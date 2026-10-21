@@ -9,25 +9,54 @@ import { useAuth } from '../../providers/AuthProvider';
 import { collection, query, onSnapshot } from '../../lib/firestore_adapter';
 import { DS } from '../../constants/designTokens';
 
-const menuItems = [
-  { name: 'Dashboard', icon: 'view-dashboard-outline', path: '/(owner)' },
-  { name: 'Billing', icon: 'receipt', path: '/(owner)/pos_billing' },
-  { name: 'Tables & KOT', icon: 'silverware-fork-knife', path: '/(owner)/tables_kot' },
-  { name: 'Kitchen KDS', icon: 'chef-hat', path: '/(owner)/kds' },
-  { name: 'Store Tasks', icon: 'checkbox-marked-circle-auto-outline', path: '/(owner)/tasks' },
-  { name: 'Staff & Payroll', icon: 'badge-account-horizontal-outline', path: '/(owner)/attendance' },
-  { name: 'Inventory', icon: 'clipboard-list-outline', path: '/(owner)/inventory' },
-  { name: 'Products', icon: 'package-variant-closed', path: '/(owner)/products_management' },
-  { name: 'Barcode Gen.', icon: 'barcode-scan', path: '/(owner)/barcode_generator' },
-  { name: 'Reorder List', icon: 'alert-circle-outline', path: '/(owner)/reorder_list' },
-  { name: 'Day Book', icon: 'book-open-page-variant-outline', path: '/(owner)/day_book' },
-  { name: 'Cash & Bank', icon: 'cash-multiple', path: '/(owner)/cash_bank_book' },
-  { name: 'Journal', icon: 'notebook-outline', path: '/(owner)/journal_entry' },
-  { name: 'Ledgers', icon: 'account-details-outline', path: '/(owner)/ledgers' },
-  { name: 'Profit & Loss', icon: 'chart-line', path: '/(owner)/profit_loss' },
-  { name: 'Balance Sheet', icon: 'scale-balance', path: '/(owner)/balance_sheet' },
-  { name: 'GST Returns', icon: 'file-percent-outline', path: '/(owner)/gst_management', isGstOnly: true },
-  { name: 'Data Import', icon: 'file-import-outline', path: '/(owner)/data_import' },
+interface MenuItemDef {
+  name: string;
+  icon: string;
+  path: string;
+  isGstOnly?: boolean;
+  badge?: string;
+  badgeColor?: string;
+}
+
+interface MenuSection {
+  title: string;
+  items: MenuItemDef[];
+}
+
+const menuSections: MenuSection[] = [
+  {
+    title: 'Point of Sale',
+    items: [
+      { name: 'Dashboard', icon: 'view-dashboard-outline', path: '/(owner)' },
+      { name: 'POS Billing', icon: 'receipt', path: '/(owner)/pos_billing' },
+      { name: 'Tables & KOT', icon: 'silverware-fork-knife', path: '/(owner)/tables_kot', badge: 'NEW', badgeColor: '#7C3AED' },
+      { name: 'Kitchen KDS', icon: 'chef-hat', path: '/(owner)/kds', badge: 'LIVE', badgeColor: '#DC2626' },
+    ]
+  },
+  {
+    title: 'Operations & Staff',
+    items: [
+      { name: 'Store Tasks', icon: 'checkbox-marked-circle-auto-outline', path: '/(owner)/tasks', badge: 'SOP', badgeColor: '#0284C7' },
+      { name: 'Staff & Payroll', icon: 'badge-account-horizontal-outline', path: '/(owner)/attendance' },
+      { name: 'Inventory & Stock', icon: 'clipboard-list-outline', path: '/(owner)/inventory' },
+      { name: 'Products Catalog', icon: 'package-variant-closed', path: '/(owner)/products_management' },
+      { name: 'Barcode Generator', icon: 'barcode-scan', path: '/(owner)/barcode_generator' },
+      { name: 'Reorder Alerts', icon: 'alert-circle-outline', path: '/(owner)/reorder_list' },
+    ]
+  },
+  {
+    title: 'Accounting & GST',
+    items: [
+      { name: 'Day Book', icon: 'book-open-page-variant-outline', path: '/(owner)/day_book' },
+      { name: 'Cash & Bank Books', icon: 'cash-multiple', path: '/(owner)/cash_bank_book' },
+      { name: 'Journal Vouchers', icon: 'notebook-outline', path: '/(owner)/journal_entry' },
+      { name: 'General Ledgers', icon: 'account-details-outline', path: '/(owner)/ledgers' },
+      { name: 'Profit & Loss', icon: 'chart-line', path: '/(owner)/profit_loss' },
+      { name: 'Balance Sheet', icon: 'scale-balance', path: '/(owner)/balance_sheet' },
+      { name: 'GST Returns (GSTR)', icon: 'file-percent-outline', path: '/(owner)/gst_management', isGstOnly: true },
+      { name: 'Data Import / Export', icon: 'file-import-outline', path: '/(owner)/data_import' },
+    ]
+  }
 ];
 
 // ── Live Clock Hook ────────────────────────────────────────────────────
@@ -43,7 +72,7 @@ function useLiveClock() {
 }
 
 // ── Sidebar Menu Item with hover ───────────────────────────────────────
-const MenuItem = ({ item, isActive, onPress }: { item: any; isActive: boolean; onPress: () => void }) => {
+const MenuItem = ({ item, isActive, onPress }: { item: MenuItemDef; isActive: boolean; onPress: () => void }) => {
   const [isHovered, setIsHovered] = useState(false);
   return (
     <TouchableOpacity
@@ -59,8 +88,17 @@ const MenuItem = ({ item, isActive, onPress }: { item: any; isActive: boolean; o
       onMouseLeave={Platform.OS === 'web' ? () => setIsHovered(false) : undefined}
       activeOpacity={0.7}
     >
-      <Icon name={item.icon} size={20} color={isActive ? '#16A34A' : '#6B7280'} />
-      <Text style={[styles.menuText, isActive && styles.menuTextActive]}>{item.name}</Text>
+      <View style={[styles.menuIconContainer, isActive && styles.menuIconActiveContainer]}>
+        <Icon name={item.icon} size={18} color={isActive ? '#16A34A' : isHovered ? '#0F172A' : '#64748B'} />
+      </View>
+      <Text style={[styles.menuText, isActive && styles.menuTextActive, isHovered && !isActive && { color: '#0F172A' }]}>
+        {item.name}
+      </Text>
+      {item.badge && (
+        <View style={[styles.menuBadgePill, { backgroundColor: item.badgeColor ? `${item.badgeColor}15` : '#F1F5F9' }]}>
+          <Text style={[styles.menuBadgeText, { color: item.badgeColor || '#64748B' }]}>{item.badge}</Text>
+        </View>
+      )}
     </TouchableOpacity>
   );
 };
@@ -330,14 +368,21 @@ export default function OwnerLayout() {
 
         {/* Menu */}
         <ScrollView style={styles.sidebarMenu} showsVerticalScrollIndicator={false}>
-          {menuItems
-            .filter(item => !(item as any).isGstOnly || isGstRegistered)
-            .map((item, idx) => {
-              const isActive = pathname === item.path || (item.path === '/(owner)' && pathname === '/(owner)/');
-              return (
-                <MenuItem key={idx} item={item} isActive={isActive} onPress={() => handleNav(item.path)} />
-              );
-            })}
+          {menuSections.map((sec, sIdx) => {
+            const filteredItems = sec.items.filter(item => !item.isGstOnly || isGstRegistered);
+            if (filteredItems.length === 0) return null;
+            return (
+              <View key={sIdx} style={styles.menuSectionGroup}>
+                <Text style={styles.menuSectionTitle}>{sec.title}</Text>
+                {filteredItems.map((item, idx) => {
+                  const isActive = pathname === item.path || (item.path === '/(owner)' && pathname === '/(owner)/');
+                  return (
+                    <MenuItem key={idx} item={item} isActive={isActive} onPress={() => handleNav(item.path)} />
+                  );
+                })}
+              </View>
+            );
+          })}
           <View style={{ height: 20 }} />
         </ScrollView>
 
@@ -551,23 +596,67 @@ const styles = StyleSheet.create({
   sidebarMenu: { flex: 1, marginTop: 8 },
 
   // Menu Item
+  menuSectionGroup: {
+    marginBottom: 12,
+  },
+  menuSectionTitle: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#94A3B8',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+    paddingHorizontal: 20,
+    marginTop: 6,
+    marginBottom: 4,
+    fontFamily: 'Plus Jakarta Sans',
+  },
   menuItem: {
-    flexDirection: 'row', alignItems: 'center',
-    paddingVertical: 10, paddingHorizontal: 16,
-    marginHorizontal: 8, marginBottom: 4, borderRadius: 0,
-    borderLeftWidth: 3, borderLeftColor: 'transparent',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginHorizontal: 10,
+    marginBottom: 2,
+    borderRadius: 10,
   },
   menuItemActive: {
-    backgroundColor: '#F0FDF4',
-    borderLeftColor: '#16A34A',
+    backgroundColor: '#DCFCE7',
   },
   menuItemHover: {
-    backgroundColor: '#F9FAFB',
+    backgroundColor: '#F1F5F9',
+  },
+  menuIconContainer: {
+    width: 28,
+    height: 28,
+    borderRadius: 7,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  menuIconActiveContainer: {
+    backgroundColor: 'rgba(22, 163, 74, 0.12)',
   },
   menuText: {
-    color: '#4B5563', marginLeft: 12, fontSize: 14, fontWeight: '500',
+    color: '#475569',
+    marginLeft: 8,
+    fontSize: 13,
+    fontWeight: '500',
+    flex: 1,
+    fontFamily: 'Plus Jakarta Sans',
   },
-  menuTextActive: { color: '#16A34A', fontWeight: '600' },
+  menuTextActive: {
+    color: '#15803D',
+    fontWeight: '700',
+  },
+  menuBadgePill: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  menuBadgeText: {
+    fontSize: 9,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
 
   // Logout
   logoutButton: {
