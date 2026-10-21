@@ -6,7 +6,7 @@ BharatPOS is a full-stack Point of Sale (POS), Accounting, and Retail Management
 
 ## 📁 Repository Structure
 
-`
+```
 bharatpos-new/
 ├── frontend/           # Store Owner & Vendor POS Terminal (Expo / React Native Web)
 │   ├── src/app/        # Billing, Inventory, GST, Cash/Bank Books, Voice AI
@@ -17,11 +17,9 @@ bharatpos-new/
 ├── backend/            # Express & Firebase Admin SDK API Server
 │   ├── server.js       # User provisioning, password reset, sync API
 │   └── package.json
-├── index.html          # BharatPOS Official Landing Website
-├── start_all.bat       # One-click Windows development launcher
 ├── START_SERVERS.sh    # One-click Unix / macOS development launcher
 └── README.md
-`
+```
 
 ---
 
@@ -34,27 +32,27 @@ bharatpos-new/
 ### 2. Manual Commands
 
 #### Frontend (POS App)
-`ash
+```bash
 cd frontend
 npm install
 npx expo start --web --port 8081
-`
+```
 *Access at: http://localhost:8081*
 
 #### Admin Portal
-`ash
+```bash
 cd admin
 npm install
 npx expo start --web --port 8082
-`
+```
 *Access at: http://localhost:8082*
 
 #### Backend Server
-`ash
+```bash
 cd backend
 npm install
 npm start
-`
+```
 *API running at: http://localhost:8083*
 
 ---
@@ -63,9 +61,9 @@ npm start
 
 | Component | Production URL |
 | :--- | :--- |
-| **Frontend (POS App)** | https://pos-app-red.vercel.app |
-| **Admin Portal** | https://pos-admin-bharat.vercel.app |
-| **Landing Website** | https://bharatpos-new.vercel.app |
+| **BharatPOS Main App (POS & Terminal)** | https://bharatpos-new.vercel.app |
+| **Public Customer Invoice Viewer** | https://bharatpos-new.vercel.app/invoice |
+| **Super Admin Portal** | https://pos-admin-bharat.vercel.app |
 
 ---
 

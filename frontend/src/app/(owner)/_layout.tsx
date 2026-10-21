@@ -12,6 +12,10 @@ import { DS } from '../../constants/designTokens';
 const menuItems = [
   { name: 'Dashboard', icon: 'view-dashboard-outline', path: '/(owner)' },
   { name: 'Billing', icon: 'receipt', path: '/(owner)/pos_billing' },
+  { name: 'Tables & KOT', icon: 'silverware-fork-knife', path: '/(owner)/tables_kot' },
+  { name: 'Kitchen KDS', icon: 'chef-hat', path: '/(owner)/kds' },
+  { name: 'Store Tasks', icon: 'checkbox-marked-circle-auto-outline', path: '/(owner)/tasks' },
+  { name: 'Staff & Payroll', icon: 'badge-account-horizontal-outline', path: '/(owner)/attendance' },
   { name: 'Inventory', icon: 'clipboard-list-outline', path: '/(owner)/inventory' },
   { name: 'Products', icon: 'package-variant-closed', path: '/(owner)/products_management' },
   { name: 'Barcode Gen.', icon: 'barcode-scan', path: '/(owner)/barcode_generator' },

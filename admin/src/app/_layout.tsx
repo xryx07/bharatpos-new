@@ -563,8 +563,11 @@ function AuthGuard() {
     if (loading) return;
     if ((user || isDemoBypass) && inAuthGroup) {
       router.replace('/' as any);
-    } else if (!user && !isDemoBypass && !inAuthGroup) {
-      router.replace('/(auth)/login' as any);
+    } else if (!user && !isDemoBypass) {
+      const authScreen = segments[1];
+      if (!inAuthGroup || (authScreen && authScreen !== 'login')) {
+        router.replace('/(auth)/login' as any);
+      }
     }
   }, [user, loading, segments, isDemoBypass, inAuthGroup]);
 

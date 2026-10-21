@@ -452,7 +452,272 @@ export default function Index() {
           </View>
         </View>
 
-        {/* 3. EVERYTHING YOU NEED FEATURE GRID */}
+        {/* 2.5. PETPOOJA-INSPIRED 4-IN-1 PRODUCT ECOSYSTEM */}
+        <View style={styles.ecosystemSection} onLayout={(e) => handleLayout('ecosystem', e)}>
+          <View style={styles.ecosystemContainer}>
+            <View style={{ alignItems: 'center', marginBottom: 40 }}>
+              <View style={styles.ecosystemPill}>
+                <Icon name="lightning-bolt" size={14} color="#16A34A" />
+                <Text style={styles.ecosystemPillText}>POWERED BY 4 SPECIALIZED ENTERPRISE ENGINES</Text>
+              </View>
+              <Text style={styles.ecosystemTitle}>
+                The Complete All-In-One Platform{"
+"}
+                <Text style={{ color: '#16A34A' }}>Designed Like Enterprise Operating Systems</Text>
+              </Text>
+              <Text style={styles.ecosystemSubtitle}>
+                From lightning-fast billing and kitchen order tickets to staff shift attendance, daily SOP checklists, and automated GSTR returns — everything runs in sync.
+              </Text>
+            </View>
+
+            {/* 2x2 Grid matching Petpooja Architecture */}
+            <View style={[styles.ecosystemGrid, { flexDirection: screenWidth > 992 ? 'row' : 'column' }]}>
+              
+              {/* Product 1: BharatPOS POSS (Master POS & KOT) */}
+              <View style={[styles.ecoCard, { width: screenWidth > 992 ? '48.5%' : '100%' }]}>
+                <View style={styles.ecoCardTop}>
+                  <View style={[styles.ecoIconBox, { backgroundColor: '#FEE2E2' }]}>
+                    <Icon name="cash-register" size={24} color="#DC2626" />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.ecoCardTitle}>BharatPOS Master POS</Text>
+                    <Text style={styles.ecoCardSubtitle}>
+                      All-rounder solution designed to drive retail & restaurant growth, supporting all types of food service & retail outlets.
+                    </Text>
+                  </View>
+                </View>
+
+                {/* Petpooja POS Mockup Visual */}
+                <View style={styles.ecoVisualArea}>
+                  <View style={styles.posMasterNode}>
+                    <Text style={{ fontSize: 11, fontWeight: '800', color: '#DC2626' }}>Master POS</Text>
+                  </View>
+
+                  <View style={styles.kotCardsWrapper}>
+                    {/* Floating KOT Card 1 */}
+                    <Surface style={styles.floatingKotCard} elevation={2}>
+                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 }}>
+                        <Text style={styles.kotTableLabel}>Table: AC 7</Text>
+                        <Text style={styles.kotNoLabel}>KOT No. 13</Text>
+                      </View>
+                      <Text style={styles.kotItemName}>1 x Chicken Biryani Special</Text>
+                      <Text style={styles.kotOrderId}>Order ID: #619001662041758</Text>
+                      <View style={{ flexDirection: 'row', gap: 6, marginTop: 8 }}>
+                        <View style={styles.miniBtnOutline}><Text style={styles.miniBtnText}>Print bill</Text></View>
+                        <View style={[styles.miniBtnOutline, { borderColor: '#16A34A' }]}><Text style={[styles.miniBtnText, { color: '#16A34A' }]}>Print KOT</Text></View>
+                      </View>
+                    </Surface>
+
+                    {/* Floating KOT Card 2 */}
+                    <Surface style={[styles.floatingKotCard, { marginTop: 10 }]} elevation={2}>
+                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 }}>
+                        <Text style={styles.kotTableLabel}>Table: AC 7</Text>
+                        <Text style={styles.kotNoLabel}>KOT No. 13</Text>
+                      </View>
+                      <Text style={styles.kotItemName}>1 x Italian Farmhouse Pizza</Text>
+                      <Text style={styles.kotOrderId}>Order ID: #619001662041763</Text>
+                      <View style={{ flexDirection: 'row', gap: 6, marginTop: 8 }}>
+                        <View style={[styles.miniBtnOutline, { borderColor: '#7E22CE' }]}><Text style={[styles.miniBtnText, { color: '#7E22CE' }]}>Print KOT</Text></View>
+                      </View>
+                    </Surface>
+                  </View>
+                </View>
+
+                <Button mode="outlined" style={styles.ecoActionBtn} textColor="#DC2626" onPress={() => router.push('/(owner)/tables_kot' as any)}>
+                  Explore Tables & KOT Terminal →
+                </Button>
+              </View>
+
+              {/* Product 2: Bharat Stepwise (Tasks & Store SOPs) */}
+              <View style={[styles.ecoCard, { width: screenWidth > 992 ? '48.5%' : '100%' }]}>
+                <View style={styles.ecoCardTop}>
+                  <View style={[styles.ecoIconBox, { backgroundColor: '#E0F2FE' }]}>
+                    <Icon name="checkbox-marked-circle-auto-outline" size={24} color="#0284C7" />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.ecoCardTitle}>Stepwise Store SOPs</Text>
+                    <Text style={styles.ecoCardSubtitle}>
+                      Assign, supervise & verify tasks, get downloadable reports, simplify complex processes, and ensure consistency.
+                    </Text>
+                  </View>
+                </View>
+
+                {/* Petpooja Tasks Phone Mockup Visual */}
+                <View style={styles.ecoVisualArea}>
+                  <Surface style={styles.stepwisePhoneFrame} elevation={2}>
+                    <View style={styles.phoneHeader}>
+                      <Icon name="checkbox-marked-circle-outline" size={16} color="#16A34A" />
+                      <Text style={{ fontSize: 11, fontWeight: '800', color: '#0F172A' }}>STORE TASKS</Text>
+                      <Text style={{ fontSize: 10, color: '#64748B', marginLeft: 'auto' }}>Today</Text>
+                    </View>
+
+                    {/* Progress pill */}
+                    <View style={styles.taskMetricRow}>
+                      <View style={styles.taskStatPill}><Text style={{ fontSize: 10, fontWeight: '700', color: '#16A34A' }}>✓ 33/47 Done</Text></View>
+                      <View style={[styles.taskStatPill, { backgroundColor: '#FEF3C7' }]}><Text style={{ fontSize: 10, fontWeight: '700', color: '#D97706' }}>⚠️ 3 Issues</Text></View>
+                    </View>
+
+                    {/* Department list */}
+                    <View style={styles.miniDeptRow}>
+                      <Text style={styles.miniDeptText}>Kitchen · 12 tasks</Text>
+                      <Icon name="chevron-right" size={14} color="#94A3B8" />
+                    </View>
+                    <View style={styles.miniDeptRow}>
+                      <Text style={styles.miniDeptText}>Cleaning & Hygiene · 8 tasks</Text>
+                      <Icon name="chevron-right" size={14} color="#94A3B8" />
+                    </View>
+
+                    {/* Active Servicing Card */}
+                    <View style={styles.taskActiveCard}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                        <Icon name="air-conditioner" size={16} color="#0284C7" />
+                        <Text style={{ fontSize: 11, fontWeight: '700', color: '#0F172A' }}>AC Servicing & Deep Freezer</Text>
+                      </View>
+                      <Text style={{ fontSize: 9, color: '#64748B', marginBottom: 8 }}>Due 04:30 PM • Technician Assigned</Text>
+                      <View style={styles.finishTaskBtn}>
+                        <Icon name="check" size={12} color="#FFFFFF" />
+                        <Text style={{ fontSize: 10, fontWeight: '800', color: '#FFFFFF' }}>Finish Task</Text>
+                      </View>
+                    </View>
+                  </Surface>
+                </View>
+
+                <Button mode="outlined" style={styles.ecoActionBtn} textColor="#0284C7" onPress={() => router.push('/(owner)/tasks' as any)}>
+                  Explore Store SOPs & Tasks →
+                </Button>
+              </View>
+
+            </View>
+
+            {/* Row 2: Attendo Payroll & Petpooja INVOICE */}
+            <View style={[styles.ecosystemGrid, { flexDirection: screenWidth > 992 ? 'row' : 'column', marginTop: 24 }]}>
+              
+              {/* Product 3: Bharat Attendo (Attendance & Payroll) */}
+              <View style={[styles.ecoCard, { width: screenWidth > 992 ? '48.5%' : '100%' }]}>
+                <View style={styles.ecoCardTop}>
+                  <View style={[styles.ecoIconBox, { backgroundColor: '#E0E7FF' }]}>
+                    <Icon name="badge-account-horizontal-outline" size={24} color="#4F46E5" />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.ecoCardTitle}>Attendo Staff & Payroll</Text>
+                    <Text style={styles.ecoCardSubtitle}>
+                      Complete solution for easy attendance tracking, simplified payroll management, overtime bonuses, and a leave monitoring system.
+                    </Text>
+                  </View>
+                </View>
+
+                {/* Petpooja Attendo Visual Mockup */}
+                <View style={styles.ecoVisualArea}>
+                  <View style={styles.shiftsWrapper}>
+                    <View style={styles.shiftPillCard}>
+                      <Icon name="weather-sunny" size={16} color="#D97706" />
+                      <View>
+                        <Text style={{ fontSize: 11, fontWeight: '700', color: '#0F172A' }}>Morning Shift</Text>
+                        <Text style={{ fontSize: 9, color: '#64748B' }}>07:30 to 12:30</Text>
+                      </View>
+                    </View>
+
+                    <View style={[styles.shiftPillCard, { borderColor: '#DDD6FE' }]}>
+                      <Icon name="weather-night" size={16} color="#7C3AED" />
+                      <View>
+                        <Text style={{ fontSize: 11, fontWeight: '700', color: '#0F172A' }}>Evening Shift</Text>
+                        <Text style={{ fontSize: 9, color: '#64748B' }}>12:30 to 08:30</Text>
+                      </View>
+                    </View>
+                  </View>
+
+                  {/* Matrix Preview */}
+                  <Surface style={styles.attendoMatrixCard} elevation={2}>
+                    <View style={styles.matrixRowHeader}>
+                      <Text style={[styles.matrixCell, { flex: 1.4, fontWeight: '700' }]}>Employee</Text>
+                      <Text style={[styles.matrixCell, { flex: 1, textAlign: 'center', fontWeight: '700' }]}>Rahul</Text>
+                      <Text style={[styles.matrixCell, { flex: 1, textAlign: 'center', fontWeight: '700' }]}>Sameer</Text>
+                    </View>
+                    <Divider />
+                    <View style={styles.matrixRow}>
+                      <Text style={[styles.matrixCell, { flex: 1.4 }]}>Sunday</Text>
+                      <Text style={[styles.matrixCell, { flex: 1, textAlign: 'center', color: '#94A3B8' }]}>TAP</Text>
+                      <View style={{ flex: 1, alignItems: 'center' }}><Icon name="check" size={16} color="#16A34A" /></View>
+                    </View>
+                    <View style={styles.matrixRow}>
+                      <Text style={[styles.matrixCell, { flex: 1.4 }]}>Monday</Text>
+                      <View style={{ flex: 1, alignItems: 'center' }}><Icon name="check" size={16} color="#16A34A" /></View>
+                      <Text style={[styles.matrixCell, { flex: 1, textAlign: 'center', color: '#94A3B8' }]}>TAP</Text>
+                    </View>
+                    <View style={styles.matrixRow}>
+                      <Text style={[styles.matrixCell, { flex: 1.4 }]}>Tuesday</Text>
+                      <View style={{ flex: 1, alignItems: 'center' }}><Icon name="check" size={16} color="#16A34A" /></View>
+                      <View style={{ flex: 1, alignItems: 'center' }}><Icon name="check" size={16} color="#16A34A" /></View>
+                    </View>
+                  </Surface>
+                </View>
+
+                <Button mode="outlined" style={styles.ecoActionBtn} textColor="#4F46E5" onPress={() => router.push('/(owner)/attendance' as any)}>
+                  Explore Attendance & Payroll →
+                </Button>
+              </View>
+
+              {/* Product 4: Bharat INVOICE (GST & ITC Engine) */}
+              <View style={[styles.ecoCard, { width: screenWidth > 992 ? '48.5%' : '100%' }]}>
+                <View style={styles.ecoCardTop}>
+                  <View style={[styles.ecoIconBox, { backgroundColor: '#F3E8FF' }]}>
+                    <Icon name="file-percent-outline" size={24} color="#7E22CE" />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.ecoCardTitle}>Bharat INVOICE Suite</Text>
+                    <Text style={styles.ecoCardSubtitle}>
+                      GST billing and inventory management solution for B2B and retail businesses, designed to provide real-time insights.
+                    </Text>
+                  </View>
+                </View>
+
+                {/* Petpooja INVOICE Mockup Visual */}
+                <View style={styles.ecoVisualArea}>
+                  {/* GSTR Summary Card */}
+                  <Surface style={styles.gstrSummaryCard} elevation={2}>
+                    <View style={styles.gstrCardHeader}>
+                      <Text style={{ fontSize: 12, fontWeight: '800', color: '#0F172A' }}>GSTR Summary</Text>
+                      <Chip compact style={{ height: 20, backgroundColor: '#DCFCE7' }} textStyle={{ fontSize: 9, color: '#16A34A' }}>Active FY</Chip>
+                    </View>
+                    <View style={styles.gstrRow}>
+                      <Text style={{ fontSize: 11, color: '#64748B' }}>Output GST</Text>
+                      <Text style={{ fontSize: 12, fontWeight: '700', color: '#0F172A' }}>₹1,89,000</Text>
+                    </View>
+                    <View style={styles.gstrRow}>
+                      <Text style={{ fontSize: 11, color: '#64748B' }}>Input GST (Eligible ITC)</Text>
+                      <Text style={{ fontSize: 12, fontWeight: '700', color: '#16A34A' }}>₹1,10,000</Text>
+                    </View>
+                    <Divider style={{ marginVertical: 4 }} />
+                    <View style={styles.gstrRow}>
+                      <Text style={{ fontSize: 11, fontWeight: '700', color: '#DC2626' }}>Net GST Payable</Text>
+                      <Text style={{ fontSize: 13, fontWeight: '800', color: '#DC2626' }}>₹79,000</Text>
+                    </View>
+                  </Surface>
+
+                  {/* Floating GSTR Reports Pill Card */}
+                  <Surface style={styles.gstrReportsCard} elevation={2}>
+                    <Text style={{ fontSize: 11, fontWeight: '800', color: '#0F172A', marginBottom: 6 }}>GSTR Reports Ready</Text>
+                    <View style={styles.reportPillRow}>
+                      <Text style={{ fontSize: 10, color: '#334155' }}>GSTR-3B Summary</Text>
+                      <View style={styles.viewReportBtn}><Text style={{ fontSize: 9, color: '#7E22CE', fontWeight: '700' }}>View Report</Text></View>
+                    </View>
+                    <View style={styles.reportPillRow}>
+                      <Text style={{ fontSize: 10, color: '#334155' }}>Sales Return GSTR-1</Text>
+                      <View style={styles.viewReportBtn}><Text style={{ fontSize: 9, color: '#7E22CE', fontWeight: '700' }}>View Report</Text></View>
+                    </View>
+                  </Surface>
+                </View>
+
+                <Button mode="outlined" style={styles.ecoActionBtn} textColor="#7E22CE" onPress={() => router.push('/(owner)/gst_management' as any)}>
+                  Explore GST Returns & Invoicing →
+                </Button>
+              </View>
+
+            </View>
+          </View>
+        </View>
+
+        {target}
         <View style={styles.section} onLayout={(e) => handleLayout('features', e)}>
           <Text style={styles.sectionTitle}>Everything You Need to Run Your Business</Text>
           <Text style={styles.sectionSubtitle}>Powerful features built for modern retailers and wholesalers.</Text>
@@ -2274,5 +2539,303 @@ const styles = StyleSheet.create({
 
   // Dialog styles
   formInput: { marginBottom: 10, backgroundColor: '#FFFFFF' },
-  dialogStyle: { borderRadius: 10, backgroundColor: '#FFFFFF' }
+  dialogStyle: { borderRadius: 10, backgroundColor: '#FFFFFF' },
+
+  // Petpooja-inspired 4-in-1 Ecosystem Styles
+  ecosystemSection: {
+    paddingVertical: 70,
+    paddingHorizontal: 24,
+    backgroundColor: '#F8FAFC',
+    alignItems: 'center',
+    width: '100%'
+  },
+  ecosystemContainer: {
+    width: '100%',
+    maxWidth: 1200
+  },
+  ecosystemPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    backgroundColor: '#DCFCE7',
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
+    marginBottom: 16
+  },
+  ecosystemPillText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#16A34A',
+    fontFamily: 'Plus Jakarta Sans',
+    letterSpacing: 0.5
+  },
+  ecosystemTitle: {
+    fontSize: 36,
+    fontWeight: '800',
+    color: '#0F172A',
+    textAlign: 'center',
+    lineHeight: 44,
+    marginBottom: 12,
+    fontFamily: 'Plus Jakarta Sans'
+  },
+  ecosystemSubtitle: {
+    fontSize: 15,
+    color: '#64748B',
+    textAlign: 'center',
+    maxWidth: 720,
+    lineHeight: 22,
+    fontFamily: 'Plus Jakarta Sans'
+  },
+  ecosystemGrid: {
+    justifyContent: 'space-between',
+    width: '100%',
+    gap: 24
+  },
+  ecoCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 28,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#64748B',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.04,
+    shadowRadius: 12,
+    elevation: 2
+  },
+  ecoCardTop: {
+    flexDirection: 'row',
+    gap: 14,
+    alignItems: 'flex-start',
+    marginBottom: 20
+  },
+  ecoIconBox: {
+    width: 46,
+    height: 46,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  ecoCardTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#0F172A',
+    fontFamily: 'Plus Jakarta Sans',
+    marginBottom: 4
+  },
+  ecoCardSubtitle: {
+    fontSize: 12,
+    color: '#64748B',
+    lineHeight: 18,
+    fontFamily: 'Plus Jakarta Sans'
+  },
+  ecoVisualArea: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    minHeight: 270,
+    justifyContent: 'center'
+  },
+  posMasterNode: {
+    alignSelf: 'center',
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: '#FCA5A5',
+    shadowColor: '#DC2626',
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 1,
+    marginBottom: 12
+  },
+  kotCardsWrapper: {
+    gap: 10
+  },
+  floatingKotCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0'
+  },
+  kotTableLabel: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#0F172A'
+  },
+  kotNoLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#7E22CE',
+    backgroundColor: '#F3E8FF',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6
+  },
+  kotItemName: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#1E293B'
+  },
+  kotOrderId: {
+    fontSize: 9,
+    color: '#94A3B8',
+    marginTop: 2
+  },
+  miniBtnOutline: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    backgroundColor: '#FFFFFF'
+  },
+  miniBtnText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#475569'
+  },
+  ecoActionBtn: {
+    marginTop: 18,
+    borderRadius: 10,
+    borderWidth: 1.5
+  },
+  stepwisePhoneFrame: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0'
+  },
+  phoneHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 10
+  },
+  taskMetricRow: {
+    flexDirection: 'row',
+    gap: 6,
+    marginBottom: 10
+  },
+  taskStatPill: {
+    backgroundColor: '#DCFCE7',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6
+  },
+  miniDeptRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 5,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9'
+  },
+  miniDeptText: {
+    fontSize: 11,
+    color: '#334155',
+    fontWeight: '500'
+  },
+  taskActiveCard: {
+    backgroundColor: '#F0F9FF',
+    borderRadius: 10,
+    padding: 10,
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: '#BAE6FD'
+  },
+  finishTaskBtn: {
+    backgroundColor: '#16A34A',
+    borderRadius: 6,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    alignSelf: 'flex-start'
+  },
+  shiftsWrapper: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 12
+  },
+  shiftPillCard: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    padding: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    borderWidth: 1,
+    borderColor: '#FDE68A'
+  },
+  attendoMatrixCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#E2E8F0'
+  },
+  matrixRowHeader: {
+    flexDirection: 'row',
+    paddingVertical: 6
+  },
+  matrixRow: {
+    flexDirection: 'row',
+    paddingVertical: 7,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F8FAFC',
+    alignItems: 'center'
+  },
+  matrixCell: {
+    fontSize: 11,
+    color: '#334155'
+  },
+  gstrSummaryCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    marginBottom: 10
+  },
+  gstrCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8
+  },
+  gstrRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 4
+  },
+  gstrReportsCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0'
+  },
+  reportPillRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 4
+  },
+  viewReportBtn: {
+    backgroundColor: '#F3E8FF',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6
+  }
 });
