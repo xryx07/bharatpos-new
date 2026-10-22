@@ -236,6 +236,22 @@ export default function AdminLoginScreen() {
             {'Log In to Dashboard'}
           </Button>
         </Surface>
+
+        {/* Back to main store website */}
+        <TouchableOpacity
+          style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 20 }}
+          onPress={() => {
+            if (Platform.OS === 'web' && typeof window !== 'undefined') {
+              window.location.href = 'https://bharatpos-new.vercel.app';
+            } else {
+              router.replace('/' as any);
+            }
+          }}
+          activeOpacity={0.75}
+        >
+          <Icon name="arrow-left" size={16} color="#F59E0B" />
+          <Text style={{ fontSize: 13, color: '#F59E0B', fontWeight: '700' }}>Back to BharatPOS Store</Text>
+        </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
   );

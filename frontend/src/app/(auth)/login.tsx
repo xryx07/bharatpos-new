@@ -164,14 +164,26 @@ export default function LoginScreen() {
 
   const renderLoginForm = () => (
     <View style={styles.formWrapper}>
+      {/* Top Back to Website Action */}
+      <TouchableOpacity 
+        onPress={() => router.push('/')} 
+        style={styles.formBackBtn}
+        activeOpacity={0.7}
+      >
+        <Icon name="arrow-left" size={16} color="#16A34A" />
+        <Text style={styles.formBackBtnText}>Back to Website</Text>
+      </TouchableOpacity>
+
       {/* Brand Header */}
-      <View style={styles.brandHeader}>
-        <Icon name="cash-register" size={24} color="#10B981" />
-        <Text style={styles.brandTitle}>SmartPOS</Text>
-      </View>
+      <TouchableOpacity onPress={() => router.push('/')} style={styles.brandHeader} activeOpacity={0.8}>
+        <View style={styles.brandIconCircle}>
+          <Icon name="cash-register" size={20} color="#FFFFFF" />
+        </View>
+        <Text style={styles.brandTitle}>BharatPOS</Text>
+      </TouchableOpacity>
 
       <Text style={styles.welcomeTitle}>Welcome Back</Text>
-      <Text style={styles.welcomeSubtitle}>Sign in to access your SmartPOS account</Text>
+      <Text style={styles.welcomeSubtitle}>Sign in to access your BharatPOS store account</Text>
 
       {/* Main Form Fields */}
       <View style={styles.fieldsContainer}>
@@ -235,10 +247,28 @@ export default function LoginScreen() {
           style={styles.primaryButton}
           contentStyle={styles.buttonPadding}
           labelStyle={styles.buttonLabel}
-          buttonColor="#1E293B"
+          buttonColor="#0F172A"
         >
           {loading ? 'Logging in...' : 'Log In to Dashboard'}
         </Button>
+
+        {/* Footer Register Link */}
+        <View style={styles.registerFooter}>
+          <Text style={styles.registerDescText}>Don't have an account? </Text>
+          <TouchableOpacity onPress={() => router.push('/(auth)/signup' as any)}>
+            <Text style={styles.registerLinkText}>Sign Up for Free</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Return to website bottom anchor */}
+        <TouchableOpacity 
+          onPress={() => router.push('/')} 
+          style={styles.returnHomeFooter}
+          activeOpacity={0.7}
+        >
+          <Icon name="home-outline" size={16} color="#64748B" />
+          <Text style={styles.returnHomeText}>Return to BharatPOS Homepage</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -248,20 +278,45 @@ export default function LoginScreen() {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
+      {/* ── Top Global Navigation Bar ──────────────────────────── */}
+      <View style={styles.globalTopBar}>
+        <TouchableOpacity 
+          onPress={() => router.push('/')} 
+          style={styles.topBackPill}
+          activeOpacity={0.75}
+        >
+          <Icon name="arrow-left" size={16} color="#0F172A" />
+          <Text style={styles.topBackText}>Back to Website</Text>
+        </TouchableOpacity>
+
+        <View style={styles.topRightWrap}>
+          <Text style={styles.topRightPrompt}>New to BharatPOS?</Text>
+          <TouchableOpacity 
+            onPress={() => router.push('/(auth)/signup' as any)}
+            style={styles.topSignUpPill}
+            activeOpacity={0.75}
+          >
+            <Text style={styles.topSignUpText}>Sign Up Free →</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
       <View style={styles.splitWrapper}>
         {/* LEFT PANEL: Branding & Highlights */}
         <View style={styles.leftBanner}>
           <View style={styles.bannerContent}>
             {/* Brand Logo Row */}
-            <View style={styles.bannerBrandRow}>
-              <Icon name="cash-register" size={28} color="#10B981" />
-              <Text style={styles.bannerBrandName}>SmartPOS</Text>
-            </View>
+            <TouchableOpacity onPress={() => router.push('/')} style={styles.bannerBrandRow} activeOpacity={0.8}>
+              <View style={styles.brandIconCircle}>
+                <Icon name="cash-register" size={20} color="#FFFFFF" />
+              </View>
+              <Text style={styles.bannerBrandName}>BharatPOS</Text>
+            </TouchableOpacity>
 
             {/* Slogan */}
             <Text style={styles.bannerSlogan}>
               Manage Your Store{"\n"}
-              <Text style={{ color: '#10B981' }}>Anywhere</Text>
+              <Text style={{ color: '#16A34A' }}>Anywhere</Text>
             </Text>
             <Text style={styles.bannerSubTitle}>
               The complete cloud POS & Inventory solution for modern Indian retailers.
@@ -347,6 +402,103 @@ const styles = StyleSheet.create({
     height: '100%'
   },
   
+  // Global Top Bar
+  globalTopBar: {
+    height: 56,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
+    backgroundColor: '#FFFFFF',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    zIndex: 10,
+  },
+  topBackPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#F1F5F9',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  topBackText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#0F172A',
+    fontFamily: 'Plus Jakarta Sans',
+  },
+  topRightWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  topRightPrompt: {
+    fontSize: 13,
+    color: '#64748B',
+    fontFamily: 'Plus Jakarta Sans',
+  },
+  topSignUpPill: {
+    backgroundColor: '#DCFCE7',
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  topSignUpText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#16A34A',
+    fontFamily: 'Plus Jakarta Sans',
+  },
+
+  // Form back button & Brand circle
+  formBackBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    alignSelf: 'center',
+    marginBottom: 14,
+    backgroundColor: '#ECFDF5',
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+  },
+  formBackBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#16A34A',
+    fontFamily: 'Plus Jakarta Sans',
+  },
+  brandIconCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: '#16A34A',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  returnHomeFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginTop: 14,
+    paddingVertical: 6,
+  },
+  returnHomeText: {
+    fontSize: 12,
+    color: '#64748B',
+    fontWeight: '600',
+    fontFamily: 'Plus Jakarta Sans',
+  },
+
   // Left Banner (Desktop)
   leftBanner: {
     width: '50%',

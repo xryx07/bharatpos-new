@@ -108,6 +108,16 @@ export default function SignupScreen() {
 
   const renderSignupForm = () => (
     <View style={styles.formContainer}>
+      {/* Top Back to Website Action */}
+      <TouchableOpacity 
+        onPress={() => router.push('/')} 
+        style={styles.formBackBtn}
+        activeOpacity={0.7}
+      >
+        <Icon name="arrow-left" size={16} color="#16A34A" />
+        <Text style={styles.formBackBtnText}>Back to Website</Text>
+      </TouchableOpacity>
+
       <Text style={styles.formTitle}>Start Your 30-Day Free Trial</Text>
       <Text style={styles.formSub}>Get instant access to all features. No credit card required.</Text>
 
@@ -312,6 +322,24 @@ export default function SignupScreen() {
             Create Free Account
           </Button>
         </View>
+
+        {/* Login Link */}
+        <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 18 }}>
+          <Text style={{ fontSize: 13, color: '#475569' }}>Already have an account? </Text>
+          <TouchableOpacity onPress={() => router.push('/(auth)/login' as any)}>
+            <Text style={{ fontWeight: '700', fontSize: 13, color: '#16A34A' }}>Log In here</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Return to website bottom anchor */}
+        <TouchableOpacity 
+          onPress={() => router.push('/')} 
+          style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 12, paddingVertical: 6 }}
+          activeOpacity={0.7}
+        >
+          <Icon name="home-outline" size={16} color="#64748B" />
+          <Text style={{ fontSize: 12, color: '#64748B', fontWeight: '600' }}>Return to BharatPOS Homepage</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -324,7 +352,7 @@ export default function SignupScreen() {
           <View style={styles.logoIconBg}>
             <Icon name="store" size={16} color="#FFFFFF" />
           </View>
-          <Text style={styles.logoText}>SmartPOS</Text>
+          <Text style={styles.logoText}>BharatPOS</Text>
         </View>
         <Button 
           mode="outlined" 
@@ -343,7 +371,7 @@ export default function SignupScreen() {
         
         <Text style={styles.successTitle}>Your Free Trial is Ready!</Text>
         <Text style={styles.successSub}>
-          Welcome to SmartPOS family. Your account has been created successfully.{"\n"}Here's what you can do next:
+          Welcome to BharatPOS family. Your account has been created successfully.{"\n"}Here's what you can do next:
         </Text>
 
         {/* Steps Grid */}
@@ -410,6 +438,29 @@ export default function SignupScreen() {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
+      {/* ── Top Global Navigation Bar ──────────────────────────── */}
+      <View style={styles.globalTopBar}>
+        <TouchableOpacity 
+          onPress={() => router.push('/')} 
+          style={styles.topBackPill}
+          activeOpacity={0.75}
+        >
+          <Icon name="arrow-left" size={16} color="#0F172A" />
+          <Text style={styles.topBackText}>Back to Website</Text>
+        </TouchableOpacity>
+
+        <View style={styles.topRightWrap}>
+          <Text style={styles.topRightPrompt}>Already registered?</Text>
+          <TouchableOpacity 
+            onPress={() => router.push('/(auth)/login' as any)}
+            style={styles.topLoginPill}
+            activeOpacity={0.75}
+          >
+            <Text style={styles.topLoginText}>Log In →</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
         {currentStep === 2 ? (
           renderSuccessPage()
@@ -500,6 +551,74 @@ export default function SignupScreen() {
 }
 
 const styles = StyleSheet.create({
+  // Global Top Bar
+  globalTopBar: {
+    height: 56,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
+    backgroundColor: '#FFFFFF',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    zIndex: 10,
+  },
+  topBackPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#F1F5F9',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  topBackText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  topRightWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  topRightPrompt: {
+    fontSize: 13,
+    color: '#64748B',
+  },
+  topLoginPill: {
+    backgroundColor: '#DCFCE7',
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  topLoginText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#16A34A',
+  },
+  formBackBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    alignSelf: 'flex-start',
+    marginBottom: 16,
+    backgroundColor: '#ECFDF5',
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+  },
+  formBackBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#16A34A',
+  },
   container: { flex: 1, backgroundColor: '#FFFFFF' },
   scrollContent: { flexGrow: 1 },
   splitWrapper: { flex: 1 },

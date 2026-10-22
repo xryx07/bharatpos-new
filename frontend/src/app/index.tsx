@@ -216,7 +216,7 @@ export default function Index() {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F8FAFC' }}>
         <ActivityIndicator size="large" color="#16A34A" />
-        <Text style={{ marginTop: 12, color: '#64748B', fontSize: 14, fontFamily: 'Plus Jakarta Sans' }}>Loading SmartPOS...</Text>
+        <Text style={{ marginTop: 12, color: '#64748B', fontSize: 14, fontFamily: 'Plus Jakarta Sans' }}>Loading BharatPOS...</Text>
       </View>
     );
   }
@@ -230,7 +230,7 @@ export default function Index() {
             <Icon name="store" size={20} color="#FFFFFF" />
           </View>
           <View style={{ marginLeft: 8 }}>
-            <Text style={styles.logoText}>SmartPOS</Text>
+            <Text style={styles.logoText}>BharatPOS</Text>
             <Text style={styles.logoSubtitle}>Billing Simplified</Text>
           </View>
         </View>
@@ -296,7 +296,7 @@ export default function Index() {
               </Text>
               
               <Text style={styles.heroDesc}>
-                SmartPOS is a powerful billing and inventory software designed for Indian retailers. From barcode billing to GST reports — manage everything in one simple system.
+                BharatPOS is a powerful billing and inventory software designed for Indian retailers. From barcode billing to GST reports — manage everything in one simple system.
               </Text>
 
               <View style={styles.heroPillsRow}>
@@ -786,7 +786,7 @@ export default function Index() {
 
         {/* 5. SEE SMARTPOS IN ACTION (INTERACTIVE SHOWCASE) */}
         <View style={styles.section} onLayout={(e) => handleLayout('demo', e)}>
-          <Text style={styles.sectionTitle}>See SmartPOS in Action</Text>
+          <Text style={styles.sectionTitle}>See BharatPOS in Action</Text>
           <Text style={styles.sectionSubtitle}>Explore the premium terminal interfaces tailored for maximum speed.</Text>
 
           <View style={styles.showcaseTabsRow}>
@@ -1027,7 +1027,7 @@ export default function Index() {
         {/* 6. SEE SMARTPOS IN ACTION - LIVE PREVIEWS GRID (Screenshot 2) */}
         <View style={[styles.section, { backgroundColor: '#F8FAFC' }]}>
           <Text style={styles.liveHeadingMini}>LIVE PREVIEW</Text>
-          <Text style={styles.sectionTitle}>See SmartPOS in Action</Text>
+          <Text style={styles.sectionTitle}>See BharatPOS in Action</Text>
           <Text style={styles.sectionSubtitle}>Explore the powerful features through our live demos and screenshots.</Text>
 
           <View style={styles.showcaseTabsRow}>
@@ -1057,7 +1057,7 @@ export default function Index() {
                 <View style={styles.screenshotContent}>
                   {/* Top Header Mock */}
                   <View style={styles.innerMockHeader}>
-                    <Text style={styles.innerMockTitle}>SmartPOS</Text>
+                    <Text style={styles.innerMockTitle}>BharatPOS</Text>
                     <Text style={styles.innerMockWalk}>Walk-in Customer</Text>
                   </View>
                   <View style={styles.innerBillingMockLayout}>
@@ -1146,7 +1146,7 @@ export default function Index() {
                   {/* Phone frame */}
                   <View style={styles.miniPhoneFrame}>
                     <View style={styles.miniPhoneNotch} />
-                    <Text style={styles.miniPhoneHeader}>SmartPOS</Text>
+                    <Text style={styles.miniPhoneHeader}>BharatPOS</Text>
                     <Text style={styles.miniPhoneText}>Grand Total</Text>
                     <Text style={styles.miniPhonePrice}>₹262.50</Text>
                     <View style={styles.miniPhoneList}>
@@ -1410,7 +1410,7 @@ export default function Index() {
                 <View style={styles.footerLogoIcon}>
                   <Icon name="store" size={16} color="#16A34A" />
                 </View>
-                <Text style={styles.footerLogoText}>SmartPOS</Text>
+                <Text style={styles.footerLogoText}>BharatPOS</Text>
               </View>
               <Text style={styles.footerLogoSub}>Billing Simplified</Text>
               <Text style={styles.footerDesc}>High-speed retail billing terminal and live cloud inventory control system tailored for Indian shopkeepers.</Text>
@@ -1452,7 +1452,7 @@ export default function Index() {
           
           <Divider style={{ backgroundColor: '#1E293B', width: '100%', marginVertical: 24 }} />
           
-          <Text style={styles.footerCopy}>© 2026 SmartPOS. All rights reserved. Designed for Indian Businesses. Made with ❤ in India</Text>
+          <Text style={styles.footerCopy}>© 2026 BharatPOS. All rights reserved. Designed for Indian Businesses. Made with ❤ in India</Text>
         </View>
 
       </ScrollView>
@@ -1601,7 +1601,7 @@ export default function Index() {
                 {/* Quote block */}
                 <View style={{ marginVertical: 20 }}>
                   <Text style={{ fontSize: 13, color: '#475569', fontStyle: 'italic', lineHeight: 20, textAlign: 'center', fontFamily: 'Plus Jakarta Sans' }}>
-                    “See how SmartPOS can simplify your billing and grow your business. Our experts will walk you through everything.”
+                    “See how BharatPOS can simplify your billing and grow your business. Our experts will walk you through everything.”
                   </Text>
                 </View>
 
@@ -1766,7 +1766,7 @@ export default function Index() {
       {/* 3. VIDEO DIALOG */}
       <Portal>
         <Dialog visible={demoVideoPlaying} onDismiss={() => setDemoVideoPlaying(false)} style={styles.dialogStyle}>
-          <Dialog.Title style={{ color: '#0F172A', fontWeight: '800', fontSize: 18, fontFamily: 'Plus Jakarta Sans' }}>SmartPOS Walkthrough Video</Dialog.Title>
+          <Dialog.Title style={{ color: '#0F172A', fontWeight: '800', fontSize: 18, fontFamily: 'Plus Jakarta Sans' }}>BharatPOS Walkthrough Video</Dialog.Title>
           <Dialog.Content style={{ alignItems: 'center', paddingVertical: 24 }}>
             <Icon name="play-circle-outline" size={72} color="#16A34A" />
             <Text style={{ fontWeight: 'bold', marginTop: 16, color: '#0F172A', fontFamily: 'Plus Jakarta Sans' }}>Simulated Product Demonstration</Text>
