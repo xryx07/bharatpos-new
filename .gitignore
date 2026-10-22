@@ -1,6 +1,8 @@
 node_modules/
 .expo/
 .next/
+dist/
+frontend/dist/
 *.log
 .env
 .env.local

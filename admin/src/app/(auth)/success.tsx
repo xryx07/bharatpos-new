@@ -30,7 +30,7 @@ export default function SuccessScreen() {
       <View style={styles.header}>
         <View style={styles.logoRow}>
            <Icon name="cash-register" size={24} color="#10B981" />
-           <Text style={styles.logoText}>SmartPOS</Text>
+           <Text style={styles.logoText}>BharatPOS</Text>
         </View>
         <Button
           mode="outlined"
@@ -60,7 +60,7 @@ export default function SuccessScreen() {
           </View>
 
           <Text style={styles.mainTitle}>Your Free Trial is Ready!</Text>
-          <Text style={styles.subtitle}>Welcome to SmartPOS family. Your account has been created successfully.</Text>
+          <Text style={styles.subtitle}>Welcome to BharatPOS family. Your account has been created successfully.</Text>
           <Text style={styles.nextText}>Here's what you can do next:</Text>
 
           {/* Next Steps Cards */}

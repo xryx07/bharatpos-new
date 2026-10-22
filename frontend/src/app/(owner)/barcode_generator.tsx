@@ -977,7 +977,7 @@ export default function BarcodeGeneratorScreen() {
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
-        <Text variant="headlineSmall" style={styles.title}>SmartPOS Barcode Workspace</Text>
+        <Text variant="headlineSmall" style={styles.title}>BharatPOS Barcode Workspace</Text>
         <Text style={{ fontSize: 13, color: '#64748B', marginTop: 4 }}>
           Bulk-select products, generate clothing size variants, organize print queues, and auto-arrange labels on A4 sheets.
         </Text>

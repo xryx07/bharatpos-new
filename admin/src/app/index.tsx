@@ -126,7 +126,7 @@ export default function IndexPage() {
           <View style={{ width: 48, height: 48, borderRadius: 14, backgroundColor: '#ECFDF5', justifyContent: 'center', alignItems: 'center', marginBottom: 12 }}>
             <Icon name="cash-register" size={24} color="#10B981" />
           </View>
-          <Text style={{ fontSize: 17, fontWeight: '800', color: '#0F172A', fontFamily: 'Plus Jakarta Sans', marginBottom: 2 }}>SmartPOS</Text>
+          <Text style={{ fontSize: 17, fontWeight: '800', color: '#0F172A', fontFamily: 'Plus Jakarta Sans', marginBottom: 2 }}>BharatPOS</Text>
           <Text style={{ fontSize: 12, color: '#64748B', fontFamily: 'Plus Jakarta Sans', marginBottom: 14 }}>Super Admin Control</Text>
           <ActivityIndicator size="small" color="#10B981" />
         </View>
@@ -1895,7 +1895,7 @@ export function SuperAdminDashboard() {
             <Text variant="titleMedium" style={{ fontWeight: 'bold', color: text }}>System & Platform Branding Settings</Text>
           </View>
           
-          <TextInput label="SaaS Platform Name" value="SmartPOS Admin" mode="outlined" style={[styles.settingInput, { backgroundColor: isDark ? '#1A1B2D' : '#fff' }]} outlineColor={border} activeOutlineColor="#2563EB" textColor={text} />
+          <TextInput label="SaaS Platform Name" value="BharatPOS Admin" mode="outlined" style={[styles.settingInput, { backgroundColor: isDark ? '#1A1B2D' : '#fff' }]} outlineColor={border} activeOutlineColor="#2563EB" textColor={text} />
           <TextInput label="Branding Accent Color" value="#D81B60" mode="outlined" style={[styles.settingInput, { backgroundColor: isDark ? '#1A1B2D' : '#fff' }]} outlineColor={border} activeOutlineColor="#2563EB" textColor={text} />
           <TextInput label="Base Currency Symbol" value="INR (₹)" mode="outlined" style={[styles.settingInput, { backgroundColor: isDark ? '#1A1B2D' : '#fff' }]} outlineColor={border} activeOutlineColor="#2563EB" textColor={text} />
 

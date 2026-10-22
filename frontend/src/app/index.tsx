@@ -461,8 +461,7 @@ export default function Index() {
                 <Text style={styles.ecosystemPillText}>POWERED BY 4 SPECIALIZED ENTERPRISE ENGINES</Text>
               </View>
               <Text style={styles.ecosystemTitle}>
-                The Complete All-In-One Platform{"
-"}
+                The Complete All-In-One Platform{"\n"}
                 <Text style={{ color: '#16A34A' }}>Designed Like Enterprise Operating Systems</Text>
               </Text>
               <Text style={styles.ecosystemSubtitle}>
@@ -1357,7 +1356,7 @@ export default function Index() {
                 <View style={[styles.contactIconBg, { backgroundColor: '#F0FDF4' }]}><Icon name="email-outline" size={18} color="#16A34A" /></View>
                 <View>
                   <Text style={styles.contactRowLabel}>Technical Support</Text>
-                  <Text style={styles.contactRowVal}>support@smartpos.in</Text>
+                  <Text style={styles.contactRowVal}>support@bharatpos.in</Text>
                 </View>
               </View>
             </View>
