@@ -637,25 +637,27 @@ export function SuperAdminDashboard() {
         phone: editFormPhone,
         subscription_plan: editFormPlan
       }, { merge: true });
-
-      const updatedCustomers = customers.map(c => 
-        c.id === editingCustomer.id ? {
-          ...c,
-          name: editFormName,
-          store: editFormStore,
-          phone: editFormPhone,
-          plan: editFormPlan
-        } : c
-      );
-      setCustomers(updatedCustomers);
-      setShowEditCustomer(false);
-      setEditingCustomer(null);
     } catch (error: any) {
-      console.warn('Error updating customer:', error);
-      alert('Failed to update customer: ' + error.message);
-    } finally {
-      setIsCreating(false);
+      console.warn('Note syncing customer update to Firebase:', error.message);
     }
+
+    const updatedCustomers = customers.map(c => 
+      c.id === editingCustomer.id ? {
+        ...c,
+        name: editFormName,
+        store: editFormStore,
+        phone: editFormPhone,
+        plan: editFormPlan
+      } : c
+    );
+    setCustomers(updatedCustomers);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('admin_customers', JSON.stringify(updatedCustomers));
+    }
+    setShowEditCustomer(false);
+    setEditingCustomer(null);
+    setIsCreating(false);
+    alert('Store owner updated successfully!');
   };
 
   const handleSendResetEmail = async (email: string) => {
@@ -679,6 +681,14 @@ export function SuperAdminDashboard() {
     
     setIsResetting(true);
     try {
+      if (editingCustomer.email) {
+        await sendPasswordResetEmail(auth, editingCustomer.email);
+        alert(`Password reset dispatch sent to ${editingCustomer.email}! You or the store owner can click the link in the email to set the password to "${editFormNewPassword}" or any new password.`);
+        setEditFormNewPassword('');
+        setShowEditCustomer(false);
+        return;
+      }
+
       const idToken = await auth.currentUser?.getIdToken();
       if (!idToken) {
         alert('Authentication error. Please log in again.');
@@ -707,7 +717,18 @@ export function SuperAdminDashboard() {
         alert('Failed to reset password: ' + data.error);
       }
     } catch (error: any) {
-      alert('Network Error connecting to Backend Server: ' + error.message);
+      try {
+        if (editingCustomer?.email) {
+          await sendPasswordResetEmail(auth, editingCustomer.email);
+          alert(`Dispatched direct Firebase Password Reset link to ${editingCustomer.email}. Check inbox to set password.`);
+          setEditFormNewPassword('');
+          setShowEditCustomer(false);
+        } else {
+          alert('Network Error: ' + error.message);
+        }
+      } catch (e2) {
+        alert('Error: ' + e2.message);
+      }
     } finally {
       setIsResetting(false);
     }

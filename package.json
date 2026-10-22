@@ -1,4 +1,12 @@
 {
+  "name": "bharatpos-suite",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "cd frontend && npm install && npx expo export -p web",
+    "start": "cd frontend && npm start",
+    "build:admin": "cd admin && npm install && npx expo export -p web"
+  },
   "dependencies": {
     "isomorphic-git": "^1.38.5"
   }

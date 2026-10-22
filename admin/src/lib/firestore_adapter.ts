@@ -12,8 +12,11 @@ export function collection(dbInstance: any, pathStr: string, ...segments: string
 }
 
 export async function setDoc(docRef: any, data: any, options?: { merge?: boolean }) {
-  // Simple set, ignores merge for now as this is a basic shim
-  await set(docRef.ref, data);
+  if (options?.merge) {
+    await update(docRef.ref, data);
+  } else {
+    await set(docRef.ref, data);
+  }
 }
 
 export async function addDoc(collectionRef: any, data: any) {

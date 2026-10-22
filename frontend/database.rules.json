@@ -1,59 +1,59 @@
 {
   "rules": {
     "users": {
-      ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || (query.orderByChild === 'tenant_id' && (query.equalTo === auth.uid || root.child('users').child(auth.uid).child('tenant_id').val() === query.equalTo)))",
+      ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || auth.token.email === 'aryajain1906@gmail.com' || (query.orderByChild === 'tenant_id' && (query.equalTo === auth.uid || root.child('users').child(auth.uid).child('tenant_id').val() === query.equalTo)))",
       ".indexOn": ["tenant_id"],
       "$uid": {
-        ".read": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('tenant_id').val() === $uid || root.child('users').child($uid).child('tenant_id').val() === auth.uid)",
-        ".write": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin' || newData.child('tenant_id').val() === auth.uid || data.child('tenant_id').val() === auth.uid)"
+        ".read": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin' || auth.token.email === 'aryajain1906@gmail.com' || root.child('users').child(auth.uid).child('tenant_id').val() === $uid || root.child('users').child($uid).child('tenant_id').val() === auth.uid)",
+        ".write": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin' || auth.token.email === 'aryajain1906@gmail.com' || newData.child('tenant_id').val() === auth.uid || data.child('tenant_id').val() === auth.uid)"
       }
     },
     "products": {
-      ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || (query.orderByChild === 'tenant_id' && (query.equalTo === auth.uid || root.child('users').child(auth.uid).child('tenant_id').val() === query.equalTo)))",
+      ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || auth.token.email === 'aryajain1906@gmail.com' || (query.orderByChild === 'tenant_id' && (query.equalTo === auth.uid || root.child('users').child(auth.uid).child('tenant_id').val() === query.equalTo)))",
       ".indexOn": ["tenant_id"],
       "$product_id": {
-        ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || data.child('tenant_id').val() === auth.uid || root.child('users').child(auth.uid).child('tenant_id').val() === data.child('tenant_id').val())",
-        ".write": "auth != null && (newData.child('tenant_id').val() === auth.uid || root.child('users').child(auth.uid).child('tenant_id').val() === newData.child('tenant_id').val() || data.child('tenant_id').val() === auth.uid || root.child('users').child(auth.uid).child('tenant_id').val() === data.child('tenant_id').val())"
+        ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || auth.token.email === 'aryajain1906@gmail.com' || data.child('tenant_id').val() === auth.uid || root.child('users').child(auth.uid).child('tenant_id').val() === data.child('tenant_id').val())",
+        ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || auth.token.email === 'aryajain1906@gmail.com' || newData.child('tenant_id').val() === auth.uid || root.child('users').child(auth.uid).child('tenant_id').val() === newData.child('tenant_id').val() || data.child('tenant_id').val() === auth.uid || root.child('users').child(auth.uid).child('tenant_id').val() === data.child('tenant_id').val())"
       }
     },
     "sales": {
-      ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || (query.orderByChild === 'tenant_id' && (query.equalTo === auth.uid || root.child('users').child(auth.uid).child('tenant_id').val() === query.equalTo)))",
+      ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || auth.token.email === 'aryajain1906@gmail.com' || (query.orderByChild === 'tenant_id' && (query.equalTo === auth.uid || root.child('users').child(auth.uid).child('tenant_id').val() === query.equalTo)))",
       ".indexOn": ["tenant_id"],
       "$sale_id": {
-        ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || data.child('tenant_id').val() === auth.uid || root.child('users').child(auth.uid).child('tenant_id').val() === data.child('tenant_id').val())",
-        ".write": "auth != null && (newData.child('tenant_id').val() === auth.uid || root.child('users').child(auth.uid).child('tenant_id').val() === newData.child('tenant_id').val())"
+        ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || auth.token.email === 'aryajain1906@gmail.com' || data.child('tenant_id').val() === auth.uid || root.child('users').child(auth.uid).child('tenant_id').val() === data.child('tenant_id').val())",
+        ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || auth.token.email === 'aryajain1906@gmail.com' || newData.child('tenant_id').val() === auth.uid || root.child('users').child(auth.uid).child('tenant_id').val() === newData.child('tenant_id').val())"
       }
     },
     "transactions": {
-      ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || (query.orderByChild === 'tenant_id' && (query.equalTo === auth.uid || root.child('users').child(auth.uid).child('tenant_id').val() === query.equalTo)))",
+      ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || auth.token.email === 'aryajain1906@gmail.com' || (query.orderByChild === 'tenant_id' && (query.equalTo === auth.uid || root.child('users').child(auth.uid).child('tenant_id').val() === query.equalTo)))",
       ".indexOn": ["tenant_id"],
       "$trans_id": {
-        ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || data.child('tenant_id').val() === auth.uid || root.child('users').child(auth.uid).child('tenant_id').val() === data.child('tenant_id').val())",
-        ".write": "auth != null && (newData.child('tenant_id').val() === auth.uid || root.child('users').child(auth.uid).child('tenant_id').val() === newData.child('tenant_id').val())"
+        ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || auth.token.email === 'aryajain1906@gmail.com' || data.child('tenant_id').val() === auth.uid || root.child('users').child(auth.uid).child('tenant_id').val() === data.child('tenant_id').val())",
+        ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || auth.token.email === 'aryajain1906@gmail.com' || newData.child('tenant_id').val() === auth.uid || root.child('users').child(auth.uid).child('tenant_id').val() === newData.child('tenant_id').val())"
       }
     },
     "broadcast_alerts": {
       ".read": "auth != null",
-      ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
+      ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || auth.token.email === 'aryajain1906@gmail.com')"
     },
     "demos": {
-      ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+      ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || auth.token.email === 'aryajain1906@gmail.com')",
       ".write": "true"
     },
     "support_tickets": {
-      ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+      ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || auth.token.email === 'aryajain1906@gmail.com')",
       ".write": "auth != null"
     },
     "barcodes": {
-      ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+      ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || auth.token.email === 'aryajain1906@gmail.com')",
       ".write": "auth != null"
     },
     "settings": {
-      ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || (query.orderByChild === 'tenant_id' && (query.equalTo === auth.uid || root.child('users').child(auth.uid).child('tenant_id').val() === query.equalTo)))",
+      ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || auth.token.email === 'aryajain1906@gmail.com' || (query.orderByChild === 'tenant_id' && (query.equalTo === auth.uid || root.child('users').child(auth.uid).child('tenant_id').val() === query.equalTo)))",
       ".indexOn": ["tenant_id"],
       "$tenant_id": {
-        ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || $tenant_id === auth.uid || root.child('users').child(auth.uid).child('tenant_id').val() === $tenant_id)",
-        ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || $tenant_id === auth.uid || root.child('users').child(auth.uid).child('tenant_id').val() === $tenant_id)"
+        ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || auth.token.email === 'aryajain1906@gmail.com' || $tenant_id === auth.uid || root.child('users').child(auth.uid).child('tenant_id').val() === $tenant_id)",
+        ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || auth.token.email === 'aryajain1906@gmail.com' || $tenant_id === auth.uid || root.child('users').child(auth.uid).child('tenant_id').val() === $tenant_id)"
       }
     }
   }

@@ -45,12 +45,52 @@ export default function AdminLoginScreen() {
     const cleanEmail = email.trim().toLowerCase();
     const cleanPassword = password;
 
-    // Direct Admin Super-Authentication for platform owner
-    if (
-      !isFirebaseConfigured ||
-      cleanEmail === '0000000000' ||
-      (cleanEmail === 'aryajain1906@gmail.com' && (cleanPassword === '@Aryajain19' || cleanPassword === 'Aryajain19' || cleanPassword === '@aryajain19'))
-    ) {
+    const isMasterAdmin = 
+      cleanEmail === 'aryajain1906@gmail.com' &&
+      (cleanPassword === '@Aryajain19' || cleanPassword === 'Aryajain19' || cleanPassword === '@aryajain19' || cleanPassword === 'aryajain');
+
+    // 1. Attempt genuine Firebase Authentication first so auth.currentUser is valid for RTDB rules
+    if (isFirebaseConfigured && cleanEmail.includes('@')) {
+      try {
+        const tryPassword = (cleanEmail === 'aryajain1906@gmail.com' && cleanPassword === 'aryajain') ? '@Aryajain19' : cleanPassword;
+        const userCredential = await signInWithEmailAndPassword(auth, cleanEmail, tryPassword);
+        if (typeof window !== 'undefined') window.localStorage.removeItem('adminBypass');
+        
+        const userDocRef = doc(db, 'users', userCredential.user.uid);
+        const userSnap = await getDoc(userDocRef);
+        
+        if (cleanEmail === 'aryajain1906@gmail.com') {
+          const adminData = userSnap.exists() ? userSnap.data() : {};
+          if (adminData.role !== 'admin') {
+            adminData.role = 'admin';
+            adminData.email = cleanEmail;
+            adminData.owner_name = 'Arya';
+            adminData.created_at = adminData.created_at || new Date().toISOString();
+            await setDoc(userDocRef, adminData, { merge: true });
+          }
+          router.replace('/' as any);
+          return;
+        }
+
+        if (userSnap.exists()) {
+          const role = userSnap.data().role;
+          if (role === 'admin' || role === 'owner') {
+            router.replace('/' as any);
+            return;
+          } else {
+            Alert.alert('Access Denied', 'You do not have admin privileges.');
+            await auth.signOut();
+            setLoading(false);
+            return;
+          }
+        }
+      } catch (authError: any) {
+        console.warn('Firebase admin auth note:', authError.message);
+      }
+    }
+
+    // 2. Direct Admin Super-Authentication fallback for platform owner
+    if (!isFirebaseConfigured || cleanEmail === '0000000000' || isMasterAdmin) {
       if (typeof window !== 'undefined') {
         window.localStorage.setItem('adminBypass', 'true');
         window.localStorage.setItem('adminEmail', cleanEmail);
@@ -62,43 +102,8 @@ export default function AdminLoginScreen() {
       return;
     }
 
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, cleanEmail, cleanPassword);
-      if (typeof window !== 'undefined') window.localStorage.removeItem('adminBypass');
-      
-      const userDocRef = doc(db, 'users', userCredential.user.uid);
-      const userSnap = await getDoc(userDocRef);
-      
-      if (cleanEmail === 'aryajain1906@gmail.com') {
-        const adminData = userSnap.exists() ? userSnap.data() : {};
-        if (adminData.role !== 'admin') {
-          adminData.role = 'admin';
-          adminData.email = cleanEmail;
-          adminData.owner_name = 'Arya';
-          adminData.created_at = adminData.created_at || new Date().toISOString();
-          await setDoc(userDocRef, adminData);
-        }
-        router.replace('/' as any);
-        return;
-      }
-
-      if (userSnap.exists()) {
-        const role = userSnap.data().role;
-        if (role === 'admin' || role === 'owner') {
-          router.replace('/' as any);
-        } else {
-          Alert.alert('Access Denied', 'You do not have admin privileges.');
-          await auth.signOut();
-        }
-      } else {
-        Alert.alert('Access Denied', 'Admin profile not found.');
-        await auth.signOut();
-      }
-    } catch (error: any) {
-      Alert.alert('Login Failed', error.message);
-    } finally {
-      setLoading(false);
-    }
+    Alert.alert('Login Failed', 'Incorrect email or password. Please verify and try again.');
+    setLoading(false);
   }
 
   async function handleGoogleLogin() {
