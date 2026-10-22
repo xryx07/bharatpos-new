@@ -184,14 +184,14 @@ export default function LoginScreen() {
 
   const renderLoginForm = () => (
     <View style={styles.formWrapper}>
-      {/* Top Back to Website Action */}
+      {/* Top ← Back to Home Page Action */}
       <TouchableOpacity 
         onPress={() => router.push('/')} 
         style={styles.formBackBtn}
         activeOpacity={0.7}
       >
         <Icon name="arrow-left" size={16} color="#16A34A" />
-        <Text style={styles.formBackBtnText}>Back to Website</Text>
+        <Text style={styles.formBackBtnText}>← Back to Home Page</Text>
       </TouchableOpacity>
 
       {/* Brand Header */}
@@ -287,7 +287,7 @@ export default function LoginScreen() {
           activeOpacity={0.7}
         >
           <Icon name="home-outline" size={16} color="#64748B" />
-          <Text style={styles.returnHomeText}>Return to BharatPOS Homepage</Text>
+          <Text style={styles.returnHomeText}>← Back to Home Page</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -306,7 +306,7 @@ export default function LoginScreen() {
           activeOpacity={0.75}
         >
           <Icon name="arrow-left" size={16} color="#0F172A" />
-          <Text style={styles.topBackText}>Back to Website</Text>
+          <Text style={styles.topBackText}>← Back to Home Page</Text>
         </TouchableOpacity>
 
         <View style={styles.topRightWrap}>
@@ -481,19 +481,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    alignSelf: 'center',
-    marginBottom: 14,
+    alignSelf: 'flex-start',
+    marginBottom: 16,
     backgroundColor: '#ECFDF5',
-    paddingHorizontal: 12,
-    paddingVertical: 5,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
     borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#A7F3D0',
+    borderWidth: 1.5,
+    borderColor: '#10B981',
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 2,
   },
   formBackBtnText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#16A34A',
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#047857',
     fontFamily: 'Plus Jakarta Sans',
   },
   brandIconCircle: {

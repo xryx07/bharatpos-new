@@ -108,14 +108,14 @@ export default function SignupScreen() {
 
   const renderSignupForm = () => (
     <View style={styles.formContainer}>
-      {/* Top Back to Website Action */}
+      {/* Top ← Back to Home Page Action */}
       <TouchableOpacity 
         onPress={() => router.push('/')} 
         style={styles.formBackBtn}
         activeOpacity={0.7}
       >
         <Icon name="arrow-left" size={16} color="#16A34A" />
-        <Text style={styles.formBackBtnText}>Back to Website</Text>
+        <Text style={styles.formBackBtnText}>← Back to Home Page</Text>
       </TouchableOpacity>
 
       <Text style={styles.formTitle}>Start Your 30-Day Free Trial</Text>
@@ -338,7 +338,7 @@ export default function SignupScreen() {
           activeOpacity={0.7}
         >
           <Icon name="home-outline" size={16} color="#64748B" />
-          <Text style={{ fontSize: 12, color: '#64748B', fontWeight: '600' }}>Return to BharatPOS Homepage</Text>
+          <Text style={{ fontSize: 12, color: '#64748B', fontWeight: '600' }}>← Back to Home Page</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -446,7 +446,7 @@ export default function SignupScreen() {
           activeOpacity={0.75}
         >
           <Icon name="arrow-left" size={16} color="#0F172A" />
-          <Text style={styles.topBackText}>Back to Website</Text>
+          <Text style={styles.topBackText}>← Back to Home Page</Text>
         </TouchableOpacity>
 
         <View style={styles.topRightWrap}>
