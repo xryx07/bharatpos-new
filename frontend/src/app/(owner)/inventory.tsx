@@ -49,6 +49,10 @@ export default function InventoryManagementScreen() {
   const [transferQty, setTransferQty] = useState('');
   const [savingTransfer, setSavingTransfer] = useState(false);
 
+  // Search & Filter
+  const [searchQuery, setSearchQuery] = useState('');
+  const [stockStatusFilter, setStockStatusFilter] = useState<'all' | 'in_stock' | 'low_stock' | 'out_of_stock'>('all');
+
   useEffect(() => {
     if (!authLoading) {
       if (tenantId) {
@@ -291,55 +295,178 @@ export default function InventoryManagementScreen() {
       />
 
       {activeTab === 'stock' && (
-        <Card style={styles.card} elevation={0}>
-          <Card.Content style={{ padding: 0 }}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={Platform.OS === 'web'}>
-              <DataTable style={{ minWidth: 720 }}>
-                <DataTable.Header>
-                  <DataTable.Title style={{ minWidth: 220, flex: 2.2 }}><Text style={styles.colHeader}>Product</Text></DataTable.Title>
-                  <DataTable.Title numeric style={{ minWidth: 100, flex: 1 }}><Text style={styles.colHeader}>Total Stock</Text></DataTable.Title>
-                  <DataTable.Title style={{ minWidth: 240, flex: 2.4 }}><Text style={styles.colHeader}>Godown Breakdown</Text></DataTable.Title>
-                  <DataTable.Title style={{ minWidth: 130, flex: 1.3, justifyContent: 'center' }}><Text style={styles.colHeader}>Status</Text></DataTable.Title>
-                </DataTable.Header>
+        <View style={{ marginBottom: 32 }}>
+          {/* Search & Stock Filter Toolbar */}
+          <View style={styles.inventoryToolbar}>
+            <View style={styles.searchBarBox}>
+              <Icon name="magnify" size={20} color="#64748B" style={{ marginLeft: 12 }} />
+              <TextInput
+                placeholder="Search stock by product name or barcode..."
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                style={styles.searchBarInput}
+                placeholderTextColor="#94A3B8"
+                underlineColor="transparent"
+                activeUnderlineColor="transparent"
+              />
+              {searchQuery.length > 0 && (
+                <TouchableOpacity onPress={() => setSearchQuery('')} style={{ padding: 6, marginRight: 6 }}>
+                  <Icon name="close-circle" size={16} color="#94A3B8" />
+                </TouchableOpacity>
+              )}
+            </View>
 
-                {products.map((item) => {
-                  const statusColor = item.stock_qty <= 0 ? '#EF4444' : (item.stock_qty <= 5 ? '#F59E0B' : '#10B981');
-                  const statusText = item.stock_qty <= 0 ? 'Out of Stock' : (item.stock_qty <= 5 ? 'Low Stock' : 'In Stock');
+            <View style={styles.stockFilterTabs}>
+              {[
+                { id: 'all', label: `All (${totalProducts})` },
+                { id: 'in_stock', label: `In Stock (${inStock})` },
+                { id: 'low_stock', label: `Low Stock (${lowStock})` },
+                { id: 'out_of_stock', label: `Out (${outOfStock})` },
+              ].map(f => {
+                const active = stockStatusFilter === f.id;
+                return (
+                  <TouchableOpacity
+                    key={f.id}
+                    onPress={() => setStockStatusFilter(f.id as any)}
+                    style={[styles.stockFilterPill, active && styles.stockFilterPillActive]}
+                  >
+                    <Text style={[styles.stockFilterPillText, active && styles.stockFilterPillTextActive]}>
+                      {f.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
 
-                  // Generate breakdown string
-                  const breakdown = Object.entries(item.location_stocks)
-                    .filter(([_, qty]) => qty > 0)
-                    .map(([loc, qty]) => `${loc}: ${qty}`)
-                    .join(' | ') || 'No Stock';
+          {/* Stock Table */}
+          <Card style={styles.card} elevation={0}>
+            <Card.Content style={{ padding: 0 }}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={Platform.OS === 'web'}>
+                <DataTable style={{ minWidth: 840, width: '100%' }}>
+                  <DataTable.Header style={styles.tableHead}>
+                    <DataTable.Title style={{ minWidth: 240, flex: 2.5 }}><Text style={styles.colHeader}>PRODUCT & BARCODE</Text></DataTable.Title>
+                    <DataTable.Title numeric style={{ minWidth: 120, flex: 1.2 }}><Text style={styles.colHeader}>STOCK UNITS</Text></DataTable.Title>
+                    <DataTable.Title style={{ minWidth: 260, flex: 2.6 }}><Text style={styles.colHeader}>GODOWN ALLOCATION</Text></DataTable.Title>
+                    <DataTable.Title style={{ minWidth: 130, flex: 1.3, justifyContent: 'center' }}><Text style={styles.colHeader}>STATUS</Text></DataTable.Title>
+                    <DataTable.Title numeric style={{ minWidth: 110, flex: 1.1 }}><Text style={styles.colHeader}>ACTION</Text></DataTable.Title>
+                  </DataTable.Header>
 
-                  return (
-                    <DataTable.Row key={item.id} style={{ minHeight: 60, alignItems: 'center' }}>
-                      <DataTable.Cell style={{ minWidth: 220, flex: 2.2 }}>
-                        <View style={{ paddingVertical: 8, width: '100%' }}>
-                          <Text style={{ fontWeight: 'bold', color: appTheme.colors.onSurface }} numberOfLines={1}>{item.name}</Text>
-                          <Text style={{ fontSize: 11, color: '#64748B', marginTop: 2 }} numberOfLines={1}>{item.barcode || 'No Barcode'}</Text>
-                        </View>
-                      </DataTable.Cell>
-                      <DataTable.Cell numeric style={{ minWidth: 100, flex: 1 }}><Text style={{ fontWeight: '600' }}>{item.stock_qty}</Text></DataTable.Cell>
-                      <DataTable.Cell style={{ minWidth: 240, flex: 2.4 }}>
-                        <Text style={{ fontSize: 12, color: '#475569' }} numberOfLines={2}>{breakdown}</Text>
-                      </DataTable.Cell>
-                      <DataTable.Cell style={{ minWidth: 130, flex: 1.3, justifyContent: 'center' }}>
-                        <Text style={{ color: statusColor, fontWeight: '700' }}>{statusText}</Text>
-                      </DataTable.Cell>
+                  {products
+                    .filter(p => {
+                      const q = searchQuery.toLowerCase().trim();
+                      const matchesSearch = !q ||
+                        (p.name || '').toLowerCase().includes(q) ||
+                        (p.barcode || '').toLowerCase().includes(q) ||
+                        (p.category || '').toLowerCase().includes(q);
+
+                      let matchesStatus = true;
+                      if (stockStatusFilter === 'in_stock') matchesStatus = p.stock_qty > 5;
+                      else if (stockStatusFilter === 'low_stock') matchesStatus = p.stock_qty > 0 && p.stock_qty <= 5;
+                      else if (stockStatusFilter === 'out_of_stock') matchesStatus = p.stock_qty <= 0;
+
+                      return matchesSearch && matchesStatus;
+                    })
+                    .map((item) => {
+                      const isOut = item.stock_qty <= 0;
+                      const isLow = item.stock_qty > 0 && item.stock_qty <= 5;
+                      const statusColor = isOut ? '#DC2626' : (isLow ? '#D97706' : '#16A34A');
+                      const statusBg = isOut ? '#FEF2F2' : (isLow ? '#FFFBEB' : '#F0FDF4');
+                      const statusBorder = isOut ? '#FEE2E2' : (isLow ? '#FEF3C7' : '#DCFCE7');
+                      const statusText = isOut ? 'Out of Stock' : (isLow ? 'Low Stock' : 'In Stock');
+
+                      const locEntries = Object.entries(item.location_stocks || {});
+
+                      return (
+                        <DataTable.Row key={item.id} style={{ minHeight: 68, alignItems: 'center', borderBottomWidth: 1, borderBottomColor: '#F1F5F9' }}>
+                          <DataTable.Cell style={{ minWidth: 240, flex: 2.5 }}>
+                            <View style={{ paddingVertical: 8, width: '100%' }}>
+                              <Text style={{ fontWeight: '700', fontSize: 13, color: '#0F172A' }} numberOfLines={1}>{item.name}</Text>
+                              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 }}>
+                                <View style={styles.skuTag}>
+                                  <Icon name="barcode" size={12} color="#64748B" />
+                                  <Text style={styles.skuTagText}>{item.barcode || 'NO-SKU'}</Text>
+                                </View>
+                                {item.category ? (
+                                  <Text style={{ fontSize: 11, color: '#64748B' }}>• {item.category}</Text>
+                                ) : null}
+                              </View>
+                            </View>
+                          </DataTable.Cell>
+
+                          <DataTable.Cell numeric style={{ minWidth: 120, flex: 1.2 }}>
+                            <View style={{ alignItems: 'flex-end', width: '100%' }}>
+                              <Text style={{ fontWeight: '800', fontSize: 14, color: isOut ? '#DC2626' : '#0F172A' }}>
+                                {item.stock_qty}
+                              </Text>
+                              {/* Stock Health Bar */}
+                              <View style={styles.stockBarTrack}>
+                                <View
+                                  style={[
+                                    styles.stockBarFill,
+                                    {
+                                      width: `${Math.min(100, Math.max(5, (item.stock_qty / 20) * 100))}%`,
+                                      backgroundColor: statusColor,
+                                    }
+                                  ]}
+                                />
+                              </View>
+                            </View>
+                          </DataTable.Cell>
+
+                          <DataTable.Cell style={{ minWidth: 260, flex: 2.6 }}>
+                            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, paddingVertical: 6 }}>
+                              {locEntries.length > 0 ? (
+                                locEntries.map(([locName, qty]) => (
+                                  <View key={locName} style={styles.godownPill}>
+                                    <Icon name="storefront-outline" size={11} color="#475569" />
+                                    <Text style={styles.godownPillText}>{locName}: <Text style={{ fontWeight: '800' }}>{qty}</Text></Text>
+                                  </View>
+                                ))
+                              ) : (
+                                <Text style={{ fontSize: 12, color: '#94A3B8', fontStyle: 'italic' }}>Unallocated</Text>
+                              )}
+                            </View>
+                          </DataTable.Cell>
+
+                          <DataTable.Cell style={{ minWidth: 130, flex: 1.3, justifyContent: 'center' }}>
+                            <View style={[styles.statusBadge, { backgroundColor: statusBg, borderColor: statusBorder }]}>
+                              <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
+                              <Text style={[styles.statusBadgeText, { color: statusColor }]}>{statusText}</Text>
+                            </View>
+                          </DataTable.Cell>
+
+                          <DataTable.Cell numeric style={{ minWidth: 110, flex: 1.1 }}>
+                            <TouchableOpacity
+                              style={styles.transferRowBtn}
+                              onPress={() => {
+                                setSelectedProd(item);
+                                const availableLocs = Object.keys(item.location_stocks || {});
+                                const defaultFrom = availableLocs.find(l => (item.location_stocks[l] || 0) > 0) || 'Main Shop';
+                                setFromLoc(defaultFrom);
+                                const defaultTo = locations.find(l => l !== defaultFrom) || '';
+                                setToLoc(defaultTo);
+                                setShowTransfer(true);
+                              }}
+                            >
+                              <Icon name="swap-horizontal" size={14} color="#16A34A" />
+                              <Text style={styles.transferRowBtnText}>Shift</Text>
+                            </TouchableOpacity>
+                          </DataTable.Cell>
+                        </DataTable.Row>
+                      );
+                    })}
+
+                  {products.length === 0 && (
+                    <DataTable.Row>
+                      <DataTable.Cell><Text style={{ fontStyle: 'italic', color: '#94A3B8' }}>No Products Registered in Catalog</Text></DataTable.Cell>
                     </DataTable.Row>
-                  );
-                })}
-
-                {products.length === 0 && (
-                  <DataTable.Row>
-                    <DataTable.Cell><Text style={{ fontStyle: 'italic', color: '#94A3B8' }}>No Products Registered</Text></DataTable.Cell>
-                  </DataTable.Row>
-                )}
-              </DataTable>
-            </ScrollView>
-          </Card.Content>
-        </Card>
+                  )}
+                </DataTable>
+              </ScrollView>
+            </Card.Content>
+          </Card>
+        </View>
       )}
 
       {activeTab === 'locations' && (
@@ -550,7 +677,139 @@ const styles = StyleSheet.create({
   },
   metricValue: { fontSize: 24, fontWeight: '800', letterSpacing: -0.5, color: DS.colors.text },
   metricLabel: { fontSize: 13, marginTop: 4, fontWeight: '600', color: DS.colors.textSecondary },
-  card: { backgroundColor: DS.colors.cardBg, borderRadius: DS.radius.lg, borderWidth: 0, ...DS.shadow.sm, marginBottom: 40 },
+  card: { backgroundColor: '#FFFFFF', borderRadius: 14, borderWidth: 1, borderColor: '#E2E8F0', overflow: 'hidden' },
+  tableHead: { backgroundColor: '#F8FAFC', borderBottomWidth: 1, borderBottomColor: '#E2E8F0' },
+  inventoryToolbar: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    padding: 12,
+    marginBottom: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  searchBarBox: {
+    flex: 1,
+    minWidth: 260,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F1F5F9',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  searchBarInput: {
+    flex: 1,
+    backgroundColor: 'transparent',
+    fontSize: 13,
+    height: 38,
+  },
+  stockFilterTabs: {
+    flexDirection: 'row',
+    gap: 6,
+    flexWrap: 'wrap',
+  },
+  stockFilterPill: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  stockFilterPillActive: {
+    backgroundColor: '#0F172A',
+    borderColor: '#0F172A',
+  },
+  stockFilterPillText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#64748B',
+  },
+  stockFilterPillTextActive: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+  },
+  skuTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  skuTagText: {
+    fontSize: 10,
+    fontFamily: 'monospace',
+    color: '#64748B',
+    fontWeight: '600',
+  },
+  stockBarTrack: {
+    width: 60,
+    height: 4,
+    backgroundColor: '#F1F5F9',
+    borderRadius: 2,
+    marginTop: 4,
+    overflow: 'hidden',
+  },
+  stockBarFill: {
+    height: '100%',
+    borderRadius: 2,
+  },
+  godownPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#F1F5F9',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  godownPillText: {
+    fontSize: 11,
+    color: '#475569',
+  },
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  statusBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  transferRowBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#DCFCE7',
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+    borderRadius: 6,
+  },
+  transferRowBtnText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#16A34A',
+  },
   colHeader: { fontWeight: 'bold', color: DS.colors.textSecondary },
   transferProductCard: {
     padding: 12,

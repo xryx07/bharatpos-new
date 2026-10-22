@@ -136,6 +136,37 @@ export default function ProductsManagementScreen() {
   const [editGstPct, setEditGstPct] = useState('');
   const [savingEdit, setSavingEdit] = useState(false);
 
+  // Search & Filter State
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedStockFilter, setSelectedStockFilter] = useState<'all' | 'in_stock' | 'low_stock' | 'out_of_stock'>('all');
+
+  const handleQueueBarcode = (prod: any) => {
+    if (typeof window === 'undefined') return;
+    try {
+      const existingQueueStr = window.localStorage.getItem('barcode_print_queue');
+      let queue: any[] = [];
+      if (existingQueueStr) queue = JSON.parse(existingQueueStr);
+      const idx = queue.findIndex((item: any) => item.id === prod.id);
+      if (idx > -1) {
+        queue[idx].copies = (queue[idx].copies || 0) + 24;
+      } else {
+        queue.push({
+          id: prod.id,
+          name: prod.name,
+          barcode: prod.barcode || `AUTO-${prod.id.substring(0, 8).toUpperCase()}`,
+          category: prod.category,
+          price: String(prod.selling_price || prod.mrp || 0),
+          copies: 24,
+        });
+      }
+      window.localStorage.setItem('barcode_print_queue', JSON.stringify(queue));
+      Alert.alert('Label Queued', `Added 24 barcode stickers for "${prod.name}" to Print Queue!`);
+    } catch (e) {
+      Alert.alert('Error', 'Failed to update barcode print queue.');
+    }
+  };
+
   // Preloaded Templates for testing
   const INVOICE_TEMPLATES = [
     {
@@ -525,122 +556,320 @@ export default function ProductsManagementScreen() {
     }
   };
 
+  // Metrics Computations
+  const totalSkus = products.length;
+  const totalStockUnits = products.reduce((acc, p) => acc + (p.stock_qty || 0), 0);
+  const inventoryValue = products.reduce((acc, p) => acc + ((p.selling_price || 0) * (p.stock_qty || 0)), 0);
+  const lowStockAlerts = products.filter(p => (p.stock_qty || 0) <= 5).length;
+
+  const categoriesList = ['All', 'Groceries', 'Beverages', 'Snacks', 'Dairy', 'Personal Care', 'Bakery', 'General'];
+
+  // Filtered list
+  const filteredProducts = products.filter(p => {
+    const q = searchQuery.toLowerCase().trim();
+    const matchesSearch = !q ||
+      (p.name || '').toLowerCase().includes(q) ||
+      (p.barcode || '').toLowerCase().includes(q) ||
+      (p.category || '').toLowerCase().includes(q);
+
+    const matchesCat = selectedCategory === 'All' ||
+      (p.category || '').toLowerCase() === selectedCategory.toLowerCase();
+
+    let matchesStock = true;
+    if (selectedStockFilter === 'in_stock') matchesStock = (p.stock_qty || 0) > 5;
+    else if (selectedStockFilter === 'low_stock') matchesStock = (p.stock_qty || 0) > 0 && (p.stock_qty || 0) <= 5;
+    else if (selectedStockFilter === 'out_of_stock') matchesStock = (p.stock_qty || 0) <= 0;
+
+    return matchesSearch && matchesCat && matchesStock;
+  });
+
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Products</Text>
-        <View style={{ flexDirection: 'row', gap: 8 }}>
-          <Button 
-            mode="outlined" 
-            onPress={() => setShowImportModal(true)} 
-            style={[styles.addBtn, { borderColor: appTheme.colors.primary }]}
-            contentStyle={{ paddingHorizontal: 8 }}
-            textColor={appTheme.colors.primary}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Icon name="file-import-outline" size={16} color={appTheme.colors.primary} style={{ marginRight: 4 }} />
-              <Text style={{ color: appTheme.colors.primary, fontWeight: 'bold', fontSize: 13 }}>Import from Bill</Text>
+      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+        {/* ── Header ─────────────────────────────────────────────────── */}
+        <View style={styles.header}>
+          <View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <Text style={styles.title}>Products & Price Catalog</Text>
+              <View style={styles.proTag}>
+                <Text style={styles.proTagText}>PETPOOJA SUITE</Text>
+              </View>
             </View>
-          </Button>
-          <Button 
-            mode="contained" 
-            onPress={() => { handleGenerateBarcode(); setShowAddModal(true); }} 
-            style={styles.addBtn}
-            contentStyle={{ paddingHorizontal: 8 }}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Icon name="plus" size={16} color="white" style={{ marginRight: 4 }} />
-              <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 13 }}>Add Product</Text>
-            </View>
-          </Button>
+            <Text style={styles.subtitle}>Unified master catalog with barcode generator & wholesaler bill parser</Text>
+          </View>
+          <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
+            <Button 
+              mode="outlined" 
+              onPress={() => setShowImportModal(true)} 
+              style={[styles.actionBtn, { borderColor: '#16A34A' }]}
+              contentStyle={{ paddingHorizontal: 12, height: 42 }}
+              textColor="#16A34A"
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Icon name="file-import-outline" size={18} color="#16A34A" style={{ marginRight: 6 }} />
+                <Text style={{ color: '#16A34A', fontWeight: '700', fontSize: 13 }}>Import Bill</Text>
+              </View>
+            </Button>
+            <Button 
+              mode="contained" 
+              onPress={() => { handleGenerateBarcode(); setShowAddModal(true); }} 
+              style={[styles.actionBtn, { backgroundColor: '#16A34A' }]}
+              contentStyle={{ paddingHorizontal: 14, height: 42 }}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Icon name="plus" size={18} color="white" style={{ marginRight: 6 }} />
+                <Text style={{ color: 'white', fontWeight: '700', fontSize: 13 }}>Add Product</Text>
+              </View>
+            </Button>
+          </View>
         </View>
-      </View>
 
-      <Card style={styles.card} elevation={1}>
-        <ScrollView horizontal>
-          <View style={{ minWidth: 1000, width: '100%' }}>
-            <DataTable>
-              <DataTable.Header style={styles.tableHeader}>
-                <DataTable.Title style={{ flex: 3 }}><Text style={styles.colHeader}>Product</Text></DataTable.Title>
-                <DataTable.Title style={{ flex: 2 }}><Text style={styles.colHeader}>SKU / Barcode</Text></DataTable.Title>
-                <DataTable.Title style={{ flex: 2 }}><Text style={styles.colHeader}>Category</Text></DataTable.Title>
-                <DataTable.Title numeric style={{ flex: 1.5 }}><Text style={styles.colHeader}>Price</Text></DataTable.Title>
-                <DataTable.Title numeric style={{ flex: 1 }}><Text style={styles.colHeader}>Stock</Text></DataTable.Title>
-                <DataTable.Title style={{ flex: 1.8, justifyContent: 'center' }}><Text style={styles.colHeader}>Status</Text></DataTable.Title>
-                <DataTable.Title numeric style={{ flex: 1.2 }}><Text style={styles.colHeader}>Actions</Text></DataTable.Title>
-              </DataTable.Header>
+        {/* ── KPI Summary Cards ───────────────────────────────────────── */}
+        <View style={styles.kpiRow}>
+          <View style={styles.kpiCard}>
+            <View style={styles.kpiTop}>
+              <Text style={styles.kpiLabel}>TOTAL SKUs</Text>
+              <View style={[styles.kpiIconWrap, { backgroundColor: '#DCFCE7' }]}>
+                <Icon name="package-variant-closed" size={18} color="#16A34A" />
+              </View>
+            </View>
+            <Text style={styles.kpiVal}>{totalSkus}</Text>
+            <Text style={styles.kpiFoot}>Active catalog items</Text>
+          </View>
 
-              {products.map((item) => {
-                const isOutOfStock = item.stock_qty <= 0;
-                const isLowStock = item.stock_qty > 0 && item.stock_qty <= 5;
-                
-                const statusLabel = isOutOfStock ? '🔴 Out of Stock' : isLowStock ? '🟠 Low Stock' : '🟢 In Stock';
-                const statusBg = isOutOfStock ? '#FEF2F2' : isLowStock ? '#FFFBEB' : '#F0FDF4';
-                const statusBorder = isOutOfStock ? '#FEE2E2' : isLowStock ? '#FEF3C7' : '#DCFCE7';
-                const statusColor = isOutOfStock ? '#DC2626' : isLowStock ? '#D97706' : '#16A34A';
+          <View style={styles.kpiCard}>
+            <View style={styles.kpiTop}>
+              <Text style={styles.kpiLabel}>STOCK UNITS</Text>
+              <View style={[styles.kpiIconWrap, { backgroundColor: '#E0F2FE' }]}>
+                <Icon name="archive-outline" size={18} color="#0284C7" />
+              </View>
+            </View>
+            <Text style={styles.kpiVal}>{totalStockUnits.toLocaleString('en-IN')}</Text>
+            <Text style={styles.kpiFoot}>Units across all godowns</Text>
+          </View>
 
+          <View style={styles.kpiCard}>
+            <View style={styles.kpiTop}>
+              <Text style={styles.kpiLabel}>CATALOG VALUATION</Text>
+              <View style={[styles.kpiIconWrap, { backgroundColor: '#EDE9FE' }]}>
+                <Icon name="currency-inr" size={18} color="#7C3AED" />
+              </View>
+            </View>
+            <Text style={styles.kpiVal}>₹{Math.round(inventoryValue).toLocaleString('en-IN')}</Text>
+            <Text style={styles.kpiFoot}>At selling price</Text>
+          </View>
+
+          <View style={styles.kpiCard}>
+            <View style={styles.kpiTop}>
+              <Text style={styles.kpiLabel}>LOW STOCK ALERT</Text>
+              <View style={[styles.kpiIconWrap, { backgroundColor: lowStockAlerts > 0 ? '#FEE2E2' : '#DCFCE7' }]}>
+                <Icon name="alert-circle-outline" size={18} color={lowStockAlerts > 0 ? '#DC2626' : '#16A34A'} />
+              </View>
+            </View>
+            <Text style={[styles.kpiVal, { color: lowStockAlerts > 0 ? '#DC2626' : '#16A34A' }]}>{lowStockAlerts}</Text>
+            <Text style={styles.kpiFoot}>{lowStockAlerts > 0 ? 'Need immediate restocking' : 'All stocks healthy'}</Text>
+          </View>
+        </View>
+
+        {/* ── Search & Filter Toolbar ─────────────────────────────────── */}
+        <View style={styles.toolbarCard}>
+          {/* Search Bar */}
+          <View style={styles.searchWrap}>
+            <Icon name="magnify" size={20} color="#64748B" style={{ marginLeft: 14 }} />
+            <TextInput
+              placeholder="Search by Product Name, Barcode, or Category..."
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              style={styles.searchInput}
+              placeholderTextColor="#94A3B8"
+              underlineColor="transparent"
+              activeUnderlineColor="transparent"
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity onPress={() => setSearchQuery('')} style={{ padding: 8, marginRight: 8 }}>
+                <Icon name="close-circle" size={18} color="#94A3B8" />
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {/* Filter Chips: Categories & Stock Status */}
+          <View style={styles.filterRows}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingVertical: 4 }}>
+              {categoriesList.map(cat => {
+                const isActive = selectedCategory.toLowerCase() === cat.toLowerCase();
                 return (
-                  <DataTable.Row key={item.id} style={styles.tableRow}>
-                    <DataTable.Cell style={{ flex: 3 }}>
-                      <Text style={styles.cellMainText}>{item.name}</Text>
-                    </DataTable.Cell>
-                    <DataTable.Cell style={{ flex: 2 }}>
-                      <Text style={styles.cellSubText} numberOfLines={1}>{item.barcode || '—'}</Text>
-                    </DataTable.Cell>
-                    <DataTable.Cell style={{ flex: 2 }}>
-                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <Icon name={cleanAndMapCategory(item.category || '').icon} size={14} color="#6B7280" style={{ marginRight: 6 }} />
-                        <Text style={styles.cellSubText}>{cleanAndMapCategory(item.category || '').cleanName}</Text>
-                      </View>
-                    </DataTable.Cell>
-                    <DataTable.Cell numeric style={{ flex: 1.5 }}>
-                      <Text style={styles.cellMainText}>₹{item.selling_price.toFixed(2)}</Text>
-                    </DataTable.Cell>
-                    <DataTable.Cell numeric style={{ flex: 1 }}>
-                      <Text style={styles.cellSubText}>{item.stock_qty}</Text>
-                    </DataTable.Cell>
-                    <DataTable.Cell style={{ flex: 1.8, justifyContent: 'center' }}>
-                      <View style={[styles.statusPill, { backgroundColor: statusBg, borderColor: statusBorder }]}>
-                        <Text style={[styles.statusText, { color: statusColor }]}>
-                          {statusLabel}
-                        </Text>
-                      </View>
-                    </DataTable.Cell>
-                    <DataTable.Cell numeric style={{ flex: 1.2 }}>
-                      <View style={styles.actionIcons}>
-                        <TouchableOpacity onPress={() => openEditModal(item)}>
-                          <Icon name="pencil" size={18} color="#4B5563" />
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={() => handleDeleteProduct(item)}>
-                          <Icon name="delete-outline" size={18} color="#DC2626" />
-                        </TouchableOpacity>
-                      </View>
-                    </DataTable.Cell>
-                  </DataTable.Row>
+                  <TouchableOpacity
+                    key={cat}
+                    onPress={() => setSelectedCategory(cat)}
+                    style={[styles.categoryChip, isActive && styles.categoryChipActive]}
+                  >
+                    <Text style={[styles.categoryChipText, isActive && styles.categoryChipTextActive]}>
+                      {cat}
+                    </Text>
+                  </TouchableOpacity>
                 );
               })}
+            </ScrollView>
 
-              {products.length === 0 && (
-                <View style={styles.emptyStateContainer}>
-                  <Text style={styles.emptyStateIcon}>📦</Text>
-                  <Text style={styles.emptyStateTitle}>No products found</Text>
-                  <Text style={styles.emptyStateText}>Import a bill or click Add Product to get started</Text>
-                  <Button 
-                    mode="contained" 
-                    buttonColor="#16A34A" 
-                    textColor="white"
-                    style={{ borderRadius: 8 }}
-                    onPress={() => { handleGenerateBarcode(); setShowAddModal(true); }}
+            {/* Stock Filters */}
+            <View style={styles.stockFilters}>
+              {[
+                { id: 'all', label: `All (${products.length})` },
+                { id: 'in_stock', label: 'In Stock' },
+                { id: 'low_stock', label: 'Low Stock' },
+                { id: 'out_of_stock', label: 'Out of Stock' },
+              ].map(tab => {
+                const active = selectedStockFilter === tab.id;
+                return (
+                  <TouchableOpacity
+                    key={tab.id}
+                    onPress={() => setSelectedStockFilter(tab.id as any)}
+                    style={[styles.stockTab, active && styles.stockTabActive]}
                   >
-                    Add Product
-                  </Button>
-                </View>
-              )}
-            </DataTable>
+                    <Text style={[styles.stockTabText, active && styles.stockTabTextActive]}>
+                      {tab.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
           </View>
-        </ScrollView>
-      </Card>
+        </View>
 
+        {/* ── Products Table ──────────────────────────────────────────── */}
+        <Card style={styles.card} elevation={0}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={Platform.OS === 'web'}>
+            <View style={{ minWidth: 1040, width: '100%' }}>
+              <DataTable>
+                <DataTable.Header style={styles.tableHeader}>
+                  <DataTable.Title style={{ flex: 3.2 }}><Text style={styles.colHeader}>PRODUCT NAME & SKU</Text></DataTable.Title>
+                  <DataTable.Title style={{ flex: 2 }}><Text style={styles.colHeader}>CATEGORY</Text></DataTable.Title>
+                  <DataTable.Title numeric style={{ flex: 1.5 }}><Text style={styles.colHeader}>MRP / SELLING</Text></DataTable.Title>
+                  <DataTable.Title numeric style={{ flex: 1.2 }}><Text style={styles.colHeader}>STOCK</Text></DataTable.Title>
+                  <DataTable.Title style={{ flex: 1.8, justifyContent: 'center' }}><Text style={styles.colHeader}>STATUS</Text></DataTable.Title>
+                  <DataTable.Title numeric style={{ flex: 2 }}><Text style={styles.colHeader}>ACTIONS</Text></DataTable.Title>
+                </DataTable.Header>
+
+                {filteredProducts.map((item) => {
+                  const isOutOfStock = item.stock_qty <= 0;
+                  const isLowStock = item.stock_qty > 0 && item.stock_qty <= 5;
+
+                  const statusLabel = isOutOfStock ? 'Out of Stock' : isLowStock ? 'Low Stock' : 'In Stock';
+                  const statusBg = isOutOfStock ? '#FEF2F2' : isLowStock ? '#FFFBEB' : '#F0FDF4';
+                  const statusBorder = isOutOfStock ? '#FEE2E2' : isLowStock ? '#FEF3C7' : '#DCFCE7';
+                  const statusColor = isOutOfStock ? '#DC2626' : isLowStock ? '#D97706' : '#16A34A';
+                  const statusDot = isOutOfStock ? '#EF4444' : isLowStock ? '#F59E0B' : '#10B981';
+
+                  return (
+                    <DataTable.Row key={item.id} style={styles.tableRow}>
+                      <DataTable.Cell style={{ flex: 3.2 }}>
+                        <View style={{ paddingVertical: 8 }}>
+                          <Text style={styles.cellMainText}>{item.name}</Text>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 }}>
+                            <View style={styles.skuPill}>
+                              <Icon name="barcode" size={12} color="#64748B" />
+                              <Text style={styles.skuText}>{item.barcode || 'NO-SKU'}</Text>
+                            </View>
+                            {item.gst_pct ? (
+                              <View style={styles.gstPill}>
+                                <Text style={styles.gstText}>GST {item.gst_pct}%</Text>
+                              </View>
+                            ) : null}
+                          </View>
+                        </View>
+                      </DataTable.Cell>
+
+                      <DataTable.Cell style={{ flex: 2 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                          <View style={styles.catIconCircle}>
+                            <Icon name={cleanAndMapCategory(item.category || '').icon} size={14} color="#16A34A" />
+                          </View>
+                          <Text style={styles.cellSubText}>{cleanAndMapCategory(item.category || '').cleanName}</Text>
+                        </View>
+                      </DataTable.Cell>
+
+                      <DataTable.Cell numeric style={{ flex: 1.5 }}>
+                        <View style={{ alignItems: 'flex-end', paddingVertical: 8 }}>
+                          <Text style={styles.priceMain}>₹{Number(item.selling_price || item.price || 0).toFixed(2)}</Text>
+                          {item.mrp && item.mrp > item.selling_price ? (
+                            <Text style={styles.priceStrike}>MRP ₹{Number(item.mrp).toFixed(2)}</Text>
+                          ) : null}
+                        </View>
+                      </DataTable.Cell>
+
+                      <DataTable.Cell numeric style={{ flex: 1.2 }}>
+                        <Text style={[styles.stockCountText, { color: isOutOfStock ? '#DC2626' : '#0F172A' }]}>
+                          {item.stock_qty || 0}
+                        </Text>
+                      </DataTable.Cell>
+
+                      <DataTable.Cell style={{ flex: 1.8, justifyContent: 'center' }}>
+                        <View style={[styles.statusPill, { backgroundColor: statusBg, borderColor: statusBorder }]}>
+                          <View style={[styles.statusDot, { backgroundColor: statusDot }]} />
+                          <Text style={[styles.statusText, { color: statusColor }]}>
+                            {statusLabel}
+                          </Text>
+                        </View>
+                      </DataTable.Cell>
+
+                      <DataTable.Cell numeric style={{ flex: 2 }}>
+                        <View style={styles.actionRow}>
+                          <TouchableOpacity
+                            style={styles.actionPillBtn}
+                            onPress={() => handleQueueBarcode(item)}
+                            accessibilityLabel="Queue Barcode"
+                          >
+                            <Icon name="barcode" size={15} color="#2563EB" />
+                            <Text style={styles.actionPillText}>Tag</Text>
+                          </TouchableOpacity>
+
+                          <TouchableOpacity
+                            style={[styles.iconActionBtn, { backgroundColor: '#F1F5F9' }]}
+                            onPress={() => openEditModal(item)}
+                          >
+                            <Icon name="pencil" size={16} color="#475569" />
+                          </TouchableOpacity>
+
+                          <TouchableOpacity
+                            style={[styles.iconActionBtn, { backgroundColor: '#FEE2E2' }]}
+                            onPress={() => handleDeleteProduct(item)}
+                          >
+                            <Icon name="delete-outline" size={16} color="#DC2626" />
+                          </TouchableOpacity>
+                        </View>
+                      </DataTable.Cell>
+                    </DataTable.Row>
+                  );
+                })}
+
+                {filteredProducts.length === 0 && (
+                  <View style={styles.emptyStateContainer}>
+                    <Text style={styles.emptyStateIcon}>🔍</Text>
+                    <Text style={styles.emptyStateTitle}>No products matching criteria</Text>
+                    <Text style={styles.emptyStateText}>
+                      {products.length === 0
+                        ? 'No items in catalog yet. Click Add Product or Import Bill to populate.'
+                        : 'Try adjusting your search terms or clearing category filters.'}
+                    </Text>
+                    {products.length > 0 && (
+                      <Button
+                        mode="outlined"
+                        onPress={() => { setSearchQuery(''); setSelectedCategory('All'); setSelectedStockFilter('all'); }}
+                        style={{ borderRadius: 8, borderColor: '#16A34A' }}
+                        textColor="#16A34A"
+                      >
+                        Reset Filters
+                      </Button>
+                    )}
+                  </View>
+                )}
+              </DataTable>
+            </View>
+          </ScrollView>
+        </Card>
+
+        <View style={{ height: 40 }} />
+      </ScrollView>
       {/* Auto-Import from Purchase Bill / Invoice Dialog */}
       <Modal
         visible={showImportModal}
@@ -1119,42 +1348,163 @@ export default function ProductsManagementScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: DS.space.xl, backgroundColor: DS.colors.surfaceBg },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: DS.space.lg },
-  title: { fontSize: DS.font.h3.fontSize, fontWeight: DS.font.h3.fontWeight, color: DS.colors.text },
-  addBtn: { borderRadius: 10 },
-  card: { backgroundColor: DS.colors.cardBg, borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: DS.colors.border },
-  tableHeader: { backgroundColor: '#F9FAFB', borderBottomWidth: 1, borderBottomColor: DS.colors.border },
-  colHeader: { fontWeight: '700', color: DS.colors.textSecondary, fontSize: 13 },
-  tableRow: { borderBottomWidth: 1, borderBottomColor: DS.colors.borderLight },
-  cellMainText: { fontWeight: '500', fontSize: 14, color: DS.colors.text },
-  cellSubText: { color: DS.colors.textSecondary, fontSize: 14 },
-  statusPill: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 9999, borderWidth: 1, alignSelf: 'center' },
-  statusText: { fontSize: 12, fontWeight: '600' },
-  actionIcons: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 16 },
-  
+  container: { flex: 1, padding: 20, backgroundColor: '#F8FAFC' },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 14 },
+  title: { fontSize: 22, fontWeight: '800', color: '#0F172A', letterSpacing: -0.5 },
+  subtitle: { fontSize: 13, color: '#64748B', marginTop: 4 },
+  proTag: { backgroundColor: '#DCFCE7', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 },
+  proTagText: { fontSize: 10, fontWeight: '800', color: '#16A34A', letterSpacing: 0.5 },
+  actionBtn: { borderRadius: 10 },
+
+  // KPI Row
+  kpiRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 20 },
+  kpiCard: {
+    flexGrow: 1,
+    flexBasis: '22%',
+    minWidth: 200,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  kpiTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  kpiLabel: { fontSize: 11, fontWeight: '800', color: '#64748B', letterSpacing: 0.6 },
+  kpiIconWrap: { width: 32, height: 32, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
+  kpiVal: { fontSize: 22, fontWeight: '800', color: '#0F172A' },
+  kpiFoot: { fontSize: 11, color: '#94A3B8', marginTop: 4 },
+
+  // Toolbar
+  toolbarCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    padding: 14,
+    marginBottom: 16,
+    gap: 12,
+  },
+  searchWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F1F5F9',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  searchInput: {
+    flex: 1,
+    backgroundColor: 'transparent',
+    fontSize: 13,
+    height: 40,
+  },
+  filterRows: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  categoryChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    backgroundColor: '#F1F5F9',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  categoryChipActive: {
+    backgroundColor: '#DCFCE7',
+    borderColor: '#16A34A',
+  },
+  categoryChipText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#64748B',
+  },
+  categoryChipTextActive: {
+    color: '#16A34A',
+    fontWeight: '700',
+  },
+  stockFilters: {
+    flexDirection: 'row',
+    gap: 6,
+    flexWrap: 'wrap',
+  },
+  stockTab: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  stockTabActive: {
+    backgroundColor: '#0F172A',
+    borderColor: '#0F172A',
+  },
+  stockTabText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#64748B',
+  },
+  stockTabTextActive: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+  },
+
+  // DataTable Card
+  card: { backgroundColor: '#FFFFFF', borderRadius: 14, overflow: 'hidden', borderWidth: 1, borderColor: '#E2E8F0' },
+  tableHeader: { backgroundColor: '#F8FAFC', borderBottomWidth: 1, borderBottomColor: '#E2E8F0' },
+  colHeader: { fontWeight: '800', color: '#475569', fontSize: 11, letterSpacing: 0.5 },
+  tableRow: { borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
+  cellMainText: { fontWeight: '700', fontSize: 14, color: '#0F172A' },
+  cellSubText: { color: '#475569', fontSize: 13, fontWeight: '500' },
+  catIconCircle: { width: 24, height: 24, borderRadius: 6, backgroundColor: '#DCFCE7', alignItems: 'center', justifyContent: 'center', marginRight: 8 },
+  skuPill: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#F1F5F9', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 },
+  skuText: { fontSize: 11, fontFamily: 'monospace', color: '#64748B', fontWeight: '600' },
+  gstPill: { backgroundColor: '#EDE9FE', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 },
+  gstText: { fontSize: 10, color: '#7C3AED', fontWeight: '700' },
+  priceMain: { fontSize: 14, fontWeight: '800', color: '#0F172A' },
+  priceStrike: { fontSize: 11, color: '#94A3B8', textDecorationLine: 'line-through' },
+  stockCountText: { fontSize: 14, fontWeight: '800' },
+  statusPill: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 9999, borderWidth: 1, alignSelf: 'center' },
+  statusDot: { width: 6, height: 6, borderRadius: 3 },
+  statusText: { fontSize: 11, fontWeight: '700' },
+
+  // Actions
+  actionRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 8 },
+  actionPillBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#EFF6FF', borderWidth: 1, borderColor: '#BFDBFE', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
+  actionPillText: { fontSize: 11, fontWeight: '700', color: '#2563EB' },
+  iconActionBtn: { width: 30, height: 30, borderRadius: 6, alignItems: 'center', justifyContent: 'center' },
+
   // Modal styles
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(15, 23, 42, 0.3)', justifyContent: 'center', alignItems: 'center', padding: 20 },
-  modalContainer: { backgroundColor: DS.colors.cardBg, width: '100%', maxWidth: 600, maxHeight: '85%', borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: DS.colors.border },
-  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: DS.colors.border },
-  modalTitle: { fontSize: 16, fontWeight: '700', color: DS.colors.text },
-  modalDesc: { fontSize: 13, color: DS.colors.textSecondary, lineHeight: 18, marginBottom: 16 },
-  sectionLabel: { fontSize: 13, fontWeight: '700', color: DS.colors.text, marginBottom: 8, marginTop: 8 },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(15, 23, 42, 0.4)', justifyContent: 'center', alignItems: 'center', padding: 20 },
+  modalContainer: { backgroundColor: '#FFFFFF', width: '100%', maxWidth: 620, maxHeight: '88%', borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: '#E2E8F0' },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#E2E8F0' },
+  modalTitle: { fontSize: 16, fontWeight: '800', color: '#0F172A' },
+  modalDesc: { fontSize: 13, color: '#64748B', lineHeight: 18, marginBottom: 16 },
+  sectionLabel: { fontSize: 12, fontWeight: '800', color: '#0F172A', marginBottom: 8, marginTop: 8, textTransform: 'uppercase', letterSpacing: 0.5 },
   templateContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 },
-  templateBadge: { backgroundColor: DS.colors.borderLight, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, borderWidth: 1, borderColor: DS.colors.border },
-  templateText: { fontSize: 11, fontWeight: '600', color: DS.colors.textSecondary },
-  textArea: { backgroundColor: DS.colors.surfaceBg, fontSize: 13, minHeight: 120, textAlignVertical: 'top' },
-  previewCard: { borderWidth: 1, borderColor: DS.colors.border, borderRadius: 8, overflow: 'hidden', marginTop: 6, backgroundColor: DS.colors.surfaceBg },
-  previewColHead: { fontSize: 11, fontWeight: '700', color: DS.colors.textSecondary },
-  previewCellMain: { fontSize: 12, fontWeight: '600', color: DS.colors.text },
-  previewCellSub: { fontSize: 12, color: DS.colors.textSecondary },
-  previewCellBarcode: { fontSize: 11, fontFamily: 'monospace', color: DS.colors.textMuted },
-  modalFooter: { flexDirection: 'row', justifyContent: 'flex-end', padding: 16, borderTopWidth: 1, borderTopColor: DS.colors.border, backgroundColor: DS.colors.surfaceBg },
-  modalBtn: { borderRadius: 10, height: 44, justifyContent: 'center' },
+  templateBadge: { backgroundColor: '#F1F5F9', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, borderWidth: 1, borderColor: '#E2E8F0' },
+  templateText: { fontSize: 11, fontWeight: '700', color: '#475569' },
+  textArea: { backgroundColor: '#F8FAFC', fontSize: 13, minHeight: 120, textAlignVertical: 'top' },
+  previewCard: { borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 8, overflow: 'hidden', marginTop: 6, backgroundColor: '#F8FAFC' },
+  previewColHead: { fontSize: 11, fontWeight: '700', color: '#64748B' },
+  previewCellMain: { fontSize: 12, fontWeight: '600', color: '#0F172A' },
+  previewCellSub: { fontSize: 12, color: '#64748B' },
+  previewCellBarcode: { fontSize: 11, fontFamily: 'monospace', color: '#94A3B8' },
+  modalFooter: { flexDirection: 'row', justifyContent: 'flex-end', padding: 16, borderTopWidth: 1, borderTopColor: '#E2E8F0', backgroundColor: '#F8FAFC' },
+  modalBtn: { borderRadius: 10, height: 42, justifyContent: 'center' },
 
   // Empty State
   emptyStateContainer: { padding: 48, alignItems: 'center', justifyContent: 'center', width: '100%' },
-  emptyStateIcon: { fontSize: 32, marginBottom: 12 },
-  emptyStateTitle: { fontSize: 16, fontWeight: '700', color: DS.colors.text, marginBottom: 4 },
-  emptyStateText: { fontSize: 14, color: DS.colors.textSecondary, textAlign: 'center', marginBottom: 16 },
+  emptyStateIcon: { fontSize: 36, marginBottom: 12 },
+  emptyStateTitle: { fontSize: 16, fontWeight: '800', color: '#0F172A', marginBottom: 4 },
+  emptyStateText: { fontSize: 13, color: '#64748B', textAlign: 'center', marginBottom: 16, maxWidth: 360 },
 });

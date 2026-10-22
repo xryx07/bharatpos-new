@@ -1027,6 +1027,15 @@ export default function POSBillingScreen() {
               Tables & KOT
             </Chip>
             <Chip
+              icon="chef-hat"
+              mode="flat"
+              onPress={() => router.push('/(owner)/kds' as any)}
+              textStyle={[styles.chipText, { color: '#D97706', fontWeight: '700' }]}
+              style={[styles.chip, { backgroundColor: '#FEF3C7' }]}
+            >
+              Kitchen KDS
+            </Chip>
+            <Chip
               icon="robot"
               mode="flat"
               onPress={() => setShowAssistantModal(true)}

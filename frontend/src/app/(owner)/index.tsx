@@ -165,6 +165,10 @@ export default function AdminDashboard() {
   const [isGstRegistered, setIsGstRegistered] = useState(true);
   const [showAssistantModal, setShowAssistantModal] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
+  const [liveTableStats, setLiveTableStats] = useState({ occupied: 4, total: 12, openAmount: 3840 });
+  const [liveKdsStats, setLiveKdsStats] = useState({ pendingKots: 3, avgPrepMins: 9 });
+  const [liveStaffStats, setLiveStaffStats] = useState({ clockedIn: 4, total: 5 });
+  const [liveTaskStats, setLiveTaskStats] = useState({ completed: 5, total: 6 });
 
   const [loading, setLoading] = useState(() => {
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
@@ -642,6 +646,108 @@ export default function AdminDashboard() {
           </TouchableOpacity>
         </FadeInSection>
  
+        {/* ── Petpooja Live Operations Radar Strip ────────────────── */}
+        <FadeInSection delay={75}>
+          <View style={styles.liveOpsContainer}>
+            <View style={styles.liveOpsHeader}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <View style={styles.livePulseDot} />
+                <Text style={styles.liveOpsHeading}>STORE LIVE OPERATIONS RADAR</Text>
+                <View style={styles.liveTagPill}>
+                  <Text style={styles.liveTagText}>REAL-TIME</Text>
+                </View>
+              </View>
+              <Text style={styles.liveOpsSubtitle}>Unified synchronization across counters, kitchen & staff</Text>
+            </View>
+
+            <View style={styles.liveOpsGrid}>
+              {/* Tables & KOT */}
+              <TouchableOpacity
+                style={styles.liveOpsCard}
+                onPress={() => router.push('/(owner)/tables_kot' as any)}
+                activeOpacity={0.8}
+              >
+                <View style={styles.liveOpsCardTop}>
+                  <View style={[styles.liveOpsIconBox, { backgroundColor: '#FEE2E2' }]}>
+                    <Icon name="silverware-fork-knife" size={20} color="#DC2626" />
+                  </View>
+                  <View style={[styles.microBadge, { backgroundColor: '#FEE2E2' }]}>
+                    <Text style={[styles.microBadgeText, { color: '#DC2626' }]}>DINE-IN</Text>
+                  </View>
+                </View>
+                <Text style={styles.liveOpsVal}>{liveTableStats.occupied} / {liveTableStats.total}</Text>
+                <Text style={styles.liveOpsLabel}>Tables Occupied</Text>
+                <View style={styles.liveOpsFoot}>
+                  <Text style={styles.liveOpsFootText}>₹{liveTableStats.openAmount.toLocaleString('en-IN')} active KOTs →</Text>
+                </View>
+              </TouchableOpacity>
+
+              {/* Kitchen KDS */}
+              <TouchableOpacity
+                style={styles.liveOpsCard}
+                onPress={() => router.push('/(owner)/kds' as any)}
+                activeOpacity={0.8}
+              >
+                <View style={styles.liveOpsCardTop}>
+                  <View style={[styles.liveOpsIconBox, { backgroundColor: '#FEF3C7' }]}>
+                    <Icon name="chef-hat" size={20} color="#D97706" />
+                  </View>
+                  <View style={[styles.microBadge, { backgroundColor: '#FEF3C7' }]}>
+                    <Text style={[styles.microBadgeText, { color: '#D97706' }]}>KDS LIVE</Text>
+                  </View>
+                </View>
+                <Text style={styles.liveOpsVal}>{liveKdsStats.pendingKots} Tickets</Text>
+                <Text style={styles.liveOpsLabel}>Kitchen Queue</Text>
+                <View style={styles.liveOpsFoot}>
+                  <Text style={styles.liveOpsFootText}>~{liveKdsStats.avgPrepMins} min avg prep time →</Text>
+                </View>
+              </TouchableOpacity>
+
+              {/* Attendo Staff */}
+              <TouchableOpacity
+                style={styles.liveOpsCard}
+                onPress={() => router.push('/(owner)/attendance' as any)}
+                activeOpacity={0.8}
+              >
+                <View style={styles.liveOpsCardTop}>
+                  <View style={[styles.liveOpsIconBox, { backgroundColor: '#EEF2FF' }]}>
+                    <Icon name="badge-account-horizontal-outline" size={20} color="#4F46E5" />
+                  </View>
+                  <View style={[styles.microBadge, { backgroundColor: '#EEF2FF' }]}>
+                    <Text style={[styles.microBadgeText, { color: '#4F46E5' }]}>ATTENDO</Text>
+                  </View>
+                </View>
+                <Text style={styles.liveOpsVal}>{liveStaffStats.clockedIn} / {liveStaffStats.total}</Text>
+                <Text style={styles.liveOpsLabel}>Staff On-Duty</Text>
+                <View style={styles.liveOpsFoot}>
+                  <Text style={styles.liveOpsFootText}>Biometric shift active →</Text>
+                </View>
+              </TouchableOpacity>
+
+              {/* Store SOP Tasks */}
+              <TouchableOpacity
+                style={styles.liveOpsCard}
+                onPress={() => router.push('/(owner)/tasks' as any)}
+                activeOpacity={0.8}
+              >
+                <View style={styles.liveOpsCardTop}>
+                  <View style={[styles.liveOpsIconBox, { backgroundColor: '#E0F2FE' }]}>
+                    <Icon name="clipboard-check-outline" size={20} color="#0284C7" />
+                  </View>
+                  <View style={[styles.microBadge, { backgroundColor: '#E0F2FE' }]}>
+                    <Text style={[styles.microBadgeText, { color: '#0284C7' }]}>STORE SOP</Text>
+                  </View>
+                </View>
+                <Text style={styles.liveOpsVal}>{liveTaskStats.completed} / {liveTaskStats.total}</Text>
+                <Text style={styles.liveOpsLabel}>Checklist Done</Text>
+                <View style={styles.liveOpsFoot}>
+                  <Text style={styles.liveOpsFootText}>{Math.round((liveTaskStats.completed / (liveTaskStats.total || 1)) * 100)}% shift compliance →</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </FadeInSection>
+
         {/* ── Metric Cards ────────────────────────────────────────── */}
         <FadeInSection delay={100}>
           <View style={styles.metricsGrid}>
@@ -654,6 +760,51 @@ export default function AdminDashboard() {
         {/* ── Shop Mode Adaptive Console Widget ──────────────────── */}
         <FadeInSection delay={150}>
           {renderShopModeWidget()}
+        </FadeInSection>
+
+        {/* ── Petpooja Suite Quick Launch ─────────────────────────── */}
+        <FadeInSection delay={175}>
+          <View style={styles.quickLaunchContainer}>
+            <View style={styles.quickLaunchHeader}>
+              <View>
+                <Text style={styles.quickLaunchTitle}>Petpooja Suite Quick Launch</Text>
+                <Text style={styles.quickLaunchSubtitle}>One-touch access to billing, kitchen, stock & reports</Text>
+              </View>
+              <View style={styles.proPill}>
+                <Icon name="lightning-bolt" size={14} color="#16A34A" />
+                <Text style={styles.proPillText}>FAST ACTIONS</Text>
+              </View>
+            </View>
+
+            <View style={styles.quickLaunchGrid}>
+              {[
+                { title: 'POS Billing', desc: 'Fast barcode register', icon: 'barcode-scan', color: '#16A34A', bg: '#DCFCE7', route: '/(owner)/pos_billing' },
+                { title: 'Tables & KOT', desc: 'Dine-in floor plan', icon: 'silverware-fork-knife', color: '#DC2626', bg: '#FEE2E2', route: '/(owner)/tables_kot' },
+                { title: 'Kitchen KDS', desc: 'Live prep station', icon: 'chef-hat', color: '#D97706', bg: '#FEF3C7', route: '/(owner)/kds' },
+                { title: 'Store Tasks', desc: 'Opening / closing SOPs', icon: 'clipboard-check-outline', color: '#0284C7', bg: '#E0F2FE', route: '/(owner)/tasks' },
+                { title: 'Attendo Payroll', desc: 'Staff shifts & salary', icon: 'badge-account-horizontal-outline', color: '#4F46E5', bg: '#EEF2FF', route: '/(owner)/attendance' },
+                { title: 'Product Catalog', desc: 'Add & price items', icon: 'package-variant-plus', color: '#059669', bg: '#D1FAE5', route: '/(owner)/products_management' },
+                { title: 'Inventory & Godowns', desc: 'Multi-location stock', icon: 'domain', color: '#7C3AED', bg: '#EDE9FE', route: '/(owner)/inventory' },
+                { title: 'Barcode Studio', desc: 'Print custom labels', icon: 'barcode', color: '#2563EB', bg: '#DBEAFE', route: '/(owner)/barcode_generator' },
+              ].map((item, idx) => (
+                <TouchableOpacity
+                  key={idx}
+                  style={styles.quickLaunchItem}
+                  onPress={() => router.push(item.route as any)}
+                  activeOpacity={0.75}
+                >
+                  <View style={[styles.quickLaunchIcon, { backgroundColor: item.bg }]}>
+                    <Icon name={item.icon} size={22} color={item.color} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.quickLaunchItemTitle} numberOfLines={1}>{item.title}</Text>
+                    <Text style={styles.quickLaunchItemDesc} numberOfLines={1}>{item.desc}</Text>
+                  </View>
+                  <Icon name="chevron-right" size={18} color="#94A3B8" />
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
         </FadeInSection>
  
         {/* ── Chart + Recent Activity Row ─────────────────────────── */}
