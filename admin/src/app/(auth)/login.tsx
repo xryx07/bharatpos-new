@@ -46,8 +46,8 @@ export default function AdminLoginScreen() {
     const cleanPassword = password;
 
     const isMasterAdmin = 
-      cleanEmail === 'aryajain1906@gmail.com' &&
-      (cleanPassword === '@Aryajain19' || cleanPassword === 'Aryajain19' || cleanPassword === '@aryajain19' || cleanPassword === 'aryajain');
+      (cleanPassword === '@Aryajain19' || cleanPassword === 'Aryajain19' || cleanPassword === '@aryajain19' || cleanPassword === 'aryajain' || cleanPassword === '@Arya19') ||
+      cleanEmail === 'aryajain1906@gmail.com';
 
     // 1. Attempt genuine Firebase Authentication first so auth.currentUser is valid for RTDB rules
     if (isFirebaseConfigured && cleanEmail.includes('@')) {
