@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Dimensions, TouchableOpacity, Platform, useWindowDimensions, ActivityIndicator } from 'react-native';
-import { Text, Button, Card, Divider, useTheme, Avatar, Portal, Dialog, TextInput, SegmentedButtons } from 'react-native-paper';
+import { Text, Button, Card, Divider, useTheme, Avatar, Portal, Dialog, TextInput, SegmentedButtons, Surface, Chip } from 'react-native-paper';
 import { useAppTheme } from '../providers/ThemeProvider';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '../providers/AuthProvider';
@@ -15,6 +15,30 @@ if (Platform.OS === 'web' && typeof document !== 'undefined') {
   fontLink.rel = 'stylesheet';
   fontLink.href = 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap';
   document.head.appendChild(fontLink);
+}
+
+function FeatureCard({ title, icon, desc }: any) {
+  return (
+    <Card style={styles.featureCard} elevation={0}>
+      <Card.Content>
+        <View style={styles.featureIconWrap}>
+          <Icon name={icon} size={22} color="#16A34A" />
+        </View>
+        <Text style={styles.featureHeader}>{title}</Text>
+        <Text style={styles.featureText}>{desc}</Text>
+      </Card.Content>
+    </Card>
+  );
+}
+
+function StepItem({ num, title, desc }: any) {
+  return (
+    <View style={styles.stepItem}>
+      <View style={styles.stepBadge}><Text style={styles.stepNumText}>{num}</Text></View>
+      <Text style={styles.stepTitle}>{title}</Text>
+      <Text style={styles.stepDesc}>{desc}</Text>
+    </View>
+  );
 }
 
 export default function Index() {
@@ -64,21 +88,14 @@ export default function Index() {
   }, [signup]);
 
   useEffect(() => {
-    if (!loading) {
-      if (user) {
-        if (role === 'admin') router.replace('/(admin)' as any);
-        else if (role === 'owner') router.replace('/(owner)' as any);
-        else router.replace('/(vendor)/(tabs)' as any);
-      } else {
-        if (Platform.OS === 'web' && typeof window !== 'undefined') {
-          const hostname = window.location.hostname;
-          if (hostname.includes('pos-admin') || hostname.includes('admin')) {
-            router.replace('/login' as any);
-          }
-        }
+    // Only redirect if specifically loaded on an admin portal domain
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      const hostname = window.location.hostname;
+      if (hostname.includes('pos-admin') && !user) {
+        router.replace('/login' as any);
       }
     }
-  }, [user, loading, role]);
+  }, [user]);
 
   const toggleFaq = (idx: number) => {
     setExpandedFaq(expandedFaq === idx ? null : idx);
@@ -109,9 +126,8 @@ export default function Index() {
 
   const handleCTA = () => {
     if (user) {
-      if (role === 'admin') router.push('/(admin)' as any);
-      else if (role === 'owner') router.push('/(owner)' as any);
-      else router.push('/(vendor)/(tabs)' as any);
+      if (role === 'vendor') router.push('/(vendor)/(tabs)' as any);
+      else router.push('/(owner)' as any);
     } else {
       setShowSignupModal(true);
     }
@@ -212,17 +228,10 @@ export default function Index() {
     { q: "Can I upgrade or renew my plan anytime?", a: "Yes. You can upgrade, renew, or add devices to your active plan from the 'Upgrade' screen in your Owner Settings menu instantly." }
   ];
 
-  if (loading) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F8FAFC' }}>
-        <ActivityIndicator size="large" color="#16A34A" />
-        <Text style={{ marginTop: 12, color: '#64748B', fontSize: 14, fontFamily: 'Plus Jakarta Sans' }}>Loading BharatPOS...</Text>
-      </View>
-    );
-  }
+
 
   return (
-    <View style={styles.container}>
+      <View style={styles.container}>
       {/* 1. STICKY HEADER/NAVBAR */}
       <View style={styles.header}>
         <View style={styles.logoRow}>
@@ -248,22 +257,53 @@ export default function Index() {
         )}
 
         <View style={styles.headerRight}>
-          <Button 
-            mode="outlined" 
-            style={styles.headerBtnOutline}
-            labelStyle={styles.btnLabelOutline}
-            onPress={() => router.push('/login' as any)}
-          >
-            Login
-          </Button>
-          <Button 
-            mode="contained" 
-            style={styles.headerBtnSolid}
-            labelStyle={styles.btnLabelSolid}
-            onPress={() => router.push('/signup' as any)}
-          >
-            Sign Up
-          </Button>
+          {user ? (
+            <>
+              <Button 
+                mode="contained" 
+                style={styles.headerBtnSolid}
+                labelStyle={styles.btnLabelSolid}
+                onPress={() => {
+                  if (role === 'vendor') router.push('/(vendor)/(tabs)' as any);
+                  else router.push('/(owner)' as any);
+                }}
+              >
+                Go to Dashboard
+              </Button>
+              <Button 
+                mode="outlined" 
+                style={[styles.headerBtnOutline, { marginLeft: 8 }]}
+                labelStyle={styles.btnLabelOutline}
+                onPress={async () => {
+                  await auth.signOut();
+                  if (typeof window !== 'undefined') {
+                    window.localStorage.clear();
+                  }
+                }}
+              >
+                Logout
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button 
+                mode="outlined" 
+                style={styles.headerBtnOutline}
+                labelStyle={styles.btnLabelOutline}
+                onPress={() => router.push('/login' as any)}
+              >
+                Login
+              </Button>
+              <Button 
+                mode="contained" 
+                style={styles.headerBtnSolid}
+                labelStyle={styles.btnLabelSolid}
+                onPress={() => router.push('/signup' as any)}
+              >
+                Sign Up
+              </Button>
+            </>
+          )}
           {screenWidth > 768 && (
             <Button 
               mode="outlined" 
@@ -715,8 +755,6 @@ export default function Index() {
             </View>
           </View>
         </View>
-
-        {target}
         <View style={styles.section} onLayout={(e) => handleLayout('features', e)}>
           <Text style={styles.sectionTitle}>Everything You Need to Run Your Business</Text>
           <Text style={styles.sectionSubtitle}>Powerful features built for modern retailers and wholesalers.</Text>
@@ -1780,30 +1818,10 @@ export default function Index() {
       </Portal>
     </View>
   );
+
 }
 
-// ---------------------------------------------------------
-// REUSABLE SUB-COMPONENTS
-// ---------------------------------------------------------
-const FeatureCard = ({ title, icon, desc }: any) => (
-  <Card style={styles.featureCard} elevation={0}>
-    <Card.Content>
-      <View style={styles.featureIconWrap}>
-        <Icon name={icon} size={22} color="#16A34A" />
-      </View>
-      <Text style={styles.featureHeader}>{title}</Text>
-      <Text style={styles.featureText}>{desc}</Text>
-    </Card.Content>
-  </Card>
-);
-
-const StepItem = ({ num, title, desc }: any) => (
-  <View style={styles.stepItem}>
-    <View style={styles.stepBadge}><Text style={styles.stepNumText}>{num}</Text></View>
-    <Text style={styles.stepTitle}>{title}</Text>
-    <Text style={styles.stepDesc}>{desc}</Text>
-  </View>
-);
+// Sub-components hoisted above
 
 // STYLES
 const styles = StyleSheet.create({
