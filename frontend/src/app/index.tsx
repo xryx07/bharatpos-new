@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, Dimensions, TouchableOpacity, Platform, useWindowDimensions, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, ScrollView, Dimensions, TouchableOpacity, Platform, useWindowDimensions, ActivityIndicator, TextInput as RNTextInput } from 'react-native';
 import { Text, Button, Card, Divider, useTheme, Avatar, Portal, Dialog, TextInput, SegmentedButtons, Surface, Chip } from 'react-native-paper';
 import { useAppTheme } from '../providers/ThemeProvider';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -259,9 +259,7 @@ export default function Index() {
             <TouchableOpacity onPress={() => scrollToSection('features')} style={styles.navLinkItem}>
               <Text style={styles.navLinkText}>Features</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => scrollToSection('pricing')} style={styles.navLinkItem}>
-              <Text style={styles.navLinkText}>Pricing</Text>
-            </TouchableOpacity>
+            
             <TouchableOpacity onPress={() => scrollToSection('solutions')} style={styles.navLinkItem}>
               <Text style={styles.navLinkText}>Solutions</Text>
             </TouchableOpacity>
@@ -275,16 +273,15 @@ export default function Index() {
           </View>
         )}
 
-        {/* Right Search + Auth Buttons */}
+        {/* Right Search + Auth Buttons (Image 2 Fixed) */}
         <View style={styles.headerRight}>
           {screenWidth > 850 && (
             <View style={styles.navSearchPill}>
-              <Icon name="magnify" size={16} color="#94A3B8" style={{ marginRight: 6 }} />
-              <TextInput
+              <Icon name="magnify" size={17} color="#94A3B8" style={{ marginRight: 8 }} />
+              <RNTextInput
                 placeholder="Search anything..."
                 placeholderTextColor="#94A3B8"
                 style={styles.navSearchInput}
-                dense
               />
             </View>
           )}
@@ -297,34 +294,34 @@ export default function Index() {
                   if (role === 'vendor') router.push('/(vendor)/(tabs)' as any);
                   else router.push('/(owner)' as any);
                 }}
-                activeOpacity={0.8}
+                activeOpacity={0.85}
               >
                 <Text style={styles.btnLabelSolid}>Go to Dashboard</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.headerBtnOutline}
+                style={styles.headerBtnLogin}
                 onPress={async () => {
                   await auth.signOut();
                   if (typeof window !== 'undefined') window.localStorage.clear();
                 }}
                 activeOpacity={0.8}
               >
-                <Text style={styles.btnLabelOutline}>Logout</Text>
+                <Text style={styles.btnLabelLogin}>Logout</Text>
               </TouchableOpacity>
             </>
           ) : (
             <>
               <TouchableOpacity
-                style={styles.headerBtnOutline}
+                style={styles.headerBtnLogin}
                 onPress={() => router.push('/(auth)/login' as any)}
                 activeOpacity={0.8}
               >
-                <Text style={styles.btnLabelOutline}>Login</Text>
+                <Text style={styles.btnLabelLogin}>Login</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.headerBtnSolid}
                 onPress={() => router.push('/(auth)/signup' as any)}
-                activeOpacity={0.8}
+                activeOpacity={0.85}
               >
                 <Text style={styles.btnLabelSolid}>Get Started Free</Text>
               </TouchableOpacity>
@@ -1200,101 +1197,6 @@ export default function Index() {
           </View>
         </View>
 
-        {/* 7. PRICING SECTION */}
-        <View style={styles.section} onLayout={(e) => handleLayout('pricing', e)}>
-          <Text style={styles.sectionTitle}>Simple, Transparent Pricing</Text>
-          <Text style={styles.sectionSubtitle}>Choose the plan that fits your business needs. No hidden charges.</Text>
-
-          <View style={styles.pricingCycleToggle}>
-            <TouchableOpacity onPress={() => setBillingCycle('monthly')} style={[styles.toggleBtn, billingCycle === 'monthly' && styles.toggleBtnActive]}>
-              <Text style={[styles.toggleBtnText, billingCycle === 'monthly' && styles.toggleBtnTextActive]}>Monthly</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => setBillingCycle('yearly')} style={[styles.toggleBtn, billingCycle === 'yearly' && styles.toggleBtnActive]}>
-              <Text style={[styles.toggleBtnText, billingCycle === 'yearly' && styles.toggleBtnTextActive]}>Yearly (Save 20%)</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.pricingGrid}>
-            {/* Free Trial */}
-            <Card style={styles.priceCard} elevation={0}>
-              <Card.Content style={{ alignItems: 'center', paddingHorizontal: 16 }}>
-                <Text style={styles.priceTier}>Free Trial</Text>
-                <Text style={styles.priceAmount}>₹0</Text>
-                <Text style={styles.priceDesc}>30 Days Free trial access</Text>
-                <Divider style={styles.priceDivider} />
-                <View style={styles.priceInc}><Icon name="check" color="#16A34A" size={14} /><Text style={styles.priceIncText}>All Basic Features</Text></View>
-                <View style={styles.priceInc}><Icon name="check" color="#16A34A" size={14} /><Text style={styles.priceIncText}>Up to 100 Products</Text></View>
-                <View style={styles.priceInc}><Icon name="check" color="#16A34A" size={14} /><Text style={styles.priceIncText}>Basic Reports</Text></View>
-                <View style={styles.priceInc}><Icon name="check" color="#16A34A" size={14} /><Text style={styles.priceIncText}>Email Support</Text></View>
-                <Button mode="outlined" style={styles.priceBtnOutline} labelStyle={{ fontWeight: 'bold', color: '#16A34A' }} onPress={() => router.push('/signup' as any)}>
-                  Start Free Trial
-                </Button>
-              </Card.Content>
-            </Card>
-
-            {/* Basic Plan */}
-            <Card style={styles.priceCard} elevation={0}>
-              <Card.Content style={{ alignItems: 'center', paddingHorizontal: 16 }}>
-                <Text style={styles.priceTier}>Basic Plan</Text>
-                <Text style={styles.priceAmount}>
-                  {billingCycle === 'yearly' ? '₹4,999' : '₹499'}
-                  <Text style={{ fontSize: 12, color: '#64748B' }}>/{billingCycle === 'yearly' ? 'Year' : 'Month'}</Text>
-                </Text>
-                <Text style={styles.priceDesc}>1 Year Plan duration</Text>
-                <Divider style={styles.priceDivider} />
-                <View style={styles.priceInc}><Icon name="check" color="#16A34A" size={14} /><Text style={styles.priceIncText}>All Basic Features</Text></View>
-                <View style={styles.priceInc}><Icon name="check" color="#16A34A" size={14} /><Text style={styles.priceIncText}>Unlimited Products</Text></View>
-                <View style={styles.priceInc}><Icon name="check" color="#16A34A" size={14} /><Text style={styles.priceIncText}>PDF Reports</Text></View>
-                <View style={styles.priceInc}><Icon name="check" color="#16A34A" size={14} /><Text style={styles.priceIncText}>Priority Support</Text></View>
-                <Button mode="contained" style={styles.priceBtnSolid} labelStyle={{ fontWeight: 'bold' }} onPress={handleCTA}>
-                  Buy Now
-                </Button>
-              </Card.Content>
-            </Card>
-
-            {/* Professional Plan */}
-            <Card style={[styles.priceCard, { borderColor: '#16A34A', borderWidth: 2 }]} elevation={0}>
-              <View style={styles.pricePopular}><Text style={styles.pricePopularText}>POPULAR</Text></View>
-              <Card.Content style={{ alignItems: 'center', paddingHorizontal: 16 }}>
-                <Text style={[styles.priceTier, { color: '#0F172A' }]}>Professional Plan</Text>
-                <Text style={styles.priceAmount}>
-                  {billingCycle === 'yearly' ? '₹8,999' : '₹899'}
-                  <Text style={{ fontSize: 12, color: '#64748B' }}>/{billingCycle === 'yearly' ? '2 Yrs' : 'Month'}</Text>
-                </Text>
-                <Text style={styles.priceDesc}>2 Years Plan duration</Text>
-                <Divider style={styles.priceDivider} />
-                <View style={styles.priceInc}><Icon name="check" color="#16A34A" size={14} /><Text style={styles.priceIncText}>All Basic + Premium Features</Text></View>
-                <View style={styles.priceInc}><Icon name="check" color="#16A34A" size={14} /><Text style={styles.priceIncText}>Advanced Reports</Text></View>
-                <View style={styles.priceInc}><Icon name="check" color="#16A34A" size={14} /><Text style={styles.priceIncText}>Multi-worker Support</Text></View>
-                <View style={styles.priceInc}><Icon name="check" color="#16A34A" size={14} /><Text style={styles.priceIncText}>Automated Cloud Backup</Text></View>
-                <Button mode="contained" style={styles.priceBtnSolid} labelStyle={{ fontWeight: 'bold' }} onPress={handleCTA}>
-                  Buy Now
-                </Button>
-              </Card.Content>
-            </Card>
-
-            {/* Enterprise Plan */}
-            <Card style={styles.priceCard} elevation={0}>
-              <Card.Content style={{ alignItems: 'center', paddingHorizontal: 16 }}>
-                <Text style={styles.priceTier}>Enterprise Plan</Text>
-                <Text style={styles.priceAmount}>
-                  {billingCycle === 'yearly' ? '₹12,999' : '₹1,299'}
-                  <Text style={{ fontSize: 12, color: '#64748B' }}>/{billingCycle === 'yearly' ? '3 Yrs' : 'Month'}</Text>
-                </Text>
-                <Text style={styles.priceDesc}>3 Years Plan duration</Text>
-                <Divider style={styles.priceDivider} />
-                <View style={styles.priceInc}><Icon name="check" color="#16A34A" size={14} /><Text style={styles.priceIncText}>All Premium Features</Text></View>
-                <View style={styles.priceInc}><Icon name="check" color="#16A34A" size={14} /><Text style={styles.priceIncText}>Dedicated Support Agent</Text></View>
-                <View style={styles.priceInc}><Icon name="check" color="#16A34A" size={14} /><Text style={styles.priceIncText}>Custom Permissions Editor</Text></View>
-                <View style={styles.priceInc}><Icon name="check" color="#16A34A" size={14} /><Text style={styles.priceIncText}>Advanced Analytics Engine</Text></View>
-                <Button mode="contained" style={styles.priceBtnSolid} labelStyle={{ fontWeight: 'bold' }} onPress={handleCTA}>
-                  Buy Now
-                </Button>
-              </Card.Content>
-            </Card>
-          </View>
-        </View>
-
         {/* 8. FAQ ACCORDION SECTION */}
         <View style={[styles.section, { backgroundColor: '#FFFFFF' }]} onLayout={(e) => handleLayout('faq', e)}>
           <Text style={styles.sectionTitle}>Frequently Asked Questions</Text>
@@ -1390,67 +1292,7 @@ export default function Index() {
           </View>
         </View>
 
-                {/* ── DARK METRIC FOOTER BAR (Image 1 Bottom) ── */}
-        <View style={styles.darkMetricBarWrap}>
-          <View style={styles.darkMetricBarContainer}>
-            {/* Left Brand */}
-            <View style={styles.darkMetricBrand}>
-              <View style={styles.darkLogoCircle}>
-                <Icon name="fire" size={18} color="#FFFFFF" />
-              </View>
-              <View style={{ marginLeft: 8 }}>
-                <Text style={styles.darkBrandTitle}>BharatPOS</Text>
-                <Text style={styles.darkBrandSub}>Simple. Smart. For Every Business.</Text>
-              </View>
-            </View>
-
-            {/* Middle 4 Live Stats */}
-            <View style={styles.darkStatsRow}>
-              <View style={styles.darkStatItem}>
-                <Icon name="store-outline" size={16} color="#38BDF8" style={{ marginRight: 6 }} />
-                <View>
-                  <Text style={styles.darkStatVal}>5,000+</Text>
-                  <Text style={styles.darkStatLabel}>Happy Businesses</Text>
-                </View>
-              </View>
-
-              <View style={styles.darkStatItem}>
-                <Icon name="credit-card-outline" size={16} color="#38BDF8" style={{ marginRight: 6 }} />
-                <View>
-                  <Text style={styles.darkStatVal}>2,50,000+</Text>
-                  <Text style={styles.darkStatLabel}>Monthly Transactions</Text>
-                </View>
-              </View>
-
-              <View style={styles.darkStatItem}>
-                <Icon name="shield-check-outline" size={16} color="#38BDF8" style={{ marginRight: 6 }} />
-                <View>
-                  <Text style={styles.darkStatVal}>99.9%</Text>
-                  <Text style={styles.darkStatLabel}>System Uptime</Text>
-                </View>
-              </View>
-
-              <View style={styles.darkStatItem}>
-                <Icon name="star-outline" size={16} color="#FBBF24" style={{ marginRight: 6 }} />
-                <View>
-                  <Text style={styles.darkStatVal}>4.8/5</Text>
-                  <Text style={styles.darkStatLabel}>Customer Satisfaction</Text>
-                </View>
-              </View>
-            </View>
-
-            {/* Right Free Trial CTA */}
-            <TouchableOpacity
-              style={styles.darkTrialBtn}
-              activeOpacity={0.85}
-              onPress={() => router.push('/(auth)/signup' as any)}
-            >
-              <Text style={styles.darkTrialBtnText}>Start Your Free Trial  →</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* 10. FOOTER */}
+                {/* 10. FOOTER */}
         <View style={styles.footer}>
           <View style={styles.footerContainer}>
             <View style={styles.footerColLeft}>
@@ -1476,7 +1318,7 @@ export default function Index() {
                 <Text style={[styles.footerLink, { color: '#16A34A' }]}>POS Billing Terminal</Text>
               </TouchableOpacity>
               <Text style={styles.footerLink}>Features</Text>
-              <Text style={styles.footerLink}>Pricing</Text>
+              <Text style={styles.footerLink}>Solutions</Text>
               <Text style={styles.footerLink}>Demo Tour</Text>
               <Text style={styles.footerLink}>Mobile App</Text>
             </View>
@@ -1999,8 +1841,25 @@ const styles = StyleSheet.create({
   headerRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   headerBtnOutline: { borderRadius: 6, borderColor: '#D1D5DB', height: 36, justifyContent: 'center' },
   btnLabelOutline: { fontSize: 12, color: '#374151', fontFamily: 'Plus Jakarta Sans' },
-  headerBtnSolid: { borderRadius: 6, backgroundColor: '#16A34A', height: 36, justifyContent: 'center' },
-  btnLabelSolid: { fontSize: 12, fontWeight: '700', color: '#FFFFFF', fontFamily: 'Plus Jakarta Sans' },
+  headerBtnSolid: {
+    borderRadius: 8,
+    backgroundColor: '#16A34A',
+    height: 38,
+    paddingHorizontal: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#16A34A',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  btnLabelSolid: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    letterSpacing: 0.2,
+  },
 
   // Hero Section
   heroWrapper: {
@@ -3029,18 +2888,33 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E2E8F0',
     borderRadius: 20,
-    paddingHorizontal: 12,
-    height: 36,
-    width: 160,
-    marginRight: 8,
+    paddingHorizontal: 14,
+    height: 38,
+    width: 210,
+    marginRight: 10,
   },
   navSearchInput: {
-    fontSize: 12,
+    flex: 1,
+    height: '100%',
+    fontSize: 13,
     color: '#0F172A',
-    padding: 0,
+    paddingVertical: 0,
+    paddingHorizontal: 0,
+    borderWidth: 0,
     backgroundColor: 'transparent',
-    height: 32,
-    width: 110,
+    ...(Platform.OS === 'web' ? ({ outlineStyle: 'none', borderStyle: 'none' } as any) : {}),
+  },
+  headerBtnLogin: {
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    marginRight: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  btnLabelLogin: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#334155',
   },
 
   // Hero Section
