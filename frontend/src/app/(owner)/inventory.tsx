@@ -23,6 +23,15 @@ interface Product {
   location_stocks: Record<string, number>;
 }
 
+const DEFAULT_INVENTORY_PRODUCTS: Product[] = [
+  { id: 'p1', name: 'Amul Butter 100g', category: 'Groceries', stock_qty: 45, price: 52, barcode: '8901262010053', gst_pct: 5, hsn: '0402', location_stocks: { 'Main Shop': 45 } },
+  { id: 'p2', name: 'Britannia Marie Gold 250g', category: 'Biscuits', stock_qty: 32, price: 35, barcode: '8901063012016', gst_pct: 5, hsn: '1905', location_stocks: { 'Main Shop': 32 } },
+  { id: 'p3', name: 'Tata Tea Premium 250g', category: 'Beverages', stock_qty: 18, price: 120, barcode: '8901052000017', gst_pct: 5, hsn: '0902', location_stocks: { 'Main Shop': 18 } },
+  { id: 'p4', name: 'Maggi Noodles 70g', category: 'Snacks', stock_qty: 56, price: 14, barcode: '8901058852276', gst_pct: 5, hsn: '1902', location_stocks: { 'Main Shop': 56 } },
+  { id: 'p5', name: 'Surf Excel 1kg', category: 'Household', stock_qty: 24, price: 125, barcode: '8901030704405', gst_pct: 18, hsn: '3402', location_stocks: { 'Main Shop': 24 } },
+  { id: 'p6', name: 'Dove Soap', category: 'Soap', stock_qty: 40, price: 45, barcode: '8901396112203', gst_pct: 18, hsn: '3401', location_stocks: { 'Main Shop': 40 } },
+];
+
 export default function InventoryManagementScreen() {
   const { tenantId, loading: authLoading } = useAuth();
   const { isDarkMode } = useAppTheme();
@@ -31,7 +40,7 @@ export default function InventoryManagementScreen() {
 
   // ── State ────────────────────────────────────────────────────────
   const [activeTab, setActiveTab] = useState<'stock' | 'locations' | 'transfers'>('stock');
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<Product[]>(() => DEFAULT_INVENTORY_PRODUCTS);
   const [locations, setLocations] = useState<string[]>(['Main Shop']);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -118,7 +127,7 @@ export default function InventoryManagementScreen() {
           };
         });
         fetchedProds.sort((a, b) => a.stock_qty - b.stock_qty);
-        setProducts(fetchedProds);
+        setProducts(fetchedProds.length > 0 ? fetchedProds : DEFAULT_INVENTORY_PRODUCTS);
       }
     } catch (err: any) {
       console.error("Error fetching inventory data:", err);

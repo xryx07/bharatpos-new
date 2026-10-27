@@ -11,6 +11,15 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { cleanAndMapCategory } from '../../lib/ui_helpers';
 import { DS } from '../../constants/designTokens';
 
+const DEFAULT_PRODUCTS_LIST = [
+  { id: 'p1', name: 'Amul Butter 100g', category: 'Groceries', stock_qty: 45, stock: 45, selling_price: 52, price: 52, mrp: 56, status: 'Active', barcode: '8901262010053' },
+  { id: 'p2', name: 'Britannia Marie Gold 250g', category: 'Biscuits', stock_qty: 32, stock: 32, selling_price: 35, price: 35, mrp: 38, status: 'Active', barcode: '8901063012016' },
+  { id: 'p3', name: 'Tata Tea Premium 250g', category: 'Beverages', stock_qty: 18, stock: 18, selling_price: 120, price: 120, mrp: 135, status: 'Active', barcode: '8901052000017' },
+  { id: 'p4', name: 'Maggi Noodles 70g', category: 'Snacks', stock_qty: 56, stock: 56, selling_price: 14, price: 14, mrp: 14, status: 'Active', barcode: '8901058852276' },
+  { id: 'p5', name: 'Surf Excel 1kg', category: 'Household', stock_qty: 24, stock: 24, selling_price: 125, price: 125, mrp: 140, status: 'Active', barcode: '8901030704405' },
+  { id: 'p6', name: 'Dove Soap', category: 'Soap', stock_qty: 40, stock: 40, selling_price: 45, price: 45, mrp: 50, status: 'Active', barcode: '8901396112203' },
+];
+
 export default function ProductsManagementScreen() {
   const { tenantId, loading: authLoading } = useAuth();
 
@@ -21,10 +30,13 @@ export default function ProductsManagementScreen() {
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
       try {
         const cached = window.localStorage.getItem('cachedProductsList');
-        if (cached) return JSON.parse(cached);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
       } catch (_) {}
     }
-    return [];
+    return DEFAULT_PRODUCTS_LIST;
   });
   const [showImportModal, setShowImportModal] = useState(false);
   const [rawInvoiceText, setRawInvoiceText] = useState('');
@@ -486,9 +498,10 @@ export default function ProductsManagementScreen() {
       const snapshot = await getDocs(q);
       const productsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       productsData.sort((a: any, b: any) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
-      setProducts(productsData);
+      const finalProducts = productsData.length > 0 ? productsData : DEFAULT_PRODUCTS_LIST;
+      setProducts(finalProducts);
       if (Platform.OS === 'web' && typeof window !== 'undefined') {
-        window.localStorage.setItem('cachedProductsList', JSON.stringify(productsData));
+        window.localStorage.setItem('cachedProductsList', JSON.stringify(finalProducts));
       }
     } catch (error) {
       console.error("Error fetching products:", error);

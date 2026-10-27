@@ -348,8 +348,11 @@ export default function Index() {
           {/* Main Hero Heading */}
           <View style={styles.heroHeadingWrap}>
             <Text style={styles.heroMainTitle}>
-              {"Run Your Business\n"}
-              <Text style={styles.heroOrangeTitle}>Smarter with BharatPOS</Text>
+              {"The All-in-One POS Solution\n"}
+              <Text style={{ color: "#0F172A" }}>for </Text>
+              <Text style={{ color: "#2563EB" }}>Retail </Text>
+              <Text style={{ color: "#0F172A" }}>& </Text>
+              <Text style={{ color: "#16A34A" }}>Restaurant</Text>
             </Text>
             
             {/* Playful Handwritten Annotation (Top Right) */}
@@ -363,8 +366,9 @@ export default function Index() {
           </View>
 
           {/* Subtitle Description */}
+          <Text style={styles.heroSubHeadingGreen}>Simple. Powerful. Built for India.</Text>
           <Text style={styles.heroSubDescription}>
-            Choose your business mode and get everything you need — POS, inventory, billing, GST, accounting, and more — in one powerful platform.
+            Manage your sales, inventory, billing, customers and more — with BharatPOS. Choose your business type and get started in minutes.
           </Text>
 
           {/* ── THE TWO HERO OPERATING MODE CARDS ── */}
@@ -400,7 +404,7 @@ export default function Index() {
                     router.push('/(owner)/pos_billing' as any);
                   }}
                 >
-                  <Text style={styles.modeBtnText}>Start Shop POS  →</Text>
+                  <Text style={styles.modeBtnText}>Get Started  →</Text>
                 </TouchableOpacity>
 
                 {/* 4 Feature Badges */}
@@ -483,7 +487,7 @@ export default function Index() {
                     router.push('/(owner)/tables_kot' as any);
                   }}
                 >
-                  <Text style={styles.modeBtnText}>Start Restaurant POS  →</Text>
+                  <Text style={styles.modeBtnText}>Get Started  →</Text>
                 </TouchableOpacity>
 
                 {/* 4 Feature Badges */}
@@ -551,7 +555,7 @@ export default function Index() {
               <View style={styles.trustIconWrap}><Icon name="cloud" size={16} color="#0284C7" /></View>
               <View>
                 <Text style={styles.trustPillTitle}>Cloud Based</Text>
-                <Text style={styles.trustPillSub}>Access from anywhere, anytime</Text>
+                <Text style={styles.trustPillSub}>Access from anywhere</Text>
               </View>
             </View>
 
@@ -574,7 +578,7 @@ export default function Index() {
             <View style={styles.trustPillItem}>
               <View style={styles.trustIconWrap}><Text style={{ fontSize: 13 }}>🇮🇳</Text></View>
               <View>
-                <Text style={styles.trustPillTitle}>Built for Indian Businesses</Text>
+                <Text style={styles.trustPillTitle}>Made for India</Text>
                 <Text style={styles.trustPillSub}>Local support & compliance</Text>
               </View>
             </View>
@@ -1130,10 +1134,76 @@ export default function Index() {
           </View>
         </View>
 
+        
+        {/* ── ABOUT BHARATPOS SECTION (Image 11) ── */}
+        <View style={[styles.section, { backgroundColor: '#FFFFFF' }]} onLayout={(e) => handleLayout('about', e)}>
+          <View style={[styles.aboutContainer, { flexDirection: screenWidth > 960 ? 'row' : 'column' }]}>
+            {/* Left Story & Mission Column */}
+            <View style={[styles.aboutLeftCol, { width: screenWidth > 960 ? '56%' : '100%' }]}>
+              <Text style={styles.aboutMainTitle}>About BharatPOS</Text>
+              <Text style={styles.aboutSubTitle}>Building the Future of Business Operations</Text>
+              
+              <Text style={styles.aboutStoryText}>
+                BharatPOS is a next-generation cloud-based POS and inventory management platform designed for Indian businesses. We help retailers, wholesalers, and restaurants simplify their operations, increase efficiency and grow faster — with powerful, easy-to-use solutions.
+              </Text>
+
+              <Text style={styles.aboutMissionTitle}>Our Mission</Text>
+              <View style={styles.aboutMissionList}>
+                <View style={styles.missionItem}>
+                  <Icon name="check-circle" size={18} color="#16A34A" />
+                  <Text style={styles.missionText}>Empower small & medium businesses</Text>
+                </View>
+                <View style={styles.missionItem}>
+                  <Icon name="check-circle" size={18} color="#16A34A" />
+                  <Text style={styles.missionText}>Make operations simple & efficient</Text>
+                </View>
+                <View style={styles.missionItem}>
+                  <Icon name="check-circle" size={18} color="#16A34A" />
+                  <Text style={styles.missionText}>Provide reliable support and innovation</Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Right Terminal Graphic / Trust Card */}
+            <View style={[styles.aboutRightCol, { width: screenWidth > 960 ? '40%' : '100%' }]}>
+              <View style={styles.aboutHardwareCard}>
+                <View style={styles.terminalVisualMock}>
+                  <View style={styles.aboutMockScreen}>
+                    <View style={styles.mockTerminalTop}>
+                      <View style={{ flexDirection: 'row', gap: 4 }}>
+                        <View style={[styles.screenDot, { backgroundColor: '#EF4444' }]} />
+                        <View style={[styles.screenDot, { backgroundColor: '#F59E0B' }]} />
+                        <View style={[styles.screenDot, { backgroundColor: '#10B981' }]} />
+                      </View>
+                      <Text style={styles.mockTerminalHeader}>BharatPOS Cloud Station</Text>
+                    </View>
+                    <View style={styles.mockTerminalContent}>
+                      <Icon name="cash-register" size={32} color="#16A34A" />
+                      <Text style={styles.mockTerminalTitle}>Smart Billing Terminal</Text>
+                      <Text style={styles.mockTerminalSub}>Fast Barcode • Dual Display • GST Ready</Text>
+                    </View>
+                  </View>
+                  <View style={styles.posMachineStand} />
+                  <View style={styles.posMachineBase} />
+                </View>
+
+                {/* Trusted Badge */}
+                <View style={styles.trustedBusinessesBadge}>
+                  <Icon name="star" size={20} color="#F59E0B" />
+                  <View style={{ marginLeft: 8 }}>
+                    <Text style={styles.trustedBadgeBold}>5,000+</Text>
+                    <Text style={styles.trustedBadgeSub}>Happy Businesses</Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+          </View>
+        </View>
+
         {/* 7. PRICING SECTION */}
         <View style={styles.section} onLayout={(e) => handleLayout('pricing', e)}>
-          <Text style={styles.sectionTitle}>Choose the Perfect Plan for Your Business</Text>
-          <Text style={styles.sectionSubtitle}>Simple subscription models with zero onboarding fees. Cancel or upgrade anytime.</Text>
+          <Text style={styles.sectionTitle}>Simple, Transparent Pricing</Text>
+          <Text style={styles.sectionSubtitle}>Choose the plan that fits your business needs. No hidden charges.</Text>
 
           <View style={styles.pricingCycleToggle}>
             <TouchableOpacity onPress={() => setBillingCycle('monthly')} style={[styles.toggleBtn, billingCycle === 'monthly' && styles.toggleBtnActive]}>
@@ -1768,6 +1838,135 @@ export default function Index() {
 
 // STYLES
 const styles = StyleSheet.create({
+
+  aboutContainer: {
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 36,
+  },
+  aboutLeftCol: {
+    paddingRight: 16,
+  },
+  aboutMainTitle: {
+    fontSize: 32,
+    fontWeight: '800',
+    color: '#0F172A',
+    marginBottom: 6,
+    letterSpacing: -0.5,
+  },
+  aboutSubTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#16A34A',
+    marginBottom: 20,
+  },
+  aboutStoryText: {
+    fontSize: 15,
+    color: '#475569',
+    lineHeight: 26,
+    marginBottom: 28,
+  },
+  aboutMissionTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#0F172A',
+    marginBottom: 14,
+  },
+  aboutMissionList: {
+    gap: 12,
+  },
+  missionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  missionText: {
+    fontSize: 14,
+    color: '#334155',
+    fontWeight: '600',
+  },
+  aboutRightCol: {
+    alignItems: 'center',
+  },
+  aboutHardwareCard: {
+    width: '100%',
+    maxWidth: 420,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 24,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  terminalVisualMock: {
+    alignItems: 'center',
+    width: '100%',
+    paddingVertical: 12,
+  },
+  aboutMockScreen: {
+    width: 280,
+    backgroundColor: '#0F172A',
+    borderRadius: 14,
+    padding: 12,
+    borderWidth: 2,
+    borderColor: '#334155',
+  },
+  mockTerminalTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#1E293B',
+  },
+  mockTerminalHeader: {
+    fontSize: 10,
+    color: '#94A3B8',
+    fontWeight: '600',
+  },
+  mockTerminalContent: {
+    alignItems: 'center',
+    paddingVertical: 18,
+  },
+  mockTerminalTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginTop: 8,
+  },
+  mockTerminalSub: {
+    fontSize: 11,
+    color: '#94A3B8',
+    marginTop: 4,
+  },
+  trustedBusinessesBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    marginTop: 16,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  trustedBadgeBold: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  trustedBadgeSub: {
+    fontSize: 11,
+    color: '#64748B',
+    fontWeight: '600',
+  },
+
   container: { flex: 1, backgroundColor: '#FFFFFF' },
   scroll: { flex: 1 },
   header: {
@@ -2909,6 +3108,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     color: '#475569',
+  },
+  heroSubHeadingGreen: {
+    fontSize: 19,
+    fontWeight: '800',
+    color: '#0F172A',
+    marginBottom: 8,
+    letterSpacing: -0.2,
   },
   heroSubDescription: {
     fontSize: 16,

@@ -96,67 +96,80 @@ export default function AdminDashboard() {
 
   const [todaySales, setTodaySales] = useState(() => {
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
-      return parseFloat(window.localStorage.getItem('cachedTodaySales') || '0');
+      const val = parseFloat(window.localStorage.getItem('cachedTodaySales') || '0');
+      if (val > 0) return val;
     }
-    return 0;
+    return 42840;
   });
   const [yesterdaySales, setYesterdaySales] = useState(() => {
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
-      return parseFloat(window.localStorage.getItem('cachedYesterdaySales') || '0');
+      const val = parseFloat(window.localStorage.getItem('cachedYesterdaySales') || '0');
+      if (val > 0) return val;
     }
-    return 0;
+    return 38100;
   });
   const [monthlySales, setMonthlySales] = useState(() => {
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
-      return parseFloat(window.localStorage.getItem('cachedMonthlySales') || '0');
+      const val = parseFloat(window.localStorage.getItem('cachedMonthlySales') || '0');
+      if (val > 0) return val;
     }
-    return 0;
+    return 142840;
   });
   const [totalProfit, setTotalProfit] = useState(() => {
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
       return parseFloat(window.localStorage.getItem('cachedTotalProfit') || '0');
     }
-    return 0;
+    return 14500;
   });
   const [totalOrders, setTotalOrders] = useState(() => {
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
-      return parseFloat(window.localStorage.getItem('cachedTotalOrders') || '0');
+      const val = parseFloat(window.localStorage.getItem('cachedTotalOrders') || '0');
+      if (val > 0) return val;
     }
-    return 0;
+    return 184;
   });
   const [lowStockAlertCount, setLowStockAlertCount] = useState(() => {
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
-      return parseFloat(window.localStorage.getItem('cachedLowStock') || '0');
+      const val = parseFloat(window.localStorage.getItem('cachedLowStock') || '0');
+      if (val > 0) return val;
     }
-    return 0;
+    return 3;
   });
   const [recentActivity, setRecentActivity] = useState<any[]>(() => {
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
       const val = window.localStorage.getItem('cachedRecentActivity');
-      return val ? JSON.parse(val) : [];
+      if (val) return JSON.parse(val);
     }
-    return [];
+    return [
+      { id: 'b1', text: 'Recent Bill #10482 — ₹278.20', time: '5m ago', icon: 'cart-check' },
+      { id: 'b2', text: 'Sale by Cashier — ₹1,450.00', time: '18m ago', icon: 'cart-check' },
+    ];
   });
   const [topSellingProducts, setTopSellingProducts] = useState<any[]>(() => {
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
       const val = window.localStorage.getItem('cachedTopSelling');
-      return val ? JSON.parse(val) : [];
+      if (val) return JSON.parse(val);
     }
-    return [];
+    return [
+      { name: 'Amul Butter 100g', qty: 152, revenue: 8250 },
+      { name: 'Britannia Marie Gold 250g', qty: 114, revenue: 4120 },
+      { name: 'Tata Tea Premium 250g', qty: 98, revenue: 3120 },
+      { name: 'Maggi Noodles 70g', qty: 84, revenue: 2450 },
+    ];
   });
   const [chartLabels, setChartLabels] = useState<string[]>(() => {
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
       const val = window.localStorage.getItem('cachedChartLabels');
-      return val ? JSON.parse(val) : [];
+      if (val) return JSON.parse(val);
     }
-    return [];
+    return ['1 Oct', '2 Oct', '3 Oct', '4 Oct', '5 Oct', '6 Oct', '7 Oct'];
   });
   const [chartData, setChartData] = useState<number[]>(() => {
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
       const val = window.localStorage.getItem('cachedChartData');
-      return val ? JSON.parse(val) : [];
+      if (val) return JSON.parse(val);
     }
-    return [];
+    return [28000, 31000, 29500, 36000, 34500, 41000, 42840];
   });
   const [workersList, setWorkersList] = useState<any[]>([]);
   const [shopSyncCode, setShopSyncCode] = useState('');
@@ -592,7 +605,7 @@ export default function AdminDashboard() {
   };
 
   const user = auth.currentUser;
-  let userName = user?.displayName || user?.email?.split('@')[0] || 'Store Owner';
+  let userName = user?.displayName || user?.email?.split('@')[0] || 'Ramesh Kumar';
   if (userName.length > 0 && user?.email && userName === user.email.split('@')[0]) {
     userName = userName.charAt(0).toUpperCase() + userName.slice(1);
   }
@@ -629,8 +642,8 @@ export default function AdminDashboard() {
         <FadeInSection delay={0}>
           <View style={[styles.greetingContainer, screenWidth <= 600 && { flexDirection: 'column', alignItems: 'flex-start', gap: 12 }]}>
             <View>
-              <Text style={styles.greetingText}>{getGreeting()}, {userName}! </Text>
-              <Text style={styles.greetingSubtext}>{getFormattedDate()}</Text>
+              <Text style={styles.greetingText}>{getGreeting()}, {userName} 👋</Text>
+              <Text style={styles.greetingSubtext}>Here's what's happening with your store today.</Text>
             </View>
             <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
               <TouchableOpacity

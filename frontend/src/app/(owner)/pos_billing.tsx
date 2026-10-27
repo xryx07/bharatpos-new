@@ -30,17 +30,17 @@ const FadeIn = ({ delay = 0, style, children }: { delay?: number; style?: any; c
 };
 
 const DEFAULT_STORE_PRODUCTS = [
-  { id: 'p1', name: 'Tata Salt 1kg', price: 28, mrp: 28, barcode: '8901052000017', category: 'Groceries', gst_pct: 0, stock_qty: 5, icon: 'shaker-outline' },
-  { id: 'p2', name: 'Fortune Oil 1L', price: 145, mrp: 165, barcode: '8906007281013', category: 'Groceries', gst_pct: 5, stock_qty: 3, icon: 'bottle-tonic-outline' },
-  { id: 'p3', name: 'Amul Milk 1L', price: 64, mrp: 64, barcode: '8901262010053', category: 'Dairy', gst_pct: 0, stock_qty: 8, icon: 'cup-water' },
-  { id: 'p4', name: 'Maggi Noodles', price: 12, mrp: 14, barcode: '8901058852276', category: 'Snacks', gst_pct: 12, stock_qty: 4, icon: 'noodles' },
-  { id: 'p5', name: 'Surf Excel 1kg', price: 120, mrp: 140, barcode: '8901030704405', category: 'Household', gst_pct: 18, stock_qty: 24, icon: 'washing-machine' },
-  { id: 'p6', name: 'Dove Soap', price: 45, mrp: 50, barcode: '8901396112203', category: 'Personal Care', gst_pct: 18, stock_qty: 32, icon: 'shower-head' },
-  { id: 'p7', name: 'Colgate 200g', price: 78, mrp: 85, barcode: '8901314010118', category: 'Personal Care', gst_pct: 18, stock_qty: 18, icon: 'toothbrush-paste' },
-  { id: 'p8', name: 'Biscuits Pack', price: 30, mrp: 30, barcode: '8901063012016', category: 'Snacks', gst_pct: 12, stock_qty: 40, icon: 'cookie' },
+  { id: 'p1', name: 'Amul Butter 100g', price: 52, mrp: 56, barcode: '8901262010053', category: 'Dairy', gst_pct: 5, stock_qty: 45, icon: 'cup-water' },
+  { id: 'p2', name: 'Britannia Marie Gold 250g', price: 35, mrp: 38, barcode: '8901063012016', category: 'Groceries', gst_pct: 5, stock_qty: 32, icon: 'cookie' },
+  { id: 'p3', name: 'Tata Tea 250g', price: 120, mrp: 135, barcode: '8901052000017', category: 'Beverages', gst_pct: 5, stock_qty: 18, icon: 'coffee' },
+  { id: 'p4', name: 'Maggi Noodles 70g', price: 14, mrp: 14, barcode: '8901058852276', category: 'Snacks', gst_pct: 5, stock_qty: 56, icon: 'noodles' },
+  { id: 'p5', name: 'Surf Excel 1kg', price: 125, mrp: 140, barcode: '8901030704405', category: 'Groceries', gst_pct: 18, stock_qty: 24, icon: 'washing-machine' },
+  { id: 'p6', name: 'Dove Soap', price: 45, mrp: 50, barcode: '8901396112203', category: 'Groceries', gst_pct: 18, stock_qty: 40, icon: 'shower-head' },
+  { id: 'p7', name: 'Colgate 200g', price: 78, mrp: 85, barcode: '8901314010118', category: 'Groceries', gst_pct: 18, stock_qty: 18, icon: 'toothbrush-paste' },
+  { id: 'p8', name: 'Biscuits Pack', price: 20, mrp: 20, barcode: '8901063012999', category: 'Bakery', gst_pct: 5, stock_qty: 40, icon: 'cookie' },
 ];
 
-const RETAIL_CATEGORIES = ['All', 'Groceries', 'Dairy', 'Beverages', 'Snacks', 'Personal Care', 'Household'];
+const RETAIL_CATEGORIES = ['All', 'Groceries', 'Dairy', 'Beverages', 'Snacks', 'Bakery'];
 
 const FREQUENTLY_SOLD_ITEMS = [
   { id: 'f1', name: 'Rice 5kg', price: 320, mrp: 350, icon: 'sack', category: 'Groceries' },
@@ -63,9 +63,9 @@ export default function POSBillingScreen() {
 
   useEffect(() => {
     if (cart.length === 0) {
-      addToCart({ id: 'p1', name: 'Tata Salt 1kg', price: 28, mrp: 28, qty: 2, gst_pct: 0 });
-      addToCart({ id: 'p2', name: 'Fortune Oil 1L', price: 145, mrp: 165, qty: 1, gst_pct: 5 });
-      addToCart({ id: 'p3', name: 'Amul Milk 1L', price: 64, mrp: 64, qty: 1, gst_pct: 0 });
+      addToCart({ id: 'p1', name: 'Amul Butter', price: 52, mrp: 56, qty: 1, gst_pct: 5 });
+      addToCart({ id: 'p2', name: 'Britannia Marie Gold 250g', price: 35, mrp: 38, qty: 3, gst_pct: 5 });
+      addToCart({ id: 'p3', name: 'Tata Tea Premium 250g', price: 123, mrp: 135, qty: 1, gst_pct: 5 });
     }
   }, []);
   

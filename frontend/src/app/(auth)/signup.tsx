@@ -15,29 +15,41 @@ export default function SignupScreen() {
   }, []);
 
   const { width: screenWidth } = useWindowDimensions();
-  const isDesktop = isMounted && Platform.OS === 'web' && screenWidth > 992;
+  const isDesktop = isMounted && Platform.OS === 'web' && screenWidth > 768;
 
-  // Step state simulation (1 = form, 2 = success page)
+  // Step state
   const [currentStep, setCurrentStep] = useState(1);
 
-  // Form Fields
-  const [fullName, setFullName] = useState('');
-  const [shopName, setShopName] = useState('');
+  // Form Fields matching Image 3
+  const [businessName, setBusinessName] = useState('');
+  const [businessType, setBusinessType] = useState('Retail Shop');
   const [mobileNumber, setMobileNumber] = useState('');
   const [email, setEmail] = useState('');
+  const [businessCategory, setBusinessCategory] = useState('Grocery');
+  const [gstNumber, setGstNumber] = useState('');
+  const [chosenPos, setChosenPos] = useState<'shop' | 'cafe'>('shop');
+
+  // Step 2 Fields (Personal info / Password)
+  const [ownerName, setOwnerName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [businessCategory, setBusinessCategory] = useState('');
-  const [taxSetup, setTaxSetup] = useState('GST'); // 'GST' or 'NON-GST'
-  const [operationMode, setOperationMode] = useState('Laptop + Mobile'); // 'Mobile Only' | 'Laptop + Mobile' | 'Large Shop'
 
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
+  const handleNextStep = () => {
+    setErrorMsg('');
+    if (!businessName.trim() || !mobileNumber.trim() || !email.trim()) {
+      setErrorMsg('Please fill in your Business Name, Mobile Number, and Email.');
+      return;
+    }
+    setCurrentStep(2);
+  };
+
   const handleSignUpSubmit = async () => {
     setErrorMsg('');
-    if (!fullName || !shopName || !mobileNumber || !email || !password || !confirmPassword) {
-      setErrorMsg('Please fill in all the required fields.');
+    if (!password || !confirmPassword) {
+      setErrorMsg('Please enter and confirm your password.');
       return;
     }
     if (password !== confirmPassword) {
@@ -47,22 +59,22 @@ export default function SignupScreen() {
 
     setLoading(true);
     try {
-      // Create Firebase Auth user
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(auth, email.trim(), password);
       
-      // Save details to Firestore
       await setDoc(doc(db, 'users', userCredential.user.uid), {
         role: 'owner',
         subscription_plan: 'free_trial',
-        subscription_start_date: new Date(),
-        subscription_end_date: new Date(new Date().setDate(new Date().getDate() + 30)),
-        storeName: shopName,
-        isGSTRegistered: taxSetup === 'GST',
-        shopMode: operationMode,
-        businessCategory: businessCategory || 'General Store',
-        fullName,
-        mobileNumber,
-        email,
+        subscription_start_date: new Date().toISOString(),
+        subscription_end_date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+        storeName: businessName.trim(),
+        businessType,
+        businessCategory,
+        gstNumber: gstNumber.trim() || null,
+        isGSTRegistered: !!gstNumber.trim(),
+        chosenPos,
+        mobileNumber: mobileNumber.trim(),
+        email: email.trim(),
+        ownerName: ownerName.trim() || 'Store Owner',
         permissions: {
           pos_access: true,
           stock_management: true,
@@ -72,14 +84,12 @@ export default function SignupScreen() {
       });
 
       if (Platform.OS === 'web' && typeof window !== 'undefined') {
-        window.localStorage.setItem('storeName', shopName);
-        window.localStorage.setItem('isGstRegistered', String(taxSetup === 'GST'));
-        window.localStorage.setItem('shopMode', operationMode);
-        window.localStorage.setItem('businessCategory', businessCategory || 'General Store');
+        window.localStorage.setItem('storeName', businessName.trim());
+        window.localStorage.setItem('posBusinessMode', chosenPos === 'cafe' ? 'restaurant' : 'retail');
+        window.localStorage.setItem('isGstRegistered', String(!!gstNumber.trim()));
       }
 
-      // Instead of instant redirect, show the Success Screen!
-      setCurrentStep(2);
+      setCurrentStep(3);
     } catch (error: any) {
       let message = error.message;
       if (error.code === 'auth/email-already-in-use') {
@@ -93,734 +103,657 @@ export default function SignupScreen() {
     }
   };
 
-  const handleAutofillDemo = () => {
-    setFullName('Rohan Sharma');
-    setShopName('Sharma Supermart');
-    setMobileNumber('9876543210');
-    const randSuffix = Math.floor(100 + Math.random() * 900);
-    setEmail(`rohan.${randSuffix}@sharmamart.com`);
-    setPassword('sharma123');
-    setConfirmPassword('sharma123');
-    setBusinessCategory('Grocery');
-    setTaxSetup('GST');
-    setOperationMode('Laptop + Mobile');
-  };
-
-  const renderSignupForm = () => (
-    <View style={styles.formContainer}>
-
-      <Text style={styles.formTitle}>Start Your 30-Day Free Trial</Text>
-      <Text style={styles.formSub}>Get instant access to all features. No credit card required.</Text>
-
-      {errorMsg ? <Text style={styles.errorText}>{errorMsg}</Text> : null}
-
-      <View style={styles.formGrid}>
-        {/* Row 1 */}
-        <View style={[styles.formRow, { flexDirection: isDesktop ? 'row' : 'column' }]}>
-          <View style={styles.fieldBox}>
-            <Text style={styles.inputLabel}>Full Name</Text>
-            <TextInput
-              value={fullName}
-              onChangeText={setFullName}
-              placeholder="Enter your full name"
-              style={styles.input}
-              mode="outlined"
-              outlineColor="#E2E8F0"
-              activeOutlineColor="#16A34A"
-              dense
-            />
-          </View>
-          <View style={styles.fieldBox}>
-            <Text style={styles.inputLabel}>Shop / Business Name</Text>
-            <TextInput
-              value={shopName}
-              onChangeText={setShopName}
-              placeholder="Enter shop name"
-              style={styles.input}
-              mode="outlined"
-              outlineColor="#E2E8F0"
-              activeOutlineColor="#16A34A"
-              dense
-            />
-          </View>
-        </View>
-
-        {/* Row 2 */}
-        <View style={[styles.formRow, { flexDirection: isDesktop ? 'row' : 'column' }]}>
-          <View style={styles.fieldBox}>
-            <Text style={styles.inputLabel}>Mobile Number</Text>
-            <View style={styles.phoneInputRow}>
-              <View style={styles.countryCodeBox}>
-                <Text style={styles.countryCodeText}>+91</Text>
-              </View>
-              <TextInput
-                value={mobileNumber}
-                onChangeText={setMobileNumber}
-                placeholder="Enter mobile number"
-                keyboardType="phone-pad"
-                style={[styles.input, { flex: 1 }]}
-                mode="outlined"
-                outlineColor="#E2E8F0"
-                activeOutlineColor="#16A34A"
-                dense
-              />
-            </View>
-          </View>
-          <View style={styles.fieldBox}>
-            <Text style={styles.inputLabel}>Email Address</Text>
-            <TextInput
-              value={email}
-              onChangeText={setEmail}
-              placeholder="Enter email address"
-              keyboardType="email-address"
-              autoCapitalize="none"
-              style={styles.input}
-              mode="outlined"
-              outlineColor="#E2E8F0"
-              activeOutlineColor="#16A34A"
-              dense
-            />
-          </View>
-        </View>
-
-        {/* Row 3 */}
-        <View style={[styles.formRow, { flexDirection: isDesktop ? 'row' : 'column' }]}>
-          <View style={styles.fieldBox}>
-            <Text style={styles.inputLabel}>Password</Text>
-            <TextInput
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              placeholder="Create a strong password"
-              style={styles.input}
-              mode="outlined"
-              outlineColor="#E2E8F0"
-              activeOutlineColor="#16A34A"
-              dense
-            />
-          </View>
-          <View style={styles.fieldBox}>
-            <Text style={styles.inputLabel}>Confirm Password</Text>
-            <TextInput
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              secureTextEntry
-              placeholder="Confirm your password"
-              style={styles.input}
-              mode="outlined"
-              outlineColor="#E2E8F0"
-              activeOutlineColor="#16A34A"
-              dense
-            />
-          </View>
-        </View>
-
-        {/* Category Dropdown */}
-        <View style={styles.fieldBox}>
-          <Text style={styles.inputLabel}>Business Category</Text>
-          <TextInput
-            value={businessCategory}
-            onChangeText={setBusinessCategory}
-            placeholder="Grocery, Garments, Electronics, General..."
-            style={styles.input}
-            mode="outlined"
-            outlineColor="#E2E8F0"
-            activeOutlineColor="#16A34A"
-            dense
-          />
-        </View>
-
-        {/* Tax Setup */}
-        <Text style={styles.inputLabel}>Tax Setup</Text>
-        <View style={[styles.cardGridRow, { flexDirection: isDesktop ? 'row' : 'column' }]}>
-          <TouchableOpacity 
-            style={[styles.taxCard, taxSetup === 'GST' && styles.selectedCard]}
-            onPress={() => setTaxSetup('GST')}
-            activeOpacity={0.9}
-          >
-            <Icon name={taxSetup === 'GST' ? "check-circle" : "checkbox-blank-circle-outline"} size={18} color={taxSetup === 'GST' ? "#16A34A" : "#94A3B8"} style={{ marginBottom: 4 }} />
-            <Text style={styles.cardBtnTitle}>GST Registered</Text>
-            <Text style={styles.cardBtnDesc}>My business is registered under GST</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={[styles.taxCard, taxSetup === 'NON-GST' && styles.selectedCard]}
-            onPress={() => setTaxSetup('NON-GST')}
-            activeOpacity={0.9}
-          >
-            <Icon name={taxSetup === 'NON-GST' ? "check-circle" : "checkbox-blank-circle-outline"} size={18} color={taxSetup === 'NON-GST' ? "#16A34A" : "#94A3B8"} style={{ marginBottom: 4 }} />
-            <Text style={styles.cardBtnTitle}>Non-GST Business</Text>
-            <Text style={styles.cardBtnDesc}>My business is not registered under GST</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Shop Operation Mode */}
-        <Text style={[styles.inputLabel, { marginTop: 12 }]}>Shop Operation Mode</Text>
-        <View style={[styles.cardGridRow, { flexDirection: isDesktop ? 'row' : 'column', gap: 10 }]}>
-          <TouchableOpacity 
-            style={[styles.modeCard, operationMode === 'Mobile Only' && styles.selectedCard]}
-            onPress={() => setOperationMode('Mobile Only')}
-            activeOpacity={0.9}
-          >
-            <Icon name="cellphone" size={18} color={operationMode === 'Mobile Only' ? "#16A34A" : "#64748B"} style={{ marginBottom: 4 }} />
-            <Text style={styles.cardBtnTitle}>Mobile Only</Text>
-            <Text style={styles.cardBtnDesc}>I will use the app on mobile only</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={[styles.modeCard, operationMode === 'Laptop + Mobile' && styles.selectedCard]}
-            onPress={() => setOperationMode('Laptop + Mobile')}
-            activeOpacity={0.9}
-          >
-            <Icon name="laptop" size={18} color={operationMode === 'Laptop + Mobile' ? "#16A34A" : "#64748B"} style={{ marginBottom: 4 }} />
-            <Text style={styles.cardBtnTitle}>Laptop + Mobile</Text>
-            <Text style={styles.cardBtnDesc}>I will use both laptop and mobile</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={[styles.modeCard, operationMode === 'Large Shop' && styles.selectedCard]}
-            onPress={() => setOperationMode('Large Shop')}
-            activeOpacity={0.9}
-          >
-            <Icon name="storefront-outline" size={18} color={operationMode === 'Large Shop' ? "#16A34A" : "#64748B"} style={{ marginBottom: 4 }} />
-            <Text style={styles.cardBtnTitle}>Large Shop</Text>
-            <Text style={styles.cardBtnDesc}>I have multiple counters / devices</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* CTA Buttons */}
-        <View style={styles.actionsBox}>
-          <Button 
-            mode="outlined" 
-            style={styles.autofillBtn}
-            labelStyle={{ color: '#475569', fontSize: 11 }}
-            onPress={handleAutofillDemo}
-          >
-            Autofill Demo
-          </Button>
-
-          <Button
-            mode="contained"
-            onPress={handleSignUpSubmit}
-            loading={loading}
-            disabled={loading}
-            style={styles.submitBtn}
-            contentStyle={{ paddingVertical: 4 }}
-            labelStyle={{ fontWeight: 'bold' }}
-            buttonColor="#0B192C"
-            icon="arrow-right"
-          >
-            Create Free Account
-          </Button>
-        </View>
-
-        {/* Login Link */}
-        <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 18 }}>
-          <Text style={{ fontSize: 13, color: '#475569' }}>Already have an account? </Text>
-          <TouchableOpacity onPress={() => router.push('/(auth)/login' as any)}>
-            <Text style={{ fontWeight: '700', fontSize: 13, color: '#16A34A' }}>Log In here</Text>
-          </TouchableOpacity>
-        </View>
-
-      </View>
-    </View>
-  );
-
-  const renderSuccessPage = () => (
-    <View style={styles.successWrapper}>
-      {/* Top Header Row */}
-      <View style={styles.successTopbar}>
-        <View style={styles.logoRow}>
-          <View style={styles.logoIconBg}>
-            <Icon name="store" size={16} color="#FFFFFF" />
-          </View>
-          <Text style={styles.logoText}>BharatPOS</Text>
-        </View>
-        <Button 
-          mode="outlined" 
-          style={styles.headerBtnOutline}
-          labelStyle={styles.btnLabelOutline}
-          onPress={() => router.replace('/(owner)' as any)}
-        >
-          Go to Dashboard
-        </Button>
-      </View>
-
-      <View style={styles.successMain}>
-        <View style={styles.checkCircleBg}>
-          <Icon name="check" size={48} color="#FFFFFF" />
-        </View>
-        
-        <Text style={styles.successTitle}>Your Free Trial is Ready!</Text>
-        <Text style={styles.successSub}>
-          Welcome to BharatPOS family. Your account has been created successfully.{"\n"}Here's what you can do next:
-        </Text>
-
-        {/* Steps Grid */}
-        <View style={[styles.successStepsRow, { flexDirection: isDesktop ? 'row' : 'column' }]}>
-          <View style={styles.successStepCard}>
-            <View style={styles.stepCircle}><Text style={styles.stepCircleText}>1</Text></View>
-            <Text style={styles.stepHeader}>Verify Your Email</Text>
-            <Text style={styles.stepDesc}>We've sent a verification link to your email address.</Text>
-            <TouchableOpacity style={styles.stepLinkBtn} onPress={() => alert('Verification email resent!')}>
-              <Text style={styles.stepLinkText}>Resend Email</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.successStepCard}>
-            <View style={styles.stepCircle}><Text style={styles.stepCircleText}>2</Text></View>
-            <Text style={styles.stepHeader}>Add Your Products</Text>
-            <Text style={styles.stepDesc}>Import or add your products and set your inventory.</Text>
-            <TouchableOpacity style={styles.stepLinkBtn} onPress={() => router.push('/(owner)/products_management' as any)}>
-              <Text style={styles.stepLinkText}>Add Products</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.successStepCard}>
-            <View style={styles.stepCircle}><Text style={styles.stepCircleText}>3</Text></View>
-            <Text style={styles.stepHeader}>Start Billing</Text>
-            <Text style={styles.stepDesc}>Create your first bill and grow your business.</Text>
-            <TouchableOpacity style={styles.stepLinkBtn} onPress={() => router.push('/(owner)/pos_billing' as any)}>
-              <Text style={styles.stepLinkText}>Create Bill</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Actions */}
-        <View style={styles.successActions}>
-          <Button 
-            mode="contained" 
-            buttonColor="#0B192C" 
-            style={styles.openDashboardBtn} 
-            contentStyle={{ paddingVertical: 6 }} 
-            labelStyle={{ fontWeight: 'bold' }} 
-            icon="arrow-right"
-            onPress={() => router.replace('/(owner)' as any)}
-          >
-            Open Dashboard
-          </Button>
-
-          <Button 
-            mode="outlined" 
-            style={styles.tutorialBtn} 
-            contentStyle={{ paddingVertical: 6 }} 
-            labelStyle={{ color: '#374151', fontWeight: 'bold' }} 
-            icon="play-circle-outline"
-            onPress={() => alert('Launching Quick Walkthrough Tutorial video player...')}
-          >
-            Watch Quick Tutorial
-          </Button>
-        </View>
-      </View>
-    </View>
-  );
-
   return (
     <KeyboardAvoidingView 
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      {/* ── Top Global Navigation Bar ──────────────────────────── */}
-      <View style={styles.globalTopBar}>
-        <TouchableOpacity 
-          onPress={() => router.push('/')} 
-          style={styles.topBackPill}
-          activeOpacity={0.75}
-        >
-          <Icon name="arrow-left" size={16} color="#0F172A" />
-          <Text style={styles.topBackText}>← Back to Home Page</Text>
+      <ScrollView contentContainerStyle={styles.scrollWrap} showsVerticalScrollIndicator={false}>
+        
+        {/* Top Header Logo */}
+        <TouchableOpacity onPress={() => router.push('/')} style={styles.brandRow} activeOpacity={0.85}>
+          <View style={styles.brandIconCircle}>
+            <Icon name="cash-register" size={24} color="#FFFFFF" />
+          </View>
+          <View style={{ marginLeft: 10 }}>
+            <Text style={styles.brandTitle}>BharatPOS</Text>
+            <Text style={styles.brandSubtitle}>Simple. Smart. For Every Business.</Text>
+          </View>
         </TouchableOpacity>
 
-        <View style={styles.topRightWrap}>
-          <Text style={styles.topRightPrompt}>Already registered?</Text>
-          <TouchableOpacity 
-            onPress={() => router.push('/(auth)/login' as any)}
-            style={styles.topLoginPill}
-            activeOpacity={0.75}
-          >
-            <Text style={styles.topLoginText}>Log In →</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+        {/* Main Card */}
+        <Surface style={styles.cardContainer} elevation={1}>
+          
+          <Text style={styles.mainTitle}>Create Your Account</Text>
+          <Text style={styles.subTitle}>Start your free trial and manage your business better.</Text>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-        {currentStep === 2 ? (
-          renderSuccessPage()
-        ) : (
-          <View style={[styles.splitWrapper, { flexDirection: isDesktop ? 'row' : 'column' }]}>
-            {/* Left Tracker Panel (Desktop) */}
-            {isDesktop && (
-              <View style={styles.leftBanner}>
-                <Text style={styles.bannerTitle}>Create Your Account</Text>
-                
-                <View style={styles.stepsTracker}>
-                  <View style={styles.trackerRow}>
-                    <View style={styles.trackerActiveBullet}>
-                      <Icon name="check" size={14} color="#FFFFFF" />
-                    </View>
-                    <View>
-                      <Text style={styles.trackerTitle}>Business Details</Text>
-                      <Text style={styles.trackerDesc}>Tell us about your business</Text>
-                    </View>
-                  </View>
+          {/* Stepper Progress Indicator (Image 3) */}
+          <View style={styles.stepperRow}>
+            {/* Step 1 */}
+            <View style={styles.stepItem}>
+              <View style={[styles.stepCircle, currentStep >= 1 ? styles.stepCircleActive : styles.stepCircleInactive]}>
+                <Text style={[styles.stepNum, currentStep >= 1 ? styles.stepNumActive : styles.stepNumInactive]}>1</Text>
+              </View>
+              <Text style={[styles.stepLabel, currentStep === 1 && styles.stepLabelActive]}>Business Details</Text>
+            </View>
+            <View style={[styles.stepConnector, currentStep >= 2 && styles.stepConnectorActive]} />
 
-                  <View style={styles.trackerRow}>
-                    <View style={styles.trackerBullet}><Text style={styles.trackerBulletText}>2</Text></View>
-                    <View>
-                      <Text style={[styles.trackerTitle, { color: '#64748B' }]}>Verification</Text>
-                      <Text style={styles.trackerDesc}>Verify your email & phone</Text>
-                    </View>
-                  </View>
+            {/* Step 2 */}
+            <View style={styles.stepItem}>
+              <View style={[styles.stepCircle, currentStep >= 2 ? styles.stepCircleActive : styles.stepCircleInactive]}>
+                <Text style={[styles.stepNum, currentStep >= 2 ? styles.stepNumActive : styles.stepNumInactive]}>2</Text>
+              </View>
+              <Text style={[styles.stepLabel, currentStep === 2 && styles.stepLabelActive]}>Personal Info</Text>
+            </View>
+            <View style={[styles.stepConnector, currentStep >= 3 && styles.stepConnectorActive]} />
 
-                  <View style={styles.trackerRow}>
-                    <View style={styles.trackerBullet}><Text style={styles.trackerBulletText}>3</Text></View>
-                    <View>
-                      <Text style={[styles.trackerTitle, { color: '#64748B' }]}>Get Started</Text>
-                      <Text style={styles.trackerDesc}>Set up your store</Text>
+            {/* Step 3 */}
+            <View style={styles.stepItem}>
+              <View style={[styles.stepCircle, currentStep === 3 ? styles.stepCircleActive : styles.stepCircleInactive]}>
+                <Text style={[styles.stepNum, currentStep === 3 ? styles.stepNumActive : styles.stepNumInactive]}>3</Text>
+              </View>
+              <Text style={[styles.stepLabel, currentStep === 3 && styles.stepLabelActive]}>Complete</Text>
+            </View>
+          </View>
+
+          {errorMsg ? <Text style={styles.errorText}>{errorMsg}</Text> : null}
+
+          {/* STEP 1: BUSINESS DETAILS */}
+          {currentStep === 1 && (
+            <View style={styles.stepBody}>
+              <Text style={styles.sectionHeaderTitle}>BUSINESS DETAILS</Text>
+
+              {/* Row 1: Business Name + Business Type */}
+              <View style={[styles.formGridRow, { flexDirection: isDesktop ? 'row' : 'column' }]}>
+                <View style={styles.fieldBox}>
+                  <Text style={styles.inputLabel}>Business Name</Text>
+                  <TextInput
+                    value={businessName}
+                    onChangeText={setBusinessName}
+                    placeholder="Enter business name"
+                    style={styles.input}
+                    mode="outlined"
+                    outlineColor="#E2E8F0"
+                    activeOutlineColor="#16A34A"
+                    dense
+                  />
+                </View>
+                <View style={styles.fieldBox}>
+                  <Text style={styles.inputLabel}>Business Type</Text>
+                  <TextInput
+                    value={businessType}
+                    onChangeText={setBusinessType}
+                    placeholder="e.g. Retail Shop, Cafe, Wholesale..."
+                    style={styles.input}
+                    mode="outlined"
+                    outlineColor="#E2E8F0"
+                    activeOutlineColor="#16A34A"
+                    dense
+                  />
+                </View>
+              </View>
+
+              {/* Row 2: Mobile Number + Email Address */}
+              <View style={[styles.formGridRow, { flexDirection: isDesktop ? 'row' : 'column' }]}>
+                <View style={styles.fieldBox}>
+                  <Text style={styles.inputLabel}>Mobile Number</Text>
+                  <View style={styles.phoneInputRow}>
+                    <View style={styles.countryCodeBox}>
+                      <Text style={styles.countryCodeText}>+91</Text>
                     </View>
+                    <TextInput
+                      value={mobileNumber}
+                      onChangeText={setMobileNumber}
+                      placeholder="Enter mobile number"
+                      keyboardType="phone-pad"
+                      style={[styles.input, { flex: 1 }]}
+                      mode="outlined"
+                      outlineColor="#E2E8F0"
+                      activeOutlineColor="#16A34A"
+                      dense
+                    />
                   </View>
                 </View>
-
-                {/* Free trial badge */}
-                <View style={styles.noCardBadge}>
-                  <Icon name="credit-card-off-outline" size={18} color="#16A34A" />
-                  <View style={{ marginLeft: 8 }}>
-                    <Text style={styles.noCardTitle}>No credit card required</Text>
-                    <Text style={styles.noCardDescText}>Full access. Cancel anytime.</Text>
-                  </View>
+                <View style={styles.fieldBox}>
+                  <Text style={styles.inputLabel}>Email Address</Text>
+                  <TextInput
+                    value={email}
+                    onChangeText={setEmail}
+                    placeholder="Enter email address"
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    style={styles.input}
+                    mode="outlined"
+                    outlineColor="#E2E8F0"
+                    activeOutlineColor="#16A34A"
+                    dense
+                  />
                 </View>
+              </View>
 
-                {/* Footer Login Promo */}
-                <View style={styles.leftPromoFooter}>
-                  <Text style={styles.promoText}>Already have an account? </Text>
-                  <TouchableOpacity onPress={() => router.push('/login' as any)}>
-                    <Text style={styles.promoLink}>Login</Text>
+              {/* Row 3: Business Category + GST Number */}
+              <View style={[styles.formGridRow, { flexDirection: isDesktop ? 'row' : 'column' }]}>
+                <View style={styles.fieldBox}>
+                  <Text style={styles.inputLabel}>Business Category</Text>
+                  <TextInput
+                    value={businessCategory}
+                    onChangeText={setBusinessCategory}
+                    placeholder="Select category (e.g. Grocery, Cafe)"
+                    style={styles.input}
+                    mode="outlined"
+                    outlineColor="#E2E8F0"
+                    activeOutlineColor="#16A34A"
+                    dense
+                  />
+                </View>
+                <View style={styles.fieldBox}>
+                  <Text style={styles.inputLabel}>GST Number (Optional)</Text>
+                  <TextInput
+                    value={gstNumber}
+                    onChangeText={setGstNumber}
+                    placeholder="Enter GST number"
+                    autoCapitalize="characters"
+                    style={styles.input}
+                    mode="outlined"
+                    outlineColor="#E2E8F0"
+                    activeOutlineColor="#16A34A"
+                    dense
+                  />
+                </View>
+              </View>
+
+              {/* Choose Your POS (Image 3) */}
+              <Text style={styles.inputLabelTitle}>Choose Your POS</Text>
+              <View style={[styles.posChoicesRow, { flexDirection: isDesktop ? 'row' : 'column' }]}>
+                {/* Shop POS Card */}
+                <TouchableOpacity
+                  style={[styles.posChoiceCard, chosenPos === 'shop' && styles.posChoiceCardActive]}
+                  onPress={() => setChosenPos('shop')}
+                  activeOpacity={0.85}
+                >
+                  <View style={styles.posChoiceLeft}>
+                    <View style={[styles.posChoiceIconCircle, { backgroundColor: '#DCFCE7' }]}>
+                      <Icon name="cart-outline" size={20} color="#16A34A" />
+                    </View>
+                    <View style={{ marginLeft: 12 }}>
+                      <Text style={styles.posChoiceName}>Shop POS</Text>
+                      <Text style={styles.posChoiceSub}>Retail & Wholesale</Text>
+                    </View>
+                  </View>
+                  {chosenPos === 'shop' && (
+                    <View style={styles.checkPill}>
+                      <Icon name="check" size={16} color="#16A34A" />
+                    </View>
+                  )}
+                </TouchableOpacity>
+
+                {/* Cafe & Restaurant POS Card */}
+                <TouchableOpacity
+                  style={[styles.posChoiceCard, chosenPos === 'cafe' && styles.posChoiceCardActiveOrange]}
+                  onPress={() => setChosenPos('cafe')}
+                  activeOpacity={0.85}
+                >
+                  <View style={styles.posChoiceLeft}>
+                    <View style={[styles.posChoiceIconCircle, { backgroundColor: '#FFEDD5' }]}>
+                      <Icon name="silverware-fork-knife" size={20} color="#EA580C" />
+                    </View>
+                    <View style={{ marginLeft: 12 }}>
+                      <Text style={styles.posChoiceName}>Cafe & Restaurant POS</Text>
+                      <Text style={styles.posChoiceSub}>Dine-In | Takeaway | Delivery</Text>
+                    </View>
+                  </View>
+                  {chosenPos === 'cafe' && (
+                    <View style={styles.checkPillOrange}>
+                      <Icon name="check" size={16} color="#EA580C" />
+                    </View>
+                  )}
+                </TouchableOpacity>
+              </View>
+
+              {/* Bottom Actions Row */}
+              <View style={styles.footerActionsRow}>
+                <View style={styles.alreadyHaveWrap}>
+                  <Text style={styles.alreadyText}>Already have an account? </Text>
+                  <TouchableOpacity onPress={() => router.push('/(auth)/login' as any)}>
+                    <Text style={styles.loginLink}>Log In</Text>
                   </TouchableOpacity>
                 </View>
 
-                <View style={[styles.trackerRow, { marginTop: 12 }]}>
-                  <Icon name="clock-outline" size={14} color="#64748B" />
-                  <Text style={{ fontSize: 11, color: '#64748B', marginLeft: 4, fontFamily: 'Plus Jakarta Sans' }}>Setup takes less than 2 minutes</Text>
+                <TouchableOpacity
+                  style={styles.nextBtnGreen}
+                  onPress={handleNextStep}
+                  activeOpacity={0.85}
+                >
+                  <Text style={styles.nextBtnText}>Next  →</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+
+          {/* STEP 2: PERSONAL INFO */}
+          {currentStep === 2 && (
+            <View style={styles.stepBody}>
+              <Text style={styles.sectionHeaderTitle}>PERSONAL INFO</Text>
+
+              <View style={styles.fieldBox}>
+                <Text style={styles.inputLabel}>Owner / Manager Full Name</Text>
+                <TextInput
+                  value={ownerName}
+                  onChangeText={setOwnerName}
+                  placeholder="Enter full name"
+                  style={styles.input}
+                  mode="outlined"
+                  outlineColor="#E2E8F0"
+                  activeOutlineColor="#16A34A"
+                  dense
+                />
+              </View>
+
+              <View style={[styles.formGridRow, { flexDirection: isDesktop ? 'row' : 'column' }]}>
+                <View style={styles.fieldBox}>
+                  <Text style={styles.inputLabel}>Create Password</Text>
+                  <TextInput
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry
+                    placeholder="Create a strong password"
+                    style={styles.input}
+                    mode="outlined"
+                    outlineColor="#E2E8F0"
+                    activeOutlineColor="#16A34A"
+                    dense
+                  />
+                </View>
+                <View style={styles.fieldBox}>
+                  <Text style={styles.inputLabel}>Confirm Password</Text>
+                  <TextInput
+                    value={confirmPassword}
+                    onChangeText={setConfirmPassword}
+                    secureTextEntry
+                    placeholder="Confirm password"
+                    style={styles.input}
+                    mode="outlined"
+                    outlineColor="#E2E8F0"
+                    activeOutlineColor="#16A34A"
+                    dense
+                  />
                 </View>
               </View>
-            )}
 
-            {/* Right Form Panel */}
-            <View style={[styles.rightPanel, { width: isDesktop ? '65%' : '100%', paddingVertical: isDesktop ? 40 : 20 }]}>
-              {isDesktop ? (
-                <Surface style={styles.formSurface} elevation={0}>
-                  {renderSignupForm()}
-                </Surface>
-              ) : (
-                <View style={styles.mobileFormContainer}>
-                  {renderSignupForm()}
-                  
-                  {/* Mobile Back-to-login link */}
-                  <View style={[styles.leftPromoFooter, { marginTop: 24, alignSelf: 'center' }]}>
-                    <Text style={styles.promoText}>Already have an account? </Text>
-                    <TouchableOpacity onPress={() => router.push('/login' as any)}>
-                      <Text style={styles.promoLink}>Login</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              )}
+              {/* Bottom Actions Row */}
+              <View style={styles.footerActionsRow}>
+                <TouchableOpacity
+                  style={styles.backBtnOutline}
+                  onPress={() => setCurrentStep(1)}
+                  activeOpacity={0.85}
+                >
+                  <Text style={styles.backBtnText}>← Back</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.nextBtnGreen}
+                  onPress={handleSignUpSubmit}
+                  disabled={loading}
+                  activeOpacity={0.85}
+                >
+                  <Text style={styles.nextBtnText}>{loading ? 'Creating Account...' : 'Complete Setup  ✓'}</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
-        )}
+          )}
+
+          {/* STEP 3: COMPLETE */}
+          {currentStep === 3 && (
+            <View style={styles.successWrapper}>
+              <View style={styles.successIconCircle}>
+                <Icon name="check-bold" size={36} color="#FFFFFF" />
+              </View>
+              <Text style={styles.successTitle}>Account Created Successfully!</Text>
+              <Text style={styles.successSub}>
+                Welcome to BharatPOS! Your 14-day free trial has been activated with full feature access.
+              </Text>
+
+              <TouchableOpacity
+                style={styles.enterDashboardBtn}
+                onPress={() => {
+                  if (Platform.OS === 'web' && typeof window !== 'undefined') {
+                    window.localStorage.setItem('ownerBypass', 'true');
+                  }
+                  if (chosenPos === 'cafe') {
+                    router.replace('/(owner)/tables_kot' as any);
+                  } else {
+                    router.replace('/(owner)' as any);
+                  }
+                }}
+                activeOpacity={0.85}
+              >
+                <Text style={styles.enterDashboardText}>Enter Dashboard  →</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+        </Surface>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  // Global Top Bar
-  globalTopBar: {
-    height: 56,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
-    backgroundColor: '#FFFFFF',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    zIndex: 10,
+  container: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
   },
-  topBackPill: {
+  scrollWrap: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+    paddingHorizontal: 16,
+  },
+  brandRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  brandIconCircle: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    backgroundColor: '#16A34A',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  brandTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  brandSubtitle: {
+    fontSize: 11,
+    color: '#64748B',
+    fontWeight: '500',
+  },
+  cardContainer: {
+    width: '100%',
+    maxWidth: 680,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 36,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 16,
+    elevation: 2,
+  },
+  mainTitle: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#0F172A',
+    textAlign: 'center',
+    letterSpacing: -0.4,
+  },
+  subTitle: {
+    fontSize: 14,
+    color: '#64748B',
+    textAlign: 'center',
+    marginTop: 4,
+    marginBottom: 24,
+  },
+  stepperRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 32,
+    paddingHorizontal: 12,
+  },
+  stepItem: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: '#F1F5F9',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
-  topBackText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#0F172A',
-  },
-  topRightWrap: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  topRightPrompt: {
-    fontSize: 13,
-    color: '#64748B',
-  },
-  topLoginPill: {
-    backgroundColor: '#DCFCE7',
-    borderWidth: 1,
-    borderColor: '#BBF7D0',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
-  topLoginText: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: '#16A34A',
-  },
-  formBackBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    alignSelf: 'flex-start',
-    marginBottom: 16,
-    backgroundColor: '#ECFDF5',
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#A7F3D0',
-  },
-  formBackBtnText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#16A34A',
-  },
-  container: { flex: 1, backgroundColor: '#FFFFFF' },
-  scrollContent: { flexGrow: 1 },
-  splitWrapper: { flex: 1 },
-  
-  // Left Steps Tracker Panel
-  leftBanner: {
-    width: '35%',
-    backgroundColor: '#F8FAFC',
-    paddingHorizontal: 40,
-    paddingVertical: 60,
-    borderRightWidth: 1,
-    borderRightColor: '#E5E7EB'
-  },
-  bannerTitle: { fontSize: 18, fontWeight: '800', color: '#0F172A', marginBottom: 40, fontFamily: 'Plus Jakarta Sans' },
-  stepsTracker: { gap: 24, marginBottom: 50 },
-  trackerRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  trackerActiveBullet: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#16A34A',
-    justifyContent: 'center',
-    alignItems: 'center'
-  },
-  trackerBullet: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#CBD5E1',
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center'
-  },
-  trackerBulletText: { fontSize: 11, fontWeight: '700', color: '#64748B', fontFamily: 'Plus Jakarta Sans' },
-  trackerTitle: { fontSize: 13, fontWeight: '700', color: '#16A34A', fontFamily: 'Plus Jakarta Sans' },
-  trackerDesc: { fontSize: 11, color: '#64748B', fontFamily: 'Plus Jakarta Sans' },
-  
-  noCardBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#DCFCE7',
-    backgroundColor: '#F0FDF4',
-    marginBottom: 40
-  },
-  noCardTitle: { fontSize: 11, fontWeight: '700', color: '#16A34A', fontFamily: 'Plus Jakarta Sans' },
-  noCardDescText: { fontSize: 10, color: '#64748B', fontFamily: 'Plus Jakarta Sans' },
-  leftPromoFooter: { flexDirection: 'row', marginTop: 12 },
-  promoText: { fontSize: 12, color: '#475569', fontFamily: 'Plus Jakarta Sans' },
-  promoLink: { fontSize: 12, fontWeight: '700', color: '#2563EB', fontFamily: 'Plus Jakarta Sans' },
-
-  // Right Form Panel
-  rightPanel: {
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center'
-  },
-  formSurface: {
-    width: '100%',
-    maxWidth: 680,
-    paddingHorizontal: 40,
-    backgroundColor: '#FFFFFF'
-  },
-  mobileFormContainer: {
-    width: '100%',
-    maxWidth: 480,
-    paddingHorizontal: 20
-  },
-  formContainer: { width: '100%' },
-  formTitle: { fontSize: 24, fontWeight: '800', color: '#0F172A', marginBottom: 4, fontFamily: 'Plus Jakarta Sans' },
-  formSub: { fontSize: 13, color: '#64748B', marginBottom: 28, fontFamily: 'Plus Jakarta Sans' },
-  
-  formGrid: { gap: 14 },
-  formRow: { gap: 12 },
-  fieldBox: { flex: 1 },
-  inputLabel: { fontSize: 11, fontWeight: '700', color: '#374151', marginBottom: 6, fontFamily: 'Plus Jakarta Sans' },
-  input: { backgroundColor: '#FFFFFF', height: 40 },
-  phoneInputRow: { flexDirection: 'row', gap: 6 },
-  countryCodeBox: {
-    width: 50,
-    height: 40,
-    borderWidth: 1,
-    borderColor: '#CBD5E1',
-    borderRadius: 4,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F8FAFC',
-    marginTop: 6
-  },
-  countryCodeText: { fontSize: 12, color: '#334155', fontWeight: '700', fontFamily: 'Plus Jakarta Sans' },
-
-  // Setup Cards (Tax Setup & Operation Mode)
-  cardGridRow: { gap: 12 },
-  taxCard: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    borderRadius: 6,
-    padding: 12,
-    backgroundColor: '#FFFFFF',
-    alignItems: 'flex-start'
-  },
-  modeCard: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    borderRadius: 6,
-    padding: 12,
-    backgroundColor: '#FFFFFF',
-    alignItems: 'flex-start'
-  },
-  selectedCard: {
-    borderColor: '#16A34A',
-    backgroundColor: '#F0FDF4'
-  },
-  cardBtnTitle: { fontSize: 12, fontWeight: '700', color: '#0F172A', marginBottom: 2, fontFamily: 'Plus Jakarta Sans' },
-  cardBtnDesc: { fontSize: 10, color: '#64748B', lineHeight: 14, fontFamily: 'Plus Jakarta Sans' },
-
-  actionsBox: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 20
-  },
-  autofillBtn: { borderColor: '#E5E7EB', backgroundColor: '#F9FAFB' },
-  submitBtn: { borderRadius: 6, width: 200 },
-  errorText: { color: '#EF4444', fontSize: 12, fontWeight: '500', marginBottom: 12, fontFamily: 'Plus Jakarta Sans' },
-
-  // Success view layouts
-  successWrapper: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-    paddingBottom: 60
-  },
-  successTopbar: {
-    height: 60,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 24
-  },
-  logoRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  logoIconBg: {
-    width: 24,
-    height: 24,
-    borderRadius: 5,
-    backgroundColor: '#16A34A',
-    justifyContent: 'center',
-    alignItems: 'center'
-  },
-  logoText: { fontSize: 15, fontWeight: '800', color: '#0F172A', fontFamily: 'Plus Jakarta Sans' },
-  headerBtnOutline: { borderRadius: 6, borderColor: '#D1D5DB', height: 36, justifyContent: 'center' },
-  btnLabelOutline: { fontSize: 12, color: '#374151', fontFamily: 'Plus Jakarta Sans' },
-
-  successMain: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: 60,
-    paddingHorizontal: 24
-  },
-  checkCircleBg: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#16A34A',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 24,
-    // Pulse-like shadow simulated
-    ...Platform.select({
-      web: { boxShadow: '0 0 0 10px rgba(22, 163, 74, 0.1)' } as any,
-      default: {}
-    })
-  },
-  successTitle: { fontSize: 32, fontWeight: '800', color: '#0F172A', marginBottom: 8, fontFamily: 'Plus Jakarta Sans' },
-  successSub: { fontSize: 14, color: '#475569', textAlign: 'center', lineHeight: 22, marginBottom: 40, fontFamily: 'Plus Jakarta Sans' },
-
-  successStepsRow: {
-    gap: 16,
-    width: '100%',
-    maxWidth: 960,
-    justifyContent: 'center',
-    marginBottom: 40
-  },
-  successStepCard: {
-    flex: 1,
-    backgroundColor: '#F8FAFC',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    padding: 24,
-    alignItems: 'center',
-    minWidth: 260
   },
   stepCircle: {
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#E8F5E9',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12
   },
-  stepCircleText: { fontSize: 11, fontWeight: '800', color: '#16A34A', fontFamily: 'Plus Jakarta Sans' },
-  stepHeader: { fontSize: 14, fontWeight: '700', color: '#0F172A', marginBottom: 6, fontFamily: 'Plus Jakarta Sans' },
-  stepDesc: { fontSize: 12, color: '#64748B', textAlign: 'center', lineHeight: 18, marginBottom: 14, fontFamily: 'Plus Jakarta Sans' },
-  stepLinkBtn: { padding: 4 },
-  stepLinkText: { fontSize: 12, fontWeight: '700', color: '#2563EB', fontFamily: 'Plus Jakarta Sans' },
-
-  successActions: {
+  stepCircleActive: {
+    backgroundColor: '#16A34A',
+  },
+  stepCircleInactive: {
+    backgroundColor: '#E2E8F0',
+  },
+  stepNum: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  stepNumActive: {
+    color: '#FFFFFF',
+  },
+  stepNumInactive: {
+    color: '#64748B',
+  },
+  stepLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#94A3B8',
+  },
+  stepLabelActive: {
+    color: '#0F172A',
+  },
+  stepConnector: {
+    flex: 1,
+    height: 2,
+    backgroundColor: '#E2E8F0',
+    marginHorizontal: 12,
+  },
+  stepConnectorActive: {
+    backgroundColor: '#16A34A',
+  },
+  stepBody: {
+    width: '100%',
+  },
+  sectionHeaderTitle: {
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 0.8,
+    color: '#64748B',
+    marginBottom: 16,
+  },
+  formGridRow: {
+    gap: 16,
+    marginBottom: 14,
+  },
+  fieldBox: {
+    flex: 1,
+  },
+  inputLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#334155',
+    marginBottom: 6,
+  },
+  input: {
+    backgroundColor: '#FFFFFF',
+    fontSize: 14,
+  },
+  phoneInputRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-    justifyContent: 'center'
+    alignItems: 'center',
+    gap: 8,
   },
-  openDashboardBtn: { borderRadius: 6, width: 180 },
-  tutorialBtn: { borderRadius: 6, borderColor: '#D1D5DB', width: 220 }
+  countryCodeBox: {
+    height: 48,
+    paddingHorizontal: 14,
+    backgroundColor: '#F1F5F9',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  countryCodeText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#334155',
+  },
+  inputLabelTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#0F172A',
+    marginTop: 12,
+    marginBottom: 12,
+  },
+  posChoicesRow: {
+    gap: 14,
+    marginBottom: 28,
+  },
+  posChoiceCard: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#FFFFFF',
+  },
+  posChoiceCardActive: {
+    borderColor: '#16A34A',
+    backgroundColor: '#F0FDF4',
+  },
+  posChoiceCardActiveOrange: {
+    borderColor: '#EA580C',
+    backgroundColor: '#FFF7ED',
+  },
+  posChoiceLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  posChoiceIconCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  posChoiceName: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  posChoiceSub: {
+    fontSize: 12,
+    color: '#64748B',
+    marginTop: 2,
+  },
+  checkPill: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#DCFCE7',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkPillOrange: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#FFEDD5',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  footerActionsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+  },
+  alreadyHaveWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  alreadyText: {
+    fontSize: 13,
+    color: '#64748B',
+  },
+  loginLink: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#16A34A',
+  },
+  nextBtnGreen: {
+    backgroundColor: '#16A34A',
+    paddingVertical: 12,
+    paddingHorizontal: 28,
+    borderRadius: 10,
+  },
+  nextBtnText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  backBtnOutline: {
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 10,
+  },
+  backBtnText: {
+    color: '#475569',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  errorText: {
+    color: '#EF4444',
+    fontSize: 13,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  successWrapper: {
+    alignItems: 'center',
+    paddingVertical: 32,
+  },
+  successIconCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#16A34A',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  successTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#0F172A',
+    marginBottom: 8,
+  },
+  successSub: {
+    fontSize: 14,
+    color: '#64748B',
+    textAlign: 'center',
+    maxWidth: 420,
+    lineHeight: 22,
+    marginBottom: 28,
+  },
+  enterDashboardBtn: {
+    backgroundColor: '#16A34A',
+    paddingVertical: 14,
+    paddingHorizontal: 36,
+    borderRadius: 12,
+  },
+  enterDashboardText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '700',
+  },
 });

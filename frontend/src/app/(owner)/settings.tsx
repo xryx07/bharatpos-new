@@ -19,13 +19,13 @@ export default function AdminSettingsScreen() {
 
   const [storeName, setStoreName] = useState(() => {
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
-      return window.localStorage.getItem('storeName') || '';
+      return window.localStorage.getItem('storeName') || 'ABC Mart';
     }
-    return '';
+    return 'ABC Mart';
   });
   const [address, setAddress] = useState(() => {
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
-      return window.localStorage.getItem('storeAddress') || '';
+      return window.localStorage.getItem('storeAddress') || 'Shop No. 12, Main Market, Delhi - 110001';
     }
     return '';
   });

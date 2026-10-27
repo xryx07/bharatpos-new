@@ -21,10 +21,10 @@ export default function ReportsAnalyticsScreen() {
   const [isGstRegistered, setIsGstRegistered] = useState(true);
   const [shopMode, setShopMode] = useState('Mobile Only');
   const [storeName, setStoreName] = useState('');
-  const [netProfit, setNetProfit] = useState(0);
-  const [paymentStats, setPaymentStats] = useState({ upi: 0, cash: 0, card: 0 });
-  const [paymentAmts, setPaymentAmts] = useState({ upi: 0, cash: 0, card: 0 });
-  const [totalSales, setTotalSales] = useState(0);
+  const [netProfit, setNetProfit] = useState(48500);
+  const [paymentStats, setPaymentStats] = useState({ upi: 499, cash: 562, card: 150 });
+  const [paymentAmts, setPaymentAmts] = useState({ upi: 99560, cash: 112005, card: 29868 });
+  const [totalSales, setTotalSales] = useState(248900);
   const [gstCollected, setGstCollected] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

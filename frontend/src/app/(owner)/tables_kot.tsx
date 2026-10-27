@@ -41,17 +41,17 @@ export interface RestaurantTableItem {
 
 const RESTAURANT_TABLES: RestaurantTableItem[] = [
   { id: 'T1', name: 'T1', capacity: 2, status: 'occupied', items: [], total: 0 },
-  { id: 'T2', name: 'T2', capacity: 4, status: 'occupied', items: [], total: 0 },
-  { id: 'T3', name: 'T3', capacity: 4, status: 'available', items: [
+  { id: 'T2', name: 'T2', capacity: 4, status: 'occupied', items: [
     { id: 'm2', name: 'Paneer Tikka', price: 220, qty: 1 },
     { id: 'm6', name: 'Butter Naan', price: 60, qty: 2 },
     { id: 'm5', name: 'Cold Coffee', price: 140, qty: 1 },
   ], total: 480 },
-  { id: 'T4', name: 'T4', capacity: 2, status: 'available', items: [], total: 0 },
-  { id: 'T5', name: 'T5', capacity: 6, status: 'reserved', items: [], total: 0 },
-  { id: 'T6', name: 'T6', capacity: 4, status: 'available', items: [], total: 0 },
+  { id: 'T3', name: 'T3', capacity: 2, status: 'available', items: [], total: 0 },
+  { id: 'T4', name: 'T4', capacity: 6, status: 'reserved', items: [], total: 0 },
+  { id: 'T5', name: 'T5', capacity: 4, status: 'available', items: [], total: 0 },
+  { id: 'T6', name: 'T6', capacity: 2, status: 'available', items: [], total: 0 },
   { id: 'T7', name: 'T7', capacity: 4, status: 'occupied', items: [], total: 0 },
-  { id: 'T8', name: 'T8', capacity: 2, status: 'cleaning', items: [], total: 0 },
+  { id: 'T8', name: 'T8', capacity: 4, status: 'cleaning', items: [], total: 0 },
   { id: 'T9', name: 'T9', capacity: 4, status: 'available', items: [], total: 0 },
   { id: 'T10', name: 'T10', capacity: 6, status: 'available', items: [], total: 0 },
   { id: 'T11', name: 'T11', capacity: 4, status: 'occupied', items: [], total: 0 },
@@ -176,12 +176,12 @@ export default function TablesKOTScreen() {
   const [activeKdsFilter, setActiveKdsFilter] = useState('All (5)');
   const [cafeTables, setCafeTables] = useState<any[]>(() => RESTAURANT_TABLES);
 
-  // Auto-select T3 on mount to match screenshot view
+  // Auto-select T2 on mount to match reference design
   useEffect(() => {
-    const t3 = RESTAURANT_TABLES.find(t => t.id === 'T3');
-    if (t3) {
-      setSelectedTable(t3 as any);
-      setCurrentOrderItems(t3.items || []);
+    const t2 = RESTAURANT_TABLES.find(t => t.id === 'T2');
+    if (t2) {
+      setSelectedTable(t2 as any);
+      setCurrentOrderItems(t2.items || []);
     }
   }, []);
 
