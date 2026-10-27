@@ -29,6 +29,54 @@ interface TableData {
 }
 
 // 100% Clean initial tables - NO fake orders
+
+export interface RestaurantTableItem {
+  id: string;
+  name: string;
+  capacity: number;
+  status: 'occupied' | 'available' | 'reserved' | 'cleaning';
+  items?: OrderItem[];
+  total?: number;
+}
+
+const RESTAURANT_TABLES: RestaurantTableItem[] = [
+  { id: 'T1', name: 'T1', capacity: 2, status: 'occupied', items: [], total: 0 },
+  { id: 'T2', name: 'T2', capacity: 4, status: 'occupied', items: [], total: 0 },
+  { id: 'T3', name: 'T3', capacity: 4, status: 'available', items: [
+    { id: 'm2', name: 'Paneer Tikka', price: 220, qty: 1 },
+    { id: 'm6', name: 'Butter Naan', price: 60, qty: 2 },
+    { id: 'm5', name: 'Cold Coffee', price: 140, qty: 1 },
+  ], total: 480 },
+  { id: 'T4', name: 'T4', capacity: 2, status: 'available', items: [], total: 0 },
+  { id: 'T5', name: 'T5', capacity: 6, status: 'reserved', items: [], total: 0 },
+  { id: 'T6', name: 'T6', capacity: 4, status: 'available', items: [], total: 0 },
+  { id: 'T7', name: 'T7', capacity: 4, status: 'occupied', items: [], total: 0 },
+  { id: 'T8', name: 'T8', capacity: 2, status: 'cleaning', items: [], total: 0 },
+  { id: 'T9', name: 'T9', capacity: 4, status: 'available', items: [], total: 0 },
+  { id: 'T10', name: 'T10', capacity: 6, status: 'available', items: [], total: 0 },
+  { id: 'T11', name: 'T11', capacity: 4, status: 'occupied', items: [], total: 0 },
+  { id: 'T12', name: 'T12', capacity: 2, status: 'available', items: [], total: 0 },
+];
+
+const CAFE_MENU_ITEMS = [
+  { id: 'm1', name: 'Tomato Soup', price: 120, category: 'Starters', icon: 'bowl-mix-outline' },
+  { id: 'm2', name: 'Paneer Tikka', price: 220, category: 'Starters', icon: 'food-croissant' },
+  { id: 'm3', name: 'Veg Burger', price: 180, category: 'Main Course', icon: 'hamburger' },
+  { id: 'm4', name: 'French Fries', price: 90, category: 'Starters', icon: 'french-fries' },
+  { id: 'm5', name: 'Cold Coffee', price: 140, category: 'Beverages', icon: 'coffee' },
+  { id: 'm6', name: 'Butter Naan', price: 60, category: 'Main Course', icon: 'bread-slice-outline' },
+  { id: 'm7', name: 'Caesar Salad', price: 160, category: 'Starters', icon: 'salad' },
+  { id: 'm8', name: 'Pizza Margherita', price: 290, category: 'Main Course', icon: 'pizza' },
+  { id: 'm9', name: 'Chocolate Brownie', price: 150, category: 'Desserts', icon: 'cake' },
+];
+
+const KDS_LIVE_TICKETS = [
+  { id: '#KOT-1024', table: 'T3', time: '12 min', items: 'Paneer Tikka x2, Butter Naan x2, Cold Coffee x1', status: 'Preparing', color: '#F59E0B', bg: '#FEF3C7' },
+  { id: '#KOT-1025', table: 'T5', time: '8 min', items: 'Veg Burger x2, French Fries x1', status: 'Ready', color: '#10B981', bg: '#D1FAE5' },
+  { id: '#KOT-1026', table: 'T7', time: '5 min', items: 'Tomato Soup x1, Caesar Salad x1', status: 'In Progress', color: '#3B82F6', bg: '#DBEAFE' },
+  { id: '#KOT-1027', table: 'T9', time: '2 min', items: 'Pizza Margherita x1', status: 'Queued', color: '#94A3B8', bg: '#F1F5F9' },
+];
+
 const CLEAN_TABLES: TableData[] = [
   { id: 'T1', name: 'AC 1', section: 'AC Hall', capacity: 4, status: 'vacant', items: [], total: 0 },
   { id: 'T2', name: 'AC 2', section: 'AC Hall', capacity: 2, status: 'vacant', items: [], total: 0 },
@@ -120,6 +168,23 @@ export default function TablesKOTScreen() {
   const [currentOrderItems, setCurrentOrderItems] = useState<OrderItem[]>([]);
   const [waiterName, setWaiterName] = useState('Captain 1');
   const [specialNote, setSpecialNote] = useState('');
+
+  const [diningMode, setDiningMode] = useState<'Dine In' | 'Take Away' | 'Delivery'>('Dine In');
+  const [searchTableText, setSearchTableText] = useState('');
+  const [searchMenuText, setSearchMenuText] = useState('');
+  const [activeMenuCat, setActiveMenuCat] = useState('Starters');
+  const [activeKdsFilter, setActiveKdsFilter] = useState('All (5)');
+  const [cafeTables, setCafeTables] = useState<any[]>(() => RESTAURANT_TABLES);
+
+  // Auto-select T3 on mount to match screenshot view
+  useEffect(() => {
+    const t3 = RESTAURANT_TABLES.find(t => t.id === 'T3');
+    if (t3) {
+      setSelectedTable(t3 as any);
+      setCurrentOrderItems(t3.items || []);
+    }
+  }, []);
+
 
   // Restaurant operational dialogs
   const [showSplitModal, setShowSplitModal] = useState(false);
@@ -610,182 +675,350 @@ export default function TablesKOTScreen() {
     }
   };
 
+  const tableSubtotal = currentOrderItems.reduce((acc, i) => acc + (i.price * i.qty), 0);
+  const serviceCharge = tableSubtotal * 0.05;
+  const cgst = tableSubtotal * 0.025;
+  const sgst = tableSubtotal * 0.025;
+  const tableFinalTotal = tableSubtotal + serviceCharge + cgst + sgst;
+
+  const printCurrentOrderBill = () => {
+    const billHtml = `
+      <div style="font-family: monospace; width: 260px; padding: 10px;">
+        <h2 style="text-align: center; margin: 0;">Sunrise Cafe</h2>
+        <p style="text-align: center; margin: 2px 0;">Table: ${selectedTable?.name || 'T3'} (Dine In)</p>
+        <hr/>
+        ${currentOrderItems.map(i => `<div>${i.name} x${i.qty} - ₹${i.price * i.qty}</div>`).join('')}
+        <hr/>
+        <div>Subtotal: ₹${tableSubtotal.toFixed(2)}</div>
+        <div>Service (5%): ₹${serviceCharge.toFixed(2)}</div>
+        <div>CGST (2.5%): ₹${cgst.toFixed(2)}</div>
+        <div>SGST (2.5%): ₹${sgst.toFixed(2)}</div>
+        <div style="font-weight: bold; font-size: 16px;">TOTAL: ₹${tableFinalTotal.toFixed(2)}</div>
+      </div>
+    `;
+    printSlipHtml(billHtml);
+  };
+
   return (
-    <View style={styles.container}>
-      {/* 0. Top Bar Mode Switch Alert */}
-      <Surface style={styles.posModeBanner} elevation={0}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}>
-          <View style={styles.modeIconCircle}>
-            <Icon name="silverware-fork-knife" size={18} color="#16A34A" />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.modeBannerTitle}>Restaurant & F&B Mode Active (Petpooja Engine)</Text>
-            <Text style={styles.modeBannerSub}>Managing table tabs, live KOT dispatch, and chef station queue.</Text>
-          </View>
-        </View>
-        <Button 
-          mode="contained" 
-          buttonColor="#0F172A" 
-          compact 
-          labelStyle={{ fontSize: 11, fontWeight: 'bold' }}
-          icon="barcode-scan"
-          onPress={() => router.push('/(owner)/pos_billing' as any)}
-        >
-          Go to Retail Barcode POS
-        </Button>
-      </Surface>
-
-      {/* 1. Header Toolbar */}
-      <View style={styles.header}>
-        <View>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <View style={styles.headerIcon}>
-              <Icon name="table-chair" size={24} color="#16A34A" />
-            </View>
-            <View>
-              <Text style={styles.headerTitle}>Tables & KOT Floor Management</Text>
-              <Text style={styles.headerSubtitle}>Petpooja-style Table Tabs, Live KOT Dispatch, and Thermal Receipt Printing</Text>
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.headerStatsRow}>
-          <Surface style={styles.statPill} elevation={1}>
-            <Icon name="table-chair" size={16} color="#475569" />
-            <Text style={styles.statPillText}>Total: <b>{stats.total}</b></Text>
-          </Surface>
-          <Surface style={[styles.statPill, { backgroundColor: '#DCFCE7' }]} elevation={1}>
-            <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#16A34A' }} />
-            <Text style={[styles.statPillText, { color: '#16A34A' }]}>Vacant: <b>{stats.vacant}</b></Text>
-          </Surface>
-          <Surface style={[styles.statPill, { backgroundColor: '#F3E8FF' }]} elevation={1}>
-            <Icon name="chef-hat" size={16} color="#7E22CE" />
-            <Text style={[styles.statPillText, { color: '#7E22CE' }]}>In Prep: <b>{stats.kotFired}</b></Text>
-          </Surface>
-          <Surface style={[styles.statPill, { backgroundColor: '#FEF3C7' }]} elevation={1}>
-            <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#D97706' }} />
-            <Text style={[styles.statPillText, { color: '#D97706' }]}>Live: <b>₹{stats.totalLiveSales.toLocaleString('en-IN')}</b></Text>
-          </Surface>
-
-          <Button 
-            mode="outlined" 
-            compact 
-            textColor="#DC2626" 
-            style={{ borderColor: '#FECACA', borderRadius: 8 }} 
-            labelStyle={{ fontSize: 11 }}
-            onPress={handleResetAllTables}
-          >
-            Clear Floor
-          </Button>
-
-          {stats.occupied === 0 && stats.kotFired === 0 && (
-            <Button 
-              mode="text" 
-              compact 
-              textColor="#16A34A" 
-              labelStyle={{ fontSize: 11, fontWeight: 'bold' }}
-              onPress={handleLoadSampleOrder}
-            >
-              + Sample Order
-            </Button>
-          )}
-        </View>
-      </View>
-
-      {/* 2. Section Selector Filter Tabs */}
-      <View style={styles.sectionTabs}>
-        {['All', 'AC Hall', 'Main Dining', 'Garden Patio', 'Takeaway'].map((sec) => (
-          <TouchableOpacity
-            key={sec}
-            style={[styles.sectionTab, activeSection === sec && styles.sectionTabActive]}
-            onPress={() => setActiveSection(sec)}
-          >
-            <Text style={[styles.sectionTabText, activeSection === sec && styles.sectionTabTextActive]}>{sec}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* 3. Table Cards Grid */}
-      <ScrollView contentContainerStyle={styles.gridContainer} showsVerticalScrollIndicator={false}>
-        <View style={styles.grid}>
-          {filteredTables.map((table) => {
-            const badge = getStatusBadge(table.status);
+    <ScrollView style={styles.darkMainContainer} showsVerticalScrollIndicator={false}>
+      {/* ── 1. Top Sub-Navigation: Dining Mode Pills & Table Search ── */}
+      <View style={styles.topDiningModeRow}>
+        <View style={styles.diningModePillsWrap}>
+          {(['Dine In', 'Take Away', 'Delivery'] as const).map((mode) => {
+            const isActive = diningMode === mode;
             return (
               <TouchableOpacity
-                key={table.id}
+                key={mode}
                 style={[
-                  styles.tableCard,
-                  table.status === 'occupied' && styles.tableCardOccupied,
-                  table.status === 'kot_fired' && styles.tableCardKotFired,
-                  table.status === 'billed' && styles.tableCardBilled,
+                  styles.diningPillBtn,
+                  isActive && styles.diningPillBtnActive
                 ]}
-                onPress={() => handleOpenTable(table)}
-                activeOpacity={0.85}
+                onPress={() => setDiningMode(mode)}
+                activeOpacity={0.7}
               >
-                <View style={styles.tableCardTop}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                    <Text style={styles.tableName}>{table.name}</Text>
-                    <Chip compact textStyle={{ fontSize: 10, color: '#64748B' }} style={{ height: 22, backgroundColor: '#F1F5F9' }}>
-                      {table.capacity}p
-                    </Chip>
-                  </View>
-                  <View style={[styles.statusBadge, { backgroundColor: badge.bg }]}>
-                    <Icon name={badge.icon} size={12} color={badge.color} />
-                    <Text style={[styles.statusBadgeText, { color: badge.color }]}>{badge.label}</Text>
-                  </View>
-                </View>
-
-                <View style={styles.tableCardMiddle}>
-                  {table.status === 'vacant' ? (
-                    <View style={styles.vacantState}>
-                      <Icon name="plus-circle-outline" size={24} color="#94A3B8" />
-                      <Text style={styles.vacantStateText}>Tap to Start Order</Text>
-                    </View>
-                  ) : (
-                    <View style={styles.occupiedState}>
-                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
-                        <Text style={styles.kotBadge}>KOT #{table.kotNo || 1}</Text>
-                        <Text style={styles.orderTime}>{table.startTime || 'Active'}</Text>
-                      </View>
-                      <Text style={styles.itemSummary} numberOfLines={2}>
-                        {table.items.map(i => `${i.qty}x ${i.name}`).join(', ')}
-                      </Text>
-                    </View>
-                  )}
-                </View>
-
-                <Divider style={{ marginVertical: 8 }} />
-
-                <View style={styles.tableCardBottom}>
-                  <View>
-                    <Text style={styles.totalLabel}>Running Total</Text>
-                    <Text style={styles.totalVal}>₹{(table.total || 0).toLocaleString('en-IN')}</Text>
-                  </View>
-                  <View
-                    style={[
-                      styles.actionIndicatorBtn,
-                      { 
-                        backgroundColor: table.status === 'vacant' ? '#F1F5F9' : '#16A34A',
-                        borderWidth: table.status === 'vacant' ? 1 : 0,
-                        borderColor: '#E2E8F0'
-                      }
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.actionIndicatorText,
-                        { color: table.status === 'vacant' ? '#16A34A' : '#FFFFFF' }
-                      ]}
-                    >
-                      {table.status === 'vacant' ? 'Seat Table' : 'Manage KOT'}
-                    </Text>
-                  </View>
-                </View>
+                <Text style={[
+                  styles.diningPillText,
+                  isActive && styles.diningPillTextActive
+                ]}>
+                  {mode}
+                </Text>
               </TouchableOpacity>
             );
           })}
         </View>
-      </ScrollView>
+
+        {/* Table Search Input */}
+        <View style={styles.darkTableSearchWrap}>
+          <Icon name="magnify" size={16} color="#94A3B8" style={{ marginRight: 6 }} />
+          <TextInput
+            placeholder="Search table..."
+            placeholderTextColor="#64748B"
+            value={searchTableText}
+            onChangeText={setSearchTableText}
+            style={styles.darkTableSearchInput}
+            underlineColor="transparent"
+            activeUnderlineColor="transparent"
+          />
+        </View>
+      </View>
+
+      {/* ── 2. Middle Row: Table Floor Grid & Right Order Drawer ── */}
+      <View style={styles.middleCafeColumnsRow}>
+        {/* Left / Center: Floor Plan + Kitchen Display */}
+        <View style={styles.cafeFloorAndKdsCol}>
+          {/* Table Floor Grid (4 columns) */}
+          <View style={styles.tableFloorGrid}>
+            {cafeTables
+              .filter(t => !searchTableText || t.name.toLowerCase().includes(searchTableText.toLowerCase()))
+              .map((t) => {
+                const isSelected = selectedTable?.id === t.id;
+                let cardBg = '#1E293B';
+                let badgeColor = '#10B981';
+                let statusLabel = 'Available';
+                let borderColor = '#334155';
+
+                if (t.status === 'occupied') {
+                  cardBg = 'rgba(239, 68, 68, 0.12)';
+                  badgeColor = '#EF4444';
+                  statusLabel = 'Occupied';
+                  borderColor = 'rgba(239, 68, 68, 0.35)';
+                } else if (t.status === 'reserved') {
+                  cardBg = 'rgba(245, 158, 11, 0.12)';
+                  badgeColor = '#F59E0B';
+                  statusLabel = 'Reserved';
+                  borderColor = 'rgba(245, 158, 11, 0.35)';
+                } else if (t.status === 'cleaning') {
+                  cardBg = 'rgba(59, 130, 246, 0.12)';
+                  badgeColor = '#3B82F6';
+                  statusLabel = 'Cleaning';
+                  borderColor = 'rgba(59, 130, 246, 0.35)';
+                } else {
+                  cardBg = 'rgba(16, 185, 129, 0.1)';
+                  badgeColor = '#10B981';
+                  statusLabel = 'Available';
+                  borderColor = 'rgba(16, 185, 129, 0.25)';
+                }
+
+                if (isSelected) {
+                  borderColor = '#10B981';
+                  cardBg = 'rgba(16, 185, 129, 0.22)';
+                }
+
+                return (
+                  <TouchableOpacity
+                    key={t.id}
+                    style={[
+                      styles.cafeTableCard,
+                      { backgroundColor: cardBg, borderColor: borderColor },
+                      isSelected && { borderWidth: 2 }
+                    ]}
+                    activeOpacity={0.7}
+                    onPress={() => {
+                      setSelectedTable(t as any);
+                      setCurrentOrderItems(t.items || []);
+                    }}
+                  >
+                    <Text style={[styles.cafeTableNum, { color: badgeColor }]}>{t.name}</Text>
+                    <Text style={styles.cafeTableGuests}>{t.capacity} Guests</Text>
+                    <View style={[styles.cafeTableStatusBadge, { backgroundColor: `${badgeColor}20` }]}>
+                      <Text style={[styles.cafeTableStatusText, { color: badgeColor }]}>{statusLabel}</Text>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
+          </View>
+
+          {/* Kitchen Display Live Section */}
+          <View style={styles.kdsSectionContainer}>
+            <View style={styles.kdsHeaderRow}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Text style={styles.kdsMainHeading}>Kitchen Display</Text>
+                <Text style={styles.kdsPendingBadge}>Pending Orders (3)</Text>
+              </View>
+              <View style={styles.kdsFilterPillsRow}>
+                {['All (5)', 'Starters (1)', 'Main Course (3)', 'Beverages (1)'].map((tab, idx) => {
+                  const active = activeKdsFilter === tab;
+                  return (
+                    <TouchableOpacity
+                      key={idx}
+                      style={[styles.kdsTabPill, active && styles.kdsTabPillActive]}
+                      onPress={() => setActiveKdsFilter(tab)}
+                    >
+                      <Text style={[styles.kdsTabText, active && styles.kdsTabTextActive]}>{tab}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+
+            {/* KOT Tickets List */}
+            <View style={styles.kdsTicketList}>
+              {KDS_LIVE_TICKETS.map((kot) => (
+                <View key={kot.id} style={styles.kdsTicketRow}>
+                  <View style={styles.kotLeftInfo}>
+                    <Text style={styles.kotIdText}>{kot.id}</Text>
+                    <View style={styles.kotTableBadge}>
+                      <Text style={styles.kotTableBadgeText}>{kot.table}</Text>
+                    </View>
+                    <Text style={styles.kotTimeElapsed}>{kot.time}</Text>
+                  </View>
+                  <Text style={styles.kotItemsSummary} numberOfLines={1}>{kot.items}</Text>
+                  <View style={[styles.kotStatusBadge, { backgroundColor: kot.bg }]}>
+                    <Text style={[styles.kotStatusText, { color: kot.color }]}>{kot.status}</Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          </View>
+        </View>
+
+        {/* Right Column: Menu Quick Add & Order Summary */}
+        <View style={styles.cafeRightDrawerCol}>
+          {/* Table Header Pill */}
+          <View style={styles.activeTableHeaderCard}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={styles.activeTableTitle}>{selectedTable?.name || 'T3'} - Table {selectedTable?.id?.replace('T', '') || '3'}</Text>
+              <Text style={styles.activeTableGuests}>  ·  {selectedTable?.capacity || 4} Guests</Text>
+            </View>
+            <View style={styles.dineInBadgeGreen}>
+              <Text style={styles.dineInBadgeGreenText}>{diningMode}</Text>
+            </View>
+          </View>
+
+          {/* Search Menu Input */}
+          <View style={styles.darkMenuSearchWrap}>
+            <Icon name="magnify" size={16} color="#94A3B8" style={{ marginRight: 6 }} />
+            <TextInput
+              placeholder="Search menu items..."
+              placeholderTextColor="#64748B"
+              value={searchMenuText}
+              onChangeText={setSearchMenuText}
+              style={styles.darkMenuSearchInput}
+              underlineColor="transparent"
+              activeUnderlineColor="transparent"
+            />
+          </View>
+
+          {/* Menu Category Pills */}
+          <View style={styles.cafeMenuCategoryRow}>
+            {['Starters', 'Main Course', 'Beverages', 'Desserts'].map((cat) => {
+              const active = activeMenuCat === cat;
+              return (
+                <TouchableOpacity
+                  key={cat}
+                  style={[styles.cafeMenuCatPill, active && styles.cafeMenuCatPillActive]}
+                  onPress={() => setActiveMenuCat(cat)}
+                >
+                  <Text style={[styles.cafeMenuCatText, active && styles.cafeMenuCatTextActive]}>{cat}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          {/* Menu Quick Add List */}
+          <View style={styles.cafeMenuItemsList}>
+            {CAFE_MENU_ITEMS
+              .filter(m => activeMenuCat === 'All' || m.category === activeMenuCat)
+              .filter(m => !searchMenuText || m.name.toLowerCase().includes(searchMenuText.toLowerCase()))
+              .slice(0, 5)
+              .map((m) => (
+                <View key={m.id} style={styles.cafeMenuItemRow}>
+                  <View style={styles.cafeMenuImgWrap}>
+                    <Icon name={m.icon} size={20} color="#F97316" />
+                  </View>
+                  <View style={{ flex: 1, marginLeft: 10 }}>
+                    <Text style={styles.cafeMenuName}>{m.name}</Text>
+                    <Text style={styles.cafeMenuPrice}>₹{m.price}</Text>
+                  </View>
+                  <TouchableOpacity
+                    style={styles.cafeMenuPlusBtn}
+                    onPress={() => addItemToOrder(m as any)}
+                  >
+                    <Icon name="plus" size={14} color="#FFFFFF" />
+                  </TouchableOpacity>
+                </View>
+              ))}
+          </View>
+
+          {/* Order Summary Drawer */}
+          <View style={styles.cafeOrderSummaryBox}>
+            <View style={styles.orderSummaryHeader}>
+              <Text style={styles.orderSummaryTitle}>Order Summary</Text>
+              <TouchableOpacity onPress={() => setCurrentOrderItems([])}>
+                <Text style={styles.orderSummaryClear}>Clear</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Line Items */}
+            <ScrollView style={{ maxHeight: 110 }} showsVerticalScrollIndicator={false}>
+              {currentOrderItems.map((item) => (
+                <View key={item.id} style={styles.cafeOrderLineItem}>
+                  <Text style={styles.cafeOrderLineName} numberOfLines={1}>{item.name}</Text>
+                  <Text style={styles.cafeOrderLineQty}>x{item.qty}</Text>
+                  <Text style={styles.cafeOrderLinePrice}>₹{item.price * item.qty}</Text>
+                </View>
+              ))}
+              {currentOrderItems.length === 0 && (
+                <Text style={{ fontSize: 11, color: '#64748B', textAlign: 'center', paddingVertical: 10 }}>
+                  Tap dishes above to add to table KOT
+                </Text>
+              )}
+            </ScrollView>
+
+            <Divider style={{ marginVertical: 6, backgroundColor: '#334155' }} />
+
+            {/* Calculations Breakdown */}
+            <View style={styles.cafeCalcRow}>
+              <Text style={styles.cafeCalcLabel}>Subtotal</Text>
+              <Text style={styles.cafeCalcVal}>₹{tableSubtotal.toFixed(2)}</Text>
+            </View>
+            <View style={styles.cafeCalcRow}>
+              <Text style={styles.cafeCalcLabel}>Service Charge (5%)</Text>
+              <Text style={styles.cafeCalcVal}>₹{serviceCharge.toFixed(2)}</Text>
+            </View>
+            <View style={styles.cafeCalcRow}>
+              <Text style={styles.cafeCalcLabel}>CGST (2.5%)</Text>
+              <Text style={styles.cafeCalcVal}>₹{cgst.toFixed(2)}</Text>
+            </View>
+            <View style={styles.cafeCalcRow}>
+              <Text style={styles.cafeCalcLabel}>SGST (2.5%)</Text>
+              <Text style={styles.cafeCalcVal}>₹{sgst.toFixed(2)}</Text>
+            </View>
+            <Divider style={{ marginVertical: 6, backgroundColor: '#334155' }} />
+            <View style={[styles.cafeCalcRow, { marginBottom: 10 }]}>
+              <Text style={styles.cafeTotalLabel}>Total</Text>
+              <Text style={styles.cafeTotalVal}>₹{tableFinalTotal.toFixed(2)}</Text>
+            </View>
+
+            {/* Send to Kitchen CTA (Emerald Green) */}
+            <TouchableOpacity
+              style={styles.sendToKitchenBtn}
+              activeOpacity={0.8}
+              onPress={handleFireKOT}
+            >
+              <Text style={styles.sendToKitchenBtnText}>Send to Kitchen</Text>
+            </TouchableOpacity>
+
+            {/* Hold, Print, Save Sub-actions */}
+            <View style={styles.cafeSubActionsRow}>
+              <TouchableOpacity style={styles.cafeSubBtn} onPress={() => Alert.alert('Order Held', 'Table order kept on hold')}>
+                <Icon name="pause" size={13} color="#94A3B8" />
+                <Text style={styles.cafeSubBtnText}>Hold</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.cafeSubBtn} onPress={() => printCurrentOrderBill()}>
+                <Icon name="printer" size={13} color="#94A3B8" />
+                <Text style={styles.cafeSubBtnText}>Print</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.cafeSubBtn} onPress={() => Alert.alert('Saved', 'Order saved successfully')}>
+                <Icon name="content-save" size={13} color="#94A3B8" />
+                <Text style={styles.cafeSubBtnText}>Save</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </View>
+
+      {/* ── 3. Bottom Key Features Strip ── */}
+      <Surface style={styles.cafeKeyFeaturesFooter} elevation={0}>
+        <Text style={styles.cafeFooterHeading}>Cafe / Restaurant POS – Key Features</Text>
+        <View style={styles.cafeFeaturesRow}>
+          {[
+            { title: 'Table Management\n& Floor Plan', icon: 'table-furniture' },
+            { title: 'KOT & Kitchen\nDisplay System', icon: 'chef-hat' },
+            { title: 'Menu & Modifiers\n(Recipes / Food Costing)', icon: 'silverware-clean' },
+            { title: 'Online Orders\n(Delivery / Takeaway)', icon: 'moped' },
+            { title: 'Inventory &\nIngredient Tracking', icon: 'clipboard-list-outline' },
+            { title: 'Billing & Split Bill\n(Payments)', icon: 'credit-card-outline' },
+          ].map((f, i) => (
+            <View key={i} style={styles.cafeFeaturePill}>
+              <View style={styles.cafeFeatureIconWrap}>
+                <Icon name={f.icon} size={16} color="#F97316" />
+              </View>
+              <Text style={styles.cafeFeaturePillText}>{f.title}</Text>
+            </View>
+          ))}
+        </View>
+      </Surface>
 
       {/* 4. Table KOT Order & Billing Modal */}
       <Portal>
@@ -1013,7 +1246,7 @@ export default function TablesKOTScreen() {
           </Dialog.Actions>
         </Dialog>
       </Portal>
-    </View>
+    </ScrollView>
   );
 }
 
@@ -1322,4 +1555,466 @@ const styles = StyleSheet.create({
     borderColor: '#2563EB',
     backgroundColor: '#EFF6FF',
   },
+
+  // ── Cafe Dark Theme Styles ──
+  darkMainContainer: {
+    flex: 1,
+    backgroundColor: '#090E17',
+  },
+  topDiningModeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 8,
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  diningModePillsWrap: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  diningPillBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 7,
+    borderRadius: 8,
+    backgroundColor: '#1E293B',
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  diningPillBtnActive: {
+    backgroundColor: '#FEF3C7',
+    borderColor: '#FEF3C7',
+  },
+  diningPillText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#94A3B8',
+  },
+  diningPillTextActive: {
+    color: '#0F172A',
+  },
+  darkTableSearchWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1E293B',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#334155',
+    paddingHorizontal: 10,
+    height: 34,
+    width: 180,
+  },
+  darkTableSearchInput: {
+    flex: 1,
+    fontSize: 12,
+    color: '#F1F5F9',
+    backgroundColor: 'transparent',
+    height: 34,
+  },
+  middleCafeColumnsRow: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    gap: 14,
+    flexWrap: 'wrap',
+  },
+  cafeFloorAndKdsCol: {
+    flex: 2.1,
+    minWidth: 320,
+  },
+  tableFloorGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginBottom: 16,
+  },
+  cafeTableCard: {
+    width: '23%',
+    minWidth: 90,
+    flexGrow: 1,
+    borderRadius: 10,
+    borderWidth: 1,
+    padding: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cafeTableNum: {
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  cafeTableGuests: {
+    fontSize: 10,
+    color: '#94A3B8',
+    marginTop: 2,
+    marginBottom: 6,
+  },
+  cafeTableStatusBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  cafeTableStatusText: {
+    fontSize: 9,
+    fontWeight: '800',
+  },
+  kdsSectionContainer: {
+    backgroundColor: '#111827',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#1E293B',
+    padding: 14,
+  },
+  kdsHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  kdsMainHeading: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#F1F5F9',
+  },
+  kdsPendingBadge: {
+    fontSize: 11,
+    color: '#F97316',
+    fontWeight: '700',
+    marginLeft: 8,
+  },
+  kdsFilterPillsRow: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  kdsTabPill: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    backgroundColor: '#1E293B',
+  },
+  kdsTabPillActive: {
+    backgroundColor: '#334155',
+  },
+  kdsTabText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#94A3B8',
+  },
+  kdsTabTextActive: {
+    color: '#F1F5F9',
+    fontWeight: '700',
+  },
+  kdsTicketList: {
+    gap: 8,
+  },
+  kdsTicketRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#1E293B',
+    borderRadius: 8,
+    padding: 10,
+  },
+  kotLeftInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  kotIdText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#F1F5F9',
+  },
+  kotTableBadge: {
+    backgroundColor: '#334155',
+    borderRadius: 4,
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+  },
+  kotTableBadgeText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#F97316',
+  },
+  kotTimeElapsed: {
+    fontSize: 10,
+    color: '#64748B',
+  },
+  kotItemsSummary: {
+    flex: 1,
+    fontSize: 11,
+    color: '#CBD5E1',
+    marginHorizontal: 10,
+  },
+  kotStatusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  kotStatusText: {
+    fontSize: 10,
+    fontWeight: '800',
+  },
+  cafeRightDrawerCol: {
+    flex: 1.1,
+    minWidth: 280,
+  },
+  activeTableHeaderCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#111827',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#1E293B',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginBottom: 10,
+  },
+  activeTableTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#F1F5F9',
+  },
+  activeTableGuests: {
+    fontSize: 11,
+    color: '#94A3B8',
+  },
+  dineInBadgeGreen: {
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+    borderRadius: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  dineInBadgeGreenText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#10B981',
+  },
+  darkMenuSearchWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#111827',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#1E293B',
+    paddingHorizontal: 10,
+    height: 34,
+    marginBottom: 8,
+  },
+  darkMenuSearchInput: {
+    flex: 1,
+    fontSize: 12,
+    color: '#F1F5F9',
+    backgroundColor: 'transparent',
+    height: 34,
+  },
+  cafeMenuCategoryRow: {
+    flexDirection: 'row',
+    gap: 6,
+    marginBottom: 10,
+    flexWrap: 'wrap',
+  },
+  cafeMenuCatPill: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 6,
+    backgroundColor: '#1E293B',
+  },
+  cafeMenuCatPillActive: {
+    backgroundColor: '#F97316',
+  },
+  cafeMenuCatText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#94A3B8',
+  },
+  cafeMenuCatTextActive: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+  },
+  cafeMenuItemsList: {
+    gap: 6,
+    marginBottom: 12,
+  },
+  cafeMenuItemRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#111827',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#1E293B',
+    padding: 8,
+  },
+  cafeMenuImgWrap: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#1E293B',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cafeMenuName: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#F1F5F9',
+  },
+  cafeMenuPrice: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#94A3B8',
+    marginTop: 1,
+  },
+  cafeMenuPlusBtn: {
+    width: 24,
+    height: 24,
+    borderRadius: 6,
+    backgroundColor: '#334155',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cafeOrderSummaryBox: {
+    backgroundColor: '#111827',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#1E293B',
+    padding: 12,
+  },
+  orderSummaryHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  orderSummaryTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#F1F5F9',
+  },
+  orderSummaryClear: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#F97316',
+  },
+  cafeOrderLineItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 3,
+  },
+  cafeOrderLineName: {
+    flex: 1,
+    fontSize: 11,
+    color: '#CBD5E1',
+  },
+  cafeOrderLineQty: {
+    fontSize: 11,
+    color: '#94A3B8',
+    marginHorizontal: 8,
+  },
+  cafeOrderLinePrice: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#F1F5F9',
+  },
+  cafeCalcRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+  cafeCalcLabel: {
+    fontSize: 11,
+    color: '#94A3B8',
+  },
+  cafeCalcVal: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#F1F5F9',
+  },
+  cafeTotalLabel: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#F1F5F9',
+  },
+  cafeTotalVal: {
+    fontSize: 16,
+    fontWeight: '900',
+    color: '#10B981',
+  },
+  sendToKitchenBtn: {
+    backgroundColor: '#10B981',
+    borderRadius: 8,
+    paddingVertical: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  sendToKitchenBtnText: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+  cafeSubActionsRow: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  cafeSubBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#1E293B',
+    borderRadius: 6,
+    paddingVertical: 6,
+    gap: 4,
+  },
+  cafeSubBtnText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#CBD5E1',
+  },
+  cafeKeyFeaturesFooter: {
+    margin: 16,
+    backgroundColor: '#111827',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#1E293B',
+    padding: 16,
+  },
+  cafeFooterHeading: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#F97316',
+    marginBottom: 12,
+  },
+  cafeFeaturesRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  cafeFeaturePill: {
+    flex: 1,
+    minWidth: 120,
+    alignItems: 'center',
+  },
+  cafeFeatureIconWrap: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: '#1E293B',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 6,
+  },
+  cafeFeaturePillText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#CBD5E1',
+    textAlign: 'center',
+  },
+
 });

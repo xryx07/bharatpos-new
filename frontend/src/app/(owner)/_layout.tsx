@@ -24,57 +24,32 @@ interface MenuSection {
   items: MenuItemDef[];
 }
 
-const menuSections: MenuSection[] = [
-  {
-    title: 'Navigation',
-    items: [
-      { name: 'Back to Homepage', icon: 'home-outline', path: '/', badge: 'HOME', badgeColor: '#16A34A', mode: 'all' },
-    ]
-  },
-  {
-    title: 'Point of Sale',
-    items: [
-      { name: 'Dashboard', icon: 'view-dashboard-outline', path: '/(owner)', mode: 'all' },
-      { name: 'Barcode Billing POS', icon: 'barcode-scan', path: '/(owner)/pos_billing', badge: 'COUNTER', badgeColor: '#16A34A', mode: 'retail' },
-      { name: 'Wholesale B2B Orders', icon: 'warehouse', path: '/(owner)/wholesale', badge: 'B2B', badgeColor: '#2563EB', mode: 'wholesale' },
-      { name: 'Tables & KOT Floor', icon: 'silverware-fork-knife', path: '/(owner)/tables_kot', badge: 'DINE-IN', badgeColor: '#7C3AED', mode: 'restaurant' },
-      { name: 'Kitchen KDS', icon: 'chef-hat', path: '/(owner)/kds', badge: 'CHEF', badgeColor: '#DC2626', mode: 'restaurant' },
-    ]
-  },
-  {
-    title: 'Operations & Staff',
-    items: [
-      { name: 'Products Catalog', icon: 'package-variant-closed', path: '/(owner)/products_management', mode: 'retail' },
-      { name: 'B2B Price Lists & SKUs', icon: 'tag-multiple', path: '/(owner)/products_management', badge: 'B2B', badgeColor: '#2563EB', mode: 'wholesale' },
-      { name: 'Suppliers & POs', icon: 'truck-delivery-outline', path: '/(owner)/suppliers', badge: 'PROCURE', badgeColor: '#059669', mode: 'wholesale' },
-      { name: 'Food Menu & Pricing', icon: 'silverware-clean', path: '/(owner)/products_management', badge: 'KITCHEN', badgeColor: '#7C3AED', mode: 'restaurant' },
-      { name: 'Barcode Generator', icon: 'barcode', path: '/(owner)/barcode_generator', mode: 'retail' },
-      { name: 'Inventory & Godowns', icon: 'clipboard-list-outline', path: '/(owner)/inventory', mode: 'retail' },
-      { name: 'Warehouse Stock', icon: 'domain', path: '/(owner)/inventory', badge: 'STOCK', badgeColor: '#2563EB', mode: 'wholesale' },
-      { name: 'Reorder Alerts', icon: 'alert-circle-outline', path: '/(owner)/reorder_list', mode: 'retail' },
-      { name: 'Staff & Payroll', icon: 'badge-account-horizontal-outline', path: '/(owner)/attendance', mode: 'all' },
-      { name: 'Store Tasks (SOP)', icon: 'checkbox-marked-circle-auto-outline', path: '/(owner)/tasks', badge: 'SOP', badgeColor: '#0284C7', mode: 'all' },
-    ]
-  },
-  {
-    title: 'Accounting & GST',
-    items: [
-      { name: 'Day Book', icon: 'book-open-page-variant-outline', path: '/(owner)/day_book', mode: 'all' },
-      { name: 'Cash & Bank Books', icon: 'cash-multiple', path: '/(owner)/cash_bank_book', mode: 'all' },
-      { name: 'Journal Vouchers', icon: 'notebook-outline', path: '/(owner)/journal_entry', mode: 'all' },
-      { name: 'General Ledgers', icon: 'account-details-outline', path: '/(owner)/ledgers', mode: 'all' },
-      { name: 'Profit & Loss', icon: 'chart-line', path: '/(owner)/profit_loss', mode: 'all' },
-      { name: 'Balance Sheet', icon: 'scale-balance', path: '/(owner)/balance_sheet', mode: 'all' },
-      { name: 'GST Returns (GSTR)', icon: 'file-percent-outline', path: '/(owner)/gst_management', isGstOnly: true, mode: 'all' },
-      { name: 'Data Import / Export', icon: 'file-import-outline', path: '/(owner)/data_import', mode: 'all' },
-    ]
-  },
-  {
-    title: 'Settings',
-    items: [
-      { name: 'Shop Settings', icon: 'cog-outline', path: '/(owner)/settings', badge: 'CONFIG', badgeColor: '#64748B', mode: 'all' },
-    ]
-  }
+const retailMenuItems: MenuItemDef[] = [
+  { name: 'Dashboard', icon: 'view-dashboard-outline', path: '/(owner)', mode: 'all' },
+  { name: 'Billing', icon: 'receipt-text-outline', path: '/(owner)/pos_billing', mode: 'retail' },
+  { name: 'Products', icon: 'package-variant-closed', path: '/(owner)/products_management', mode: 'retail' },
+  { name: 'Inventory', icon: 'clipboard-list-outline', path: '/(owner)/inventory', mode: 'retail' },
+  { name: 'Purchases', icon: 'cart-arrow-down', path: '/(owner)/suppliers', mode: 'wholesale' },
+  { name: 'Suppliers', icon: 'truck-delivery-outline', path: '/(owner)/suppliers', mode: 'wholesale' },
+  { name: 'Customers', icon: 'account-group-outline', path: '/(owner)/wholesale', mode: 'wholesale' },
+  { name: 'Sales Orders', icon: 'file-document-outline', path: '/(owner)/wholesale', mode: 'wholesale' },
+  { name: 'Accounting', icon: 'book-open-page-variant-outline', path: '/(owner)/day_book', mode: 'all' },
+  { name: 'GST', icon: 'file-percent-outline', path: '/(owner)/gst_management', isGstOnly: true, mode: 'all' },
+  { name: 'Reports', icon: 'chart-box-outline', path: '/(owner)/reports', mode: 'all' },
+  { name: 'Settings', icon: 'cog-outline', path: '/(owner)/settings', mode: 'all' },
+];
+
+const restaurantMenuItems: MenuItemDef[] = [
+  { name: 'Dashboard', icon: 'view-dashboard-outline', path: '/(owner)', mode: 'all' },
+  { name: 'Tables', icon: 'table-furniture', path: '/(owner)/tables_kot', mode: 'restaurant' },
+  { name: 'Orders', icon: 'clipboard-text-clock-outline', path: '/(owner)/pos_billing', mode: 'restaurant' },
+  { name: 'Menu', icon: 'silverware-clean', path: '/(owner)/products_management', mode: 'restaurant' },
+  { name: 'Kitchen Display', icon: 'chef-hat', path: '/(owner)/kds', mode: 'restaurant' },
+  { name: 'Inventory', icon: 'clipboard-list-outline', path: '/(owner)/inventory', mode: 'restaurant' },
+  { name: 'Customers', icon: 'account-group-outline', path: '/(owner)/wholesale', mode: 'restaurant' },
+  { name: 'Billing', icon: 'receipt-text-outline', path: '/(owner)/pos_billing', mode: 'restaurant' },
+  { name: 'Reports', icon: 'chart-box-outline', path: '/(owner)/reports', mode: 'all' },
+  { name: 'Settings', icon: 'cog-outline', path: '/(owner)/settings', mode: 'all' },
 ];
 
 // ── Live Clock Hook ────────────────────────────────────────────────────
@@ -107,14 +82,14 @@ const MenuItem = ({ item, isActive, onPress }: { item: MenuItemDef; isActive: bo
       activeOpacity={0.7}
     >
       <View style={[styles.menuIconContainer, isActive && styles.menuIconActiveContainer]}>
-        <Icon name={item.icon} size={18} color={isActive ? '#16A34A' : isHovered ? '#0F172A' : '#64748B'} />
+        <Icon name={item.icon} size={18} color={isActive ? '#FFFFFF' : isHovered ? '#FFFFFF' : '#94A3B8'} />
       </View>
-      <Text style={[styles.menuText, isActive && styles.menuTextActive, isHovered && !isActive && { color: '#0F172A' }]}>
+      <Text style={[styles.menuText, isActive && styles.menuTextActive, isHovered && !isActive && { color: '#FFFFFF' }]}>
         {item.name}
       </Text>
       {item.badge && (
-        <View style={[styles.menuBadgePill, { backgroundColor: item.badgeColor ? `${item.badgeColor}15` : '#F1F5F9' }]}>
-          <Text style={[styles.menuBadgeText, { color: item.badgeColor || '#64748B' }]}>{item.badge}</Text>
+        <View style={[styles.menuBadgePill, { backgroundColor: item.badgeColor ? `${item.badgeColor}15` : '#1E293B' }]}>
+          <Text style={[styles.menuBadgeText, { color: item.badgeColor || '#94A3B8' }]}>{item.badge}</Text>
         </View>
       )}
     </TouchableOpacity>
@@ -388,195 +363,178 @@ export default function OwnerLayout() {
       <Animated.View style={[
         styles.sidebar,
         { width: sidebarAnim },
-        screenWidth <= 800 && isSidebarOpen && { position: 'absolute', zIndex: 100, width: 260 },
+        screenWidth <= 800 && isSidebarOpen && { position: 'absolute', zIndex: 100, width: 240 },
         !isSidebarOpen && { width: 0, overflow: 'hidden' },
       ]}>
         {/* Logo Area */}
         <View style={styles.logoContainer}>
           <View style={styles.logoIconContainer}>
-            <Icon name="store" size={22} color="#fff" />
+            <Icon name="fire" size={22} color="#FFFFFF" />
           </View>
           <View style={styles.logoTextContainer}>
-            <Text style={[styles.logoText, { color: '#1E293B' }]} numberOfLines={1}>{storeName}</Text>
-            <Text style={[styles.logoSubtext, { color: '#64748B' }]}>Owner Panel</Text>
+            <Text style={styles.logoText} numberOfLines={1}>BharatPOS</Text>
+            <Text style={styles.logoSubtext}>Retail · Wholesale · Restaurant</Text>
           </View>
         </View>
 
-        <Divider style={{ backgroundColor: '#E5E7EB', marginHorizontal: 16 }} />
+        <Divider style={{ backgroundColor: '#1E293B', marginHorizontal: 12, marginBottom: 8 }} />
 
         {/* Menu */}
         <ScrollView style={styles.sidebarMenu} showsVerticalScrollIndicator={false}>
-          {menuSections.map((sec, sIdx) => {
-            const filteredItems = sec.items.filter(item => {
-              if (item.isGstOnly && !isGstRegistered) return false;
-              if (posBusinessMode === 'hybrid') return true;
-              if (item.mode === 'all') return true;
-              return item.mode === posBusinessMode;
-            });
-            if (filteredItems.length === 0) return null;
+          {(posBusinessMode === 'restaurant' ? restaurantMenuItems : retailMenuItems).map((item, idx) => {
+            const isActive = pathname === item.path || (item.path === '/(owner)' && (pathname === '/(owner)' || pathname === '/(owner)/'));
             return (
-              <View key={sIdx} style={styles.menuSectionGroup}>
-                <Text style={styles.menuSectionTitle}>{sec.title}</Text>
-                {filteredItems.map((item, idx) => {
-                  const isActive = pathname === item.path || (item.path === '/(owner)' && pathname === '/(owner)/');
-                  return (
-                    <MenuItem key={idx} item={item} isActive={isActive} onPress={() => handleNav(item.path)} />
-                  );
-                })}
-              </View>
+              <MenuItem key={idx} item={item} isActive={isActive} onPress={() => handleNav(item.path)} />
             );
           })}
-          <View style={{ height: 20 }} />
+          <View style={{ height: 16 }} />
         </ScrollView>
 
+        {/* Bottom Branch Card */}
+        <View style={styles.branchBottomCard}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Icon name="storefront-outline" size={14} color="#94A3B8" style={{ marginRight: 6 }} />
+              <Text style={styles.branchNameText}>
+                {posBusinessMode === 'restaurant' ? 'Sunrise Cafe' : 'Main Branch'}
+              </Text>
+            </View>
+            <Icon name="chevron-down" size={14} color="#64748B" />
+          </View>
+          <Text style={styles.branchLocationText}>
+            {posBusinessMode === 'restaurant' ? 'Main Outlet' : 'Gujarat, India'}
+          </Text>
+          <View style={styles.onlineStatusRow}>
+            <View style={styles.onlineDot} />
+            <Text style={styles.onlineText}>Online</Text>
+          </View>
+        </View>
+
+        {/* Bottom Profile Card */}
+        <View style={styles.profileBottomCard}>
+          <Avatar.Text
+            size={32}
+            label={posBusinessMode === 'restaurant' ? 'CW' : 'RK'}
+            style={{ backgroundColor: posBusinessMode === 'restaurant' ? '#EA580C' : '#2563EB' }}
+            labelStyle={{ fontSize: 11, fontWeight: '700' }}
+          />
+          <View style={{ marginLeft: 10, flex: 1 }}>
+            <Text style={styles.profileBottomName} numberOfLines={1}>
+              {posBusinessMode === 'restaurant' ? 'Chef/Walter' : 'Ramesh Kumar'}
+            </Text>
+            <Text style={styles.profileBottomRole}>
+              {posBusinessMode === 'restaurant' ? 'Staff' : 'Owner'}
+            </Text>
+          </View>
+        </View>
       </Animated.View>
 
       {/* ── Main Content ────────────────────────────────────────── */}
       <View style={styles.main}>
-        <Surface style={styles.topBar} elevation={0}>
+        <Surface style={[styles.topBar, posBusinessMode === 'restaurant' && styles.topBarDark]} elevation={0}>
           <View style={styles.topBarLeft}>
             <TouchableOpacity
-              style={styles.menuToggle}
+              style={[styles.menuToggle, posBusinessMode === 'restaurant' && styles.menuToggleDark]}
               onPress={() => setIsSidebarOpen(!isSidebarOpen)}
               activeOpacity={0.7}
             >
-              <Icon name={isSidebarOpen ? 'menu-open' : 'menu'} size={22} color="#333" />
+              <Icon name={isSidebarOpen ? 'menu-open' : 'menu'} size={20} color={posBusinessMode === 'restaurant' ? '#94A3B8' : '#333'} />
             </TouchableOpacity>
-            {screenWidth > 480 && (
-              <>
-                <View style={styles.topBarDivider} />
-                <Icon name="store-outline" size={18} color="#6B7280" />
-                <Text style={styles.storeName}>Main Branch</Text>
-                <View style={styles.topBarDivider} />
-                <TouchableOpacity 
-                  style={styles.modePillTopBar}
-                  activeOpacity={0.8}
-                  onPress={() => {
-                    const nextMode = posBusinessMode === 'retail' 
-                      ? 'wholesale' 
-                      : posBusinessMode === 'wholesale' 
-                      ? 'restaurant' 
-                      : posBusinessMode === 'restaurant' 
-                      ? 'hybrid' 
-                      : 'retail';
-                    setPosBusinessMode(nextMode);
-                    if (typeof window !== 'undefined') {
-                      window.localStorage.setItem('posBusinessMode', nextMode);
-                      window.dispatchEvent(new Event('posBusinessModeChanged'));
-                    }
-                  }}
-                >
-                  <Icon 
-                    name={
-                      posBusinessMode === 'retail' 
-                        ? 'barcode-scan' 
-                        : posBusinessMode === 'wholesale' 
-                        ? 'warehouse' 
-                        : posBusinessMode === 'restaurant' 
-                        ? 'silverware-fork-knife' 
-                        : 'lightning-bolt'
-                    } 
-                    size={14} 
-                    color={posBusinessMode === 'wholesale' ? '#2563EB' : '#16A34A'} 
-                    style={{ marginRight: 5 }}
-                  />
-                  <Text style={[styles.modePillTopBarText, posBusinessMode === 'wholesale' && { color: '#2563EB' }]}>
-                    {posBusinessMode === 'retail' 
-                      ? 'Retail POS (Zoho)' 
-                      : posBusinessMode === 'wholesale' 
-                      ? 'Wholesale B2B ERP' 
-                      : posBusinessMode === 'restaurant' 
-                      ? 'Dining & KOT (Petpooja)' 
-                      : 'Enterprise Multi-Mode'}
-                  </Text>
-                  <Icon name="swap-horizontal" size={12} color="#64748B" style={{ marginLeft: 4 }} />
-                </TouchableOpacity>
-              </>
+
+            {posBusinessMode !== 'restaurant' && screenWidth > 640 && (
+              <View style={styles.topSearchBarWrap}>
+                <Icon name="magnify" size={17} color="#94A3B8" style={{ marginRight: 8 }} />
+                <RNTextInput
+                  placeholder="Search products, SKU, barcode..."
+                  placeholderTextColor="#94A3B8"
+                  style={styles.topSearchRawInput}
+                  onFocus={() => router.push('/(owner)/pos_billing')}
+                />
+                <View style={styles.fKeyBadge}>
+                  <Text style={styles.fKeyBadgeText}>F2</Text>
+                </View>
+              </View>
             )}
+
+            {/* Mode Switcher Pill */}
+            <TouchableOpacity 
+              style={[styles.modePillBtn, posBusinessMode === 'restaurant' && styles.modePillBtnDark]}
+              activeOpacity={0.8}
+              onPress={() => {
+                const nextMode = posBusinessMode === 'restaurant' ? 'retail' : 'restaurant';
+                setPosBusinessMode(nextMode);
+                if (typeof window !== 'undefined') {
+                  window.localStorage.setItem('posBusinessMode', nextMode);
+                  window.dispatchEvent(new Event('posBusinessModeChanged'));
+                }
+                if (nextMode === 'restaurant') router.push('/(owner)/tables_kot' as any);
+                else router.push('/(owner)/pos_billing' as any);
+              }}
+            >
+              <Icon 
+                name={posBusinessMode === 'restaurant' ? 'coffee' : 'barcode-scan'} 
+                size={14} 
+                color="#F97316" 
+                style={{ marginRight: 6 }} 
+              />
+              <Text style={[styles.modePillBtnText, posBusinessMode === 'restaurant' && { color: '#F1F5F9' }]}>
+                {posBusinessMode === 'restaurant' ? 'Cafe Mode' : 'Retail Mode'}
+              </Text>
+              <Icon name="chevron-down" size={13} color={posBusinessMode === 'restaurant' ? '#94A3B8' : '#64748B'} style={{ marginLeft: 6 }} />
+            </TouchableOpacity>
           </View>
 
-          {screenWidth > 768 && (
-            <TouchableOpacity 
-              style={styles.searchContainer} 
-              activeOpacity={0.8}
-              onPress={() => router.push('/(owner)/products_management')}
-            >
-              <Icon name="magnify" size={18} color="#6B7280" style={{ marginRight: 8 }} />
-              <Text style={styles.searchPlaceholder}>Search products...</Text>
-              <View style={styles.shortcutBadge}>
-                <Text style={styles.shortcutText}>Ctrl + K</Text>
-              </View>
-            </TouchableOpacity>
-          )}
-
           <View style={styles.topBarRight}>
-
-            {/* Back to Homepage Button */}
-            <TouchableOpacity 
-              style={styles.backHomeBtn}
-              activeOpacity={0.8}
-              onPress={() => router.push('/')}
-            >
-              <Icon name="home-outline" size={16} color="#16A34A" style={{ marginRight: 6 }} />
-              <Text style={styles.backHomeText}>Back to Homepage</Text>
-            </TouchableOpacity>
+            {posBusinessMode === 'restaurant' && (
+              <View style={styles.cafeLiveClockPill}>
+                <Icon name="clock-outline" size={14} color="#94A3B8" style={{ marginRight: 6 }} />
+                <Text style={styles.cafeDateText}>{dateStr}   {timeStr}</Text>
+              </View>
+            )}
 
             {/* Notification Bell */}
             <View style={styles.bellContainer}>
               <TouchableOpacity
-                style={styles.bellButton}
+                style={[styles.bellButton, posBusinessMode === 'restaurant' && styles.bellButtonDark]}
                 activeOpacity={0.7}
                 onPress={() => setShowNotifications(!showNotifications)}
               >
-                <Icon name={showNotifications ? "bell" : "bell-outline"} size={22} color={showNotifications ? "#1E293B" : "#555"} />
-                {notificationCount > 0 && (
-                  <Badge style={styles.bellBadge} size={16}>{notificationCount}</Badge>
-                )}
+                <Icon name={showNotifications ? "bell" : "bell-outline"} size={20} color={posBusinessMode === 'restaurant' ? "#CBD5E1" : "#555"} />
+                <Badge style={styles.bellBadge} size={15}>{posBusinessMode === 'restaurant' ? 3 : 1}</Badge>
               </TouchableOpacity>
 
               {showNotifications && (
-                <View style={styles.dropdownContainer}>
-                  <View style={styles.dropdownHeader}>
+                <View style={[styles.dropdownContainer, posBusinessMode === 'restaurant' && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
+                  <View style={[styles.dropdownHeader, posBusinessMode === 'restaurant' && { backgroundColor: '#0F172A' }]}>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <Icon name="bell-ring-outline" size={16} color="#475569" style={{ marginRight: 6 }} />
-                      <Text style={styles.dropdownTitle}>Announcements</Text>
+                      <Icon name="bell-ring-outline" size={16} color={posBusinessMode === 'restaurant' ? "#F97316" : "#475569"} style={{ marginRight: 6 }} />
+                      <Text style={[styles.dropdownTitle, posBusinessMode === 'restaurant' && { color: '#FFFFFF' }]}>Alerts</Text>
                     </View>
                     <TouchableOpacity onPress={() => setShowNotifications(false)}>
                       <Icon name="close" size={18} color="#64748B" />
                     </TouchableOpacity>
                   </View>
-                  <Divider style={{ backgroundColor: '#E2E8F0' }} />
+                  <Divider style={{ backgroundColor: posBusinessMode === 'restaurant' ? '#334155' : '#E2E8F0' }} />
                   <ScrollView style={styles.dropdownList} showsVerticalScrollIndicator={true}>
-                    {notifications.length === 0 ? (
-                      <View style={styles.emptyContainer}>
-                        <Icon name="bell-off-outline" size={28} color="#94A3B8" style={{ marginBottom: 8 }} />
-                        <Text style={styles.emptyText}>No new notifications</Text>
+                    <View style={styles.notificationItem}>
+                      <View style={styles.notifIconWrap}>
+                        <Icon name="check-circle-outline" size={16} color="#16A34A" />
                       </View>
-                    ) : (
-                      notifications.map((item, idx) => (
-                        <View key={item.id || idx}>
-                          <View style={styles.notificationItem}>
-                            <View style={styles.notifIconWrap}>
-                              <Icon name="bullhorn-outline" size={16} color="#64748B" />
-                            </View>
-                            <View style={styles.notifContent}>
-                              <Text style={styles.notifTitle}>{item.title}</Text>
-                              <Text style={styles.notifText}>{item.text}</Text>
-                              <Text style={styles.notifTime}>{formatAlertTime(item.createdAt)}</Text>
-                            </View>
-                          </View>
-                          {idx < notifications.length - 1 && (
-                            <Divider style={{ backgroundColor: '#F1F5F9', marginHorizontal: 12 }} />
-                          )}
-                        </View>
-                      ))
-                    )}
+                      <View style={styles.notifContent}>
+                        <Text style={[styles.notifTitle, posBusinessMode === 'restaurant' && { color: '#F1F5F9' }]}>
+                          {posBusinessMode === 'restaurant' ? 'KOT-1025 Ready' : 'Low Stock Alert'}
+                        </Text>
+                        <Text style={[styles.notifText, posBusinessMode === 'restaurant' && { color: '#94A3B8' }]}>
+                          {posBusinessMode === 'restaurant' ? 'Order for Table T5 is ready for service.' : '12 products running low in Inventory.'}
+                        </Text>
+                      </View>
+                    </View>
                   </ScrollView>
                 </View>
               )}
             </View>
 
-            {screenWidth > 600 && <View style={styles.topBarDivider} />}
+            {screenWidth > 600 && <View style={[styles.topBarDivider, posBusinessMode === 'restaurant' && { backgroundColor: '#1E293B' }]} />}
 
             {/* User Avatar Menu Anchor */}
             <View style={{ position: 'relative' }}>
@@ -587,15 +545,19 @@ export default function OwnerLayout() {
               >
                 {screenWidth > 600 && (
                   <View style={styles.userInfo}>
-                    <Text style={styles.userName}>{userName}</Text>
-                    <Text style={styles.userRole}>Owner</Text>
+                    <Text style={[styles.userName, posBusinessMode === 'restaurant' && { color: '#F1F5F9' }]}>
+                      {posBusinessMode === 'restaurant' ? 'Chef/Walter' : 'Ramesh Kumar'}
+                    </Text>
+                    <Text style={[styles.userRole, posBusinessMode === 'restaurant' && { color: '#94A3B8' }]}>
+                      {posBusinessMode === 'restaurant' ? 'Staff' : 'Owner'}
+                    </Text>
                   </View>
                 )}
                 <Avatar.Text
-                  size={36}
-                  label={initial}
-                  style={{ backgroundColor: '#16A34A' }}
-                  labelStyle={{ fontSize: 14, fontWeight: '700' }}
+                  size={32}
+                  label={posBusinessMode === 'restaurant' ? 'CW' : 'RK'}
+                  style={{ backgroundColor: posBusinessMode === 'restaurant' ? '#EA580C' : '#2563EB' }}
+                  labelStyle={{ fontSize: 12, fontWeight: '700' }}
                 />
                 <Icon name={showProfileMenu ? "chevron-up" : "chevron-down"} size={16} color="#64748B" style={{ marginLeft: 4 }} />
               </TouchableOpacity>
@@ -669,11 +631,11 @@ const styles = StyleSheet.create({
 
   // Sidebar
   sidebar: {
-    width: 260,
+    width: 240,
     height: '100%',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#0B132B',
     borderRightWidth: 1,
-    borderRightColor: '#E5E7EB',
+    borderRightColor: '#1E293B',
     paddingTop: 0,
   },
   overlay: {
@@ -684,69 +646,51 @@ const styles = StyleSheet.create({
   // Logo
   logoContainer: {
     flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 16, paddingVertical: 16,
+    paddingHorizontal: 16, paddingVertical: 14,
   },
   logoIconContainer: {
-    width: 38, height: 38, borderRadius: 10,
-    backgroundColor: '#10B981', alignItems: 'center', justifyContent: 'center',
+    width: 34, height: 34, borderRadius: 8,
+    backgroundColor: '#F97316', alignItems: 'center', justifyContent: 'center',
   },
-  logoTextContainer: { flex: 1, marginLeft: 12, justifyContent: 'center' },
-  logoText: { color: '#0F172A', fontWeight: '700', fontSize: 15, letterSpacing: -0.2 },
-  logoSubtext: { color: '#64748B', fontSize: 11, fontWeight: '500', marginTop: 2 },
+  logoTextContainer: { flex: 1, marginLeft: 10, justifyContent: 'center' },
+  logoText: { color: '#FFFFFF', fontWeight: '800', fontSize: 16, letterSpacing: -0.2 },
+  logoSubtext: { color: '#94A3B8', fontSize: 10, fontWeight: '500', marginTop: 1 },
 
   // Menu
-  sidebarMenu: { flex: 1, marginTop: 8 },
-
-  // Menu Item
-  menuSectionGroup: {
-    marginBottom: 12,
-  },
-  menuSectionTitle: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: '#94A3B8',
-    letterSpacing: 0.8,
-    textTransform: 'uppercase',
-    paddingHorizontal: 20,
-    marginTop: 6,
-    marginBottom: 4,
-    fontFamily: 'Plus Jakarta Sans',
-  },
+  sidebarMenu: { flex: 1, marginTop: 4 },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: 9,
     paddingHorizontal: 12,
     marginHorizontal: 10,
-    marginBottom: 2,
-    borderRadius: 10,
+    marginBottom: 3,
+    borderRadius: 8,
   },
   menuItemActive: {
-    backgroundColor: '#DCFCE7',
+    backgroundColor: '#F97316',
   },
   menuItemHover: {
-    backgroundColor: '#F1F5F9',
+    backgroundColor: '#1E293B',
   },
   menuIconContainer: {
-    width: 28,
-    height: 28,
-    borderRadius: 7,
+    width: 24,
+    height: 24,
     justifyContent: 'center',
     alignItems: 'center',
   },
   menuIconActiveContainer: {
-    backgroundColor: 'rgba(22, 163, 74, 0.12)',
+    backgroundColor: 'transparent',
   },
   menuText: {
-    color: '#475569',
+    color: '#94A3B8',
     marginLeft: 8,
     fontSize: 13,
     fontWeight: '500',
     flex: 1,
-    fontFamily: 'Plus Jakarta Sans',
   },
   menuTextActive: {
-    color: '#15803D',
+    color: '#FFFFFF',
     fontWeight: '700',
   },
   menuBadgePill: {
@@ -757,30 +701,135 @@ const styles = StyleSheet.create({
   menuBadgeText: {
     fontSize: 9,
     fontWeight: '800',
-    letterSpacing: 0.5,
   },
 
-  // Logout
-  logoutButton: {
-    flexDirection: 'row', alignItems: 'center',
-    paddingVertical: 16, paddingHorizontal: 20, marginHorizontal: 10,
-    marginBottom: 8, marginTop: 8, borderRadius: 10,
+  // Bottom Branch Card
+  branchBottomCard: {
+    backgroundColor: '#111C38',
+    borderRadius: 8,
+    padding: 10,
+    marginHorizontal: 12,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#1E293B',
   },
-  logoutIconContainer: {
-    width: 34, height: 34, borderRadius: 8,
-    backgroundColor: 'rgba(244,67,54,0.12)',
-    alignItems: 'center', justifyContent: 'center',
+  branchNameText: { color: '#F1F5F9', fontWeight: '700', fontSize: 12 },
+  branchLocationText: { color: '#64748B', fontSize: 11, marginTop: 2 },
+  onlineStatusRow: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
+  onlineDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#10B981', marginRight: 5 },
+  onlineText: { color: '#10B981', fontSize: 10, fontWeight: '600' },
+
+  // Bottom Profile Card
+  profileBottomCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#1E293B',
   },
-  logoutText: {
-    color: '#EF5350', fontWeight: '600', marginLeft: 12, fontSize: 14,
-  },
+  profileBottomName: { color: '#FFFFFF', fontSize: 12, fontWeight: '700' },
+  profileBottomRole: { color: '#94A3B8', fontSize: 10, marginTop: 1 },
 
   // Top Bar
   topBar: {
-    height: 56, backgroundColor: '#fff', flexDirection: 'row',
+    height: 52, backgroundColor: '#FFFFFF', flexDirection: 'row',
     alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 20, borderBottomWidth: 1, borderBottomColor: '#E5E7EB',
+    paddingHorizontal: 16, borderBottomWidth: 1, borderBottomColor: '#E5E7EB',
     zIndex: 1000,
+  },
+  topBarDark: {
+    backgroundColor: '#0B1120',
+    borderBottomColor: '#1E293B',
+  },
+  topBarLeft: { flexDirection: 'row', alignItems: 'center' },
+  topBarRight: { flexDirection: 'row', alignItems: 'center' },
+  menuToggle: {
+    width: 36, height: 36, borderRadius: 8,
+    backgroundColor: '#F1F5F9', alignItems: 'center', justifyContent: 'center',
+  },
+  menuToggleDark: {
+    backgroundColor: '#1E293B',
+  },
+  topSearchBarWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F1F5F9',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    height: 36,
+    width: 280,
+    marginLeft: 12,
+    marginRight: 12,
+  },
+  topSearchRawInput: {
+    flex: 1,
+    fontSize: 12,
+    color: '#0F172A',
+  },
+  fKeyBadge: {
+    backgroundColor: '#E2E8F0',
+    borderRadius: 4,
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+  },
+  fKeyBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#475569',
+  },
+  modePillBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF7ED',
+    borderWidth: 1,
+    borderColor: '#FED7AA',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    marginLeft: 6,
+  },
+  modePillBtnDark: {
+    backgroundColor: '#1E293B',
+    borderColor: '#334155',
+  },
+  modePillBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  cafeLiveClockPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  cafeDateText: {
+    color: '#94A3B8',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  bellButtonDark: {
+    backgroundColor: '#1E293B',
+  },
+  userTopBarPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+    marginLeft: 12,
+  },
+  userTopBarPillDark: {
+    backgroundColor: '#1E293B',
+  },
+  topUserName: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  topUserRole: {
+    fontSize: 10,
+    color: '#64748B',
   },
   topBarLeft: { flexDirection: 'row', alignItems: 'center' },
   topBarRight: { flexDirection: 'row', alignItems: 'center' },

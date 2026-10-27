@@ -30,16 +30,23 @@ const FadeIn = ({ delay = 0, style, children }: { delay?: number; style?: any; c
 };
 
 const DEFAULT_STORE_PRODUCTS = [
-  { id: 'p1', name: 'Amul Taaza Milk 500ml', price: 28, mrp: 28, barcode: '8901262010053', category: 'Dairy', gst_pct: 0, stock_qty: 48 },
-  { id: 'p2', name: 'Aashirvaad Shudh Chakki Atta 5kg', price: 235, mrp: 250, barcode: '8901030383709', category: 'Staples', gst_pct: 0, stock_qty: 25 },
-  { id: 'p3', name: 'Madhur Pure Sugar 1kg', price: 48, mrp: 52, barcode: '8906007280016', category: 'Staples', gst_pct: 5, stock_qty: 60 },
-  { id: 'p4', name: 'Fortune Sunlite Sunflower Oil 1L', price: 145, mrp: 165, barcode: '8906007281013', category: 'Oils', gst_pct: 5, stock_qty: 30 },
-  { id: 'p5', name: 'Tata Tea Premium 250g', price: 130, mrp: 140, barcode: '8901052002011', category: 'Beverages', gst_pct: 5, stock_qty: 40 },
-  { id: 'p6', name: 'Maggi 2-Minute Masala Noodles 70g', price: 14, mrp: 14, barcode: '8901058852276', category: 'Snacks', gst_pct: 12, stock_qty: 120 },
-  { id: 'p7', name: 'Tata Salt Vacuum Evaporated 1kg', price: 28, mrp: 28, barcode: '8901052000017', category: 'Staples', gst_pct: 0, stock_qty: 85 },
-  { id: 'p8', name: 'Surf Excel Quick Wash Detergent 1kg', price: 140, mrp: 155, barcode: '8901030704405', category: 'Cleaning', gst_pct: 18, stock_qty: 35 },
-  { id: 'p9', name: 'Dettol Original Soap 75g (Buy 3 Get 1)', price: 125, mrp: 140, barcode: '8901396112203', category: 'Personal Care', gst_pct: 18, stock_qty: 50 },
-  { id: 'p10', name: 'Britannia Good Day Butter Cookies 100g', price: 30, mrp: 30, barcode: '8901063012016', category: 'Snacks', gst_pct: 12, stock_qty: 90 },
+  { id: 'p1', name: 'Tata Salt 1kg', price: 28, mrp: 28, barcode: '8901052000017', category: 'Groceries', gst_pct: 0, stock_qty: 5, icon: 'shaker-outline' },
+  { id: 'p2', name: 'Fortune Oil 1L', price: 145, mrp: 165, barcode: '8906007281013', category: 'Groceries', gst_pct: 5, stock_qty: 3, icon: 'bottle-tonic-outline' },
+  { id: 'p3', name: 'Amul Milk 1L', price: 64, mrp: 64, barcode: '8901262010053', category: 'Dairy', gst_pct: 0, stock_qty: 8, icon: 'cup-water' },
+  { id: 'p4', name: 'Maggi Noodles', price: 12, mrp: 14, barcode: '8901058852276', category: 'Snacks', gst_pct: 12, stock_qty: 4, icon: 'noodles' },
+  { id: 'p5', name: 'Surf Excel 1kg', price: 120, mrp: 140, barcode: '8901030704405', category: 'Household', gst_pct: 18, stock_qty: 24, icon: 'washing-machine' },
+  { id: 'p6', name: 'Dove Soap', price: 45, mrp: 50, barcode: '8901396112203', category: 'Personal Care', gst_pct: 18, stock_qty: 32, icon: 'shower-head' },
+  { id: 'p7', name: 'Colgate 200g', price: 78, mrp: 85, barcode: '8901314010118', category: 'Personal Care', gst_pct: 18, stock_qty: 18, icon: 'toothbrush-paste' },
+  { id: 'p8', name: 'Biscuits Pack', price: 30, mrp: 30, barcode: '8901063012016', category: 'Snacks', gst_pct: 12, stock_qty: 40, icon: 'cookie' },
+];
+
+const RETAIL_CATEGORIES = ['All', 'Groceries', 'Dairy', 'Beverages', 'Snacks', 'Personal Care', 'Household'];
+
+const FREQUENTLY_SOLD_ITEMS = [
+  { id: 'f1', name: 'Rice 5kg', price: 320, mrp: 350, icon: 'sack', category: 'Groceries' },
+  { id: 'f2', name: 'Cooking Oil 1L', price: 145, mrp: 165, icon: 'bottle-tonic-outline', category: 'Groceries' },
+  { id: 'f3', name: 'Milk 1L', price: 64, mrp: 64, icon: 'cup-water', category: 'Dairy' },
+  { id: 'f4', name: 'Sugar 1kg', price: 42, mrp: 48, icon: 'shaker-outline', category: 'Groceries' },
 ];
 
 // ── Main POS Billing Screen ────────────────────────────────────────────
@@ -52,6 +59,15 @@ export default function POSBillingScreen() {
   const [search, setSearch] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchInputRef = useRef<RNTextInput>(null);
+  const [selectedCategory, setSelectedCategory] = useState('All');
+
+  useEffect(() => {
+    if (cart.length === 0) {
+      addToCart({ id: 'p1', name: 'Tata Salt 1kg', price: 28, mrp: 28, qty: 2, gst_pct: 0 });
+      addToCart({ id: 'p2', name: 'Fortune Oil 1L', price: 145, mrp: 165, qty: 1, gst_pct: 5 });
+      addToCart({ id: 'p3', name: 'Amul Milk 1L', price: 64, mrp: 64, qty: 1, gst_pct: 0 });
+    }
+  }, []);
   
   const [products, setProducts] = useState<any[]>(() => {
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
@@ -1069,515 +1085,359 @@ export default function POSBillingScreen() {
   const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
 
   return (
-    <View style={styles.container}>
-      {/* ── Header ─────────────────────────────────────────────── */}
-      <FadeIn>
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <View style={styles.headerIconBox}>
-              <Icon name="cash-register" size={20} color="#10B981" />
-            </View>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      {/* ── 1. Top Header Row: "New Sale" + 4 Action Buttons ── */}
+      <View style={styles.newSaleHeaderRow}>
+        <Text style={styles.newSaleTitle}>New Sale</Text>
+        <View style={styles.newSaleActionsWrap}>
+          <TouchableOpacity 
+            style={styles.actionPillBtn} 
+            activeOpacity={0.7}
+            onPress={handleOpenScanner}
+          >
+            <Icon name="barcode-scan" size={16} color="#0284C7" style={{ marginRight: 6 }} />
             <View>
-              <Text style={styles.headerTitle}>POS Billing</Text>
-              <Text style={styles.headerSubtitle}>{storeName} · {isGstRegistered ? 'GST Registered' : 'Non-GST Mode'}</Text>
+              <Text style={styles.actionPillLabel}>Scan</Text>
+              <Text style={styles.actionPillSub}>Barcode</Text>
             </View>
+            <View style={styles.actionFBadge}>
+              <Text style={styles.actionFBadgeText}>F1</Text>
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={styles.actionPillBtn} 
+            activeOpacity={0.7}
+            onPress={() => searchInputRef.current?.focus()}
+          >
+            <Icon name="magnify" size={16} color="#0284C7" style={{ marginRight: 6 }} />
+            <View>
+              <Text style={styles.actionPillLabel}>Search</Text>
+              <Text style={styles.actionPillSub}>Product</Text>
+            </View>
+            <View style={styles.actionFBadge}>
+              <Text style={styles.actionFBadgeText}>F2</Text>
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={styles.actionPillBtn} 
+            activeOpacity={0.7}
+            onPress={() => setShowPhonePromptModal(true)}
+          >
+            <Icon name="account-plus-outline" size={16} color="#0284C7" style={{ marginRight: 6 }} />
+            <View>
+              <Text style={styles.actionPillLabel}>Add</Text>
+              <Text style={styles.actionPillSub}>Customer</Text>
+            </View>
+            <View style={styles.actionFBadge}>
+              <Text style={styles.actionFBadgeText}>F4</Text>
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={styles.actionPillBtn} 
+            activeOpacity={0.7}
+            onPress={() => setShowAssistantModal(true)}
+          >
+            <Icon name="microphone" size={16} color="#0284C7" style={{ marginRight: 6 }} />
+            <View>
+              <Text style={styles.actionPillLabel}>Voice AI</Text>
+              <Text style={styles.actionPillSub}>Copilot</Text>
+            </View>
+            <View style={styles.actionFBadge}>
+              <Text style={styles.actionFBadgeText}>F5</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* ── 2. Category Filter Pills Row ── */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryScrollRow} contentContainerStyle={{ paddingVertical: 6, gap: 8 }}>
+        {RETAIL_CATEGORIES.map((cat) => {
+          const isSelected = selectedCategory.toLowerCase() === cat.toLowerCase();
+          return (
+            <TouchableOpacity
+              key={cat}
+              onPress={() => setSelectedCategory(cat)}
+              activeOpacity={0.7}
+              style={[
+                styles.categoryFilterPill,
+                isSelected && styles.categoryFilterPillActive
+              ]}
+            >
+              <Text style={[
+                styles.categoryFilterText,
+                isSelected && styles.categoryFilterTextActive
+              ]}>
+                {cat}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
+
+      {/* ── 3. Main 2-Column POS Layout ── */}
+      <View style={styles.posColumnsRow}>
+        {/* Left Column: Product Grid + Frequently Sold */}
+        <View style={styles.posLeftCatalog}>
+          {/* 4-column Product Grid */}
+          <View style={styles.productGrid}>
+            {(selectedCategory === 'All' ? products : products.filter(p => (p.category || '').toLowerCase() === selectedCategory.toLowerCase())).map((item) => (
+              <TouchableOpacity
+                key={item.id}
+                style={styles.productCard}
+                activeOpacity={0.8}
+                onPress={() => handleAddProduct(item)}
+              >
+                <View style={styles.productCardImgWrap}>
+                  <Icon name={item.icon || 'package-variant-closed'} size={28} color="#EA580C" />
+                </View>
+                <Text style={styles.productCardName} numberOfLines={1}>{item.name}</Text>
+                <View style={styles.productCardBottom}>
+                  <Text style={styles.productCardPrice}>₹{item.price}</Text>
+                  <TouchableOpacity
+                    style={styles.productCardPlusBtn}
+                    onPress={() => handleAddProduct(item)}
+                    activeOpacity={0.7}
+                  >
+                    <Icon name="plus" size={14} color="#FFFFFF" />
+                  </TouchableOpacity>
+                </View>
+              </TouchableOpacity>
+            ))}
           </View>
-          <View style={styles.headerRight}>
-            <Chip
-              icon="silverware-fork-knife"
-              mode="flat"
-              onPress={() => router.push('/(owner)/tables_kot' as any)}
-              textStyle={[styles.chipText, { color: '#7E22CE', fontWeight: '700' }]}
-              style={[styles.chip, { backgroundColor: '#F3E8FF' }]}
-            >
-              Tables & KOT
-            </Chip>
-            <Chip
-              icon="chef-hat"
-              mode="flat"
-              onPress={() => router.push('/(owner)/kds' as any)}
-              textStyle={[styles.chipText, { color: '#D97706', fontWeight: '700' }]}
-              style={[styles.chip, { backgroundColor: '#FEF3C7' }]}
-            >
-              Kitchen KDS
-            </Chip>
-            <Chip
-              icon="robot"
-              mode="flat"
-              onPress={() => setShowAssistantModal(true)}
-              textStyle={[styles.chipText, { color: '#0D9488', fontWeight: '700' }]}
-              style={[styles.chip, { backgroundColor: isDarkMode ? 'rgba(13, 148, 136, 0.2)' : '#CCFBF1' }]}
-            >
-              AI Voice Copilot 🎙️
-            </Chip>
-            <Chip icon="receipt" mode="outlined" onPress={() => setShowSessionModal(true)} textStyle={styles.chipText} style={styles.chip}>
-              Active Session
-            </Chip>
-            <Chip icon="cart" mode="flat" textStyle={[styles.chipText, { color: appTheme.colors.onSurface }]} style={[styles.chip, { backgroundColor: appTheme.colors.surface }]}>
-              {totalItems} items
-            </Chip>
+
+          {/* Frequently Sold Section */}
+          <View style={styles.frequentlySoldSection}>
+            <View style={styles.frequentlySoldHeader}>
+              <Text style={styles.frequentlySoldTitle}>Frequently Sold</Text>
+              <TouchableOpacity onPress={() => setSelectedCategory('All')}>
+                <Text style={styles.viewAllText}>View All</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.frequentlySoldGrid}>
+              {FREQUENTLY_SOLD_ITEMS.map((item) => (
+                <TouchableOpacity
+                  key={item.id}
+                  style={styles.freqCard}
+                  activeOpacity={0.8}
+                  onPress={() => handleAddProduct(item)}
+                >
+                  <View style={styles.freqImgWrap}>
+                    <Icon name={item.icon} size={22} color="#F97316" />
+                  </View>
+                  <View style={{ flex: 1, marginLeft: 8 }}>
+                    <Text style={styles.freqName} numberOfLines={1}>{item.name}</Text>
+                    <Text style={styles.freqPrice}>₹{item.price}</Text>
+                  </View>
+                  <TouchableOpacity
+                    style={styles.freqPlusBtn}
+                    onPress={() => handleAddProduct(item)}
+                  >
+                    <Icon name="plus" size={14} color="#F97316" />
+                  </TouchableOpacity>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
         </View>
-      </FadeIn>
 
-      <View style={styles.contentRow}>
-        {/* ── Left Pane: Search + Cart ────────────────────────── */}
-        <FadeIn delay={100} style={{ flex: 2 }}>
-          <View style={styles.leftPane}>
-            {/* Search Bar */}
-            <View style={styles.searchContainer}>
-              <View style={styles.searchIconBox}>
-                <Icon name="barcode-scan" size={20} color="#10B981" />
-              </View>
-              <TextInput
-                mode="flat"
-                placeholder="Scan barcode, type, or speak to AI..."
-                value={search}
-                onChangeText={(text: any) => { 
-                  const cleaned = text.replace(/[\r\n]/g, '');
-                  setSearch(cleaned); 
-                  setShowSuggestions(true); 
-                  if (text.includes('\n') || text.includes('\r')) {
-                    handleSearchSubmitWithText(cleaned);
-                  }
-                }}
-                onSubmitEditing={handleSearchSubmit}
-                onFocus={() => setShowSuggestions(true)}
-                style={styles.searchInput}
-                underlineColor="transparent"
-                activeUnderlineColor="#10B981"
-                placeholderTextColor="#aaa"
-                left={<TextInput.Icon icon="magnify" color="#999" />}
-                right={
-                  search ? (
-                    <TextInput.Icon icon="close" color="#999" onPress={() => { setSearch(''); setShowSuggestions(false); }} />
-                  ) : (
-                    <TextInput.Icon icon="microphone" color="#0D9488" onPress={() => setShowAssistantModal(true)} />
-                  )
-                }
-              />
+        {/* Right Column: Current Bill */}
+        <View style={styles.posRightBill}>
+          <Surface style={styles.billCardSurface} elevation={0}>
+            <View style={styles.billCardHeader}>
+              <Text style={styles.billCardTitle}>Current Bill</Text>
+              <TouchableOpacity onPress={clearCart}>
+                <Text style={styles.clearBillBtnText}>Clear</Text>
+              </TouchableOpacity>
             </View>
 
-            {/* Search Suggestions Dropdown */}
-            {showSuggestions && filteredProducts.length > 0 && (
-              <Surface style={styles.suggestionsDropdown} elevation={3}>
-                <ScrollView style={{ maxHeight: 260 }} nestedScrollEnabled>
-                  {filteredProducts.map((product) => (
-                    <TouchableOpacity
-                      key={product.id}
-                      style={styles.suggestionItem}
-                      onPress={() => handleAddProduct(product)}
-                      activeOpacity={0.6}
-                    >
-                      <View style={[styles.suggestionCategoryDot, { backgroundColor: categoryColors[cleanAndMapCategory(product.category || '').cleanName] || '#666' }]} />
-                      <View style={styles.suggestionInfo}>
-                        <Text style={styles.suggestionName}>{product.name}</Text>
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                          <Icon name={cleanAndMapCategory(product.category || '').icon} size={12} color="#64748B" style={{ marginRight: 4 }} />
-                          <Text style={styles.suggestionMeta} numberOfLines={1}>
-                            {cleanAndMapCategory(product.category || '').cleanName} {isGstRegistered ? `· HSN: ${product.hsn} · GST: ${product.gst_pct}%` : ''} · Qty: {getProductStock(product.id)}
-                          </Text>
-                        </View>
-                      </View>
-                      <Text style={styles.suggestionPrice}>₹{product.price}</Text>
-                      <View style={styles.addIconCircle}>
-                        <Icon name="plus" size={16} color="#10B981" />
-                      </View>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </Surface>
-            )}
-
-            {/* Cart Header */}
-            <View style={styles.cartHeader}>
-              <Text style={styles.cartHeaderTitle}>Cart Items</Text>
-              {cart.length > 0 && (
-                <Text style={styles.cartItemCount}>{cart.length} product{cart.length !== 1 ? 's' : ''} · {totalItems} unit{totalItems !== 1 ? 's' : ''}</Text>
-              )}
-            </View>
-
-            {/* Column Headers */}
-            {cart.length > 0 && (
-              <View style={styles.columnHeaders}>
-                <Text style={[styles.colHeader, { flex: 2.4 }]}>PRODUCT</Text>
-                <Text style={[styles.colHeader, { flex: 1.1, textAlign: 'center' }]}>PRICE / MRP</Text>
-                <Text style={[styles.colHeader, { flex: 1.1, textAlign: 'center' }]}>QTY</Text>
-                {isGstRegistered && <Text style={[styles.colHeader, { flex: 0.6, textAlign: 'center' }]}>GST</Text>}
-                <Text style={[styles.colHeader, { flex: 1, textAlign: 'right' }]}>TOTAL</Text>
-                <View style={{ width: 36 }} />
+            {/* Customer Selector Dropdown Pill */}
+            <TouchableOpacity
+              style={styles.custSelectorPill}
+              activeOpacity={0.8}
+              onPress={() => setShowPhonePromptModal(true)}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Icon name="account-outline" size={16} color="#64748B" style={{ marginRight: 6 }} />
+                <Text style={styles.custSelectorText}>{custName || 'Walk-In Customer'}</Text>
               </View>
-            )}
+              <Icon name="chevron-down" size={14} color="#64748B" />
+            </TouchableOpacity>
 
-            {/* Cart Items */}
-            <ScrollView style={styles.cartList} showsVerticalScrollIndicator={false}>
-              {cart.map((item, idx) => {
-                const safePrice = Number(item.price !== undefined ? item.price : (item.selling_price !== undefined ? item.selling_price : (item.mrp !== undefined ? item.mrp : 0))) || 0;
-                const safeMrp = Number(item.mrp !== undefined ? item.mrp : safePrice) || safePrice;
-                const safeQty = Number(item.qty) || 1;
-                const safeGstPct = Number(item.gst_pct) || 0;
-                const itemGst = isGstRegistered ? ((safePrice * safeQty) * (safeGstPct / 100)) : 0;
-                const itemTotal = (safePrice * safeQty) + itemGst;
-
-                return (
-                  <View key={item.id} style={[styles.cartItem, idx % 2 === 0 && { backgroundColor: appTheme.colors.surface }]}>
-                    {/* Product */}
-                    <View style={{ flex: 2.4 }}>
-                      <Text style={styles.itemName} numberOfLines={1}>{item.name}</Text>
-                      <Text style={styles.itemSku}>SKU: {String(item.id || '').toUpperCase()}</Text>
-                    </View>
-
-                    {/* Price / MRP */}
-                    <View style={{ flex: 1.1, alignItems: 'center' }}>
-                      <Text style={styles.itemPrice}>₹{safePrice.toFixed(2)}</Text>
-                      {safeMrp > safePrice ? (
-                        <Text style={{ fontSize: 10, color: '#94A3B8', textDecorationLine: 'line-through' }}>
-                          ₹{safeMrp.toFixed(2)}
-                        </Text>
-                      ) : null}
-                    </View>
-
-                    {/* Qty Controls */}
-                    <View style={[styles.qtyController, { flex: 1.1, justifyContent: 'center' }]}>
-                      <TouchableOpacity
-                        onPress={() => updateQty(item.id, -1)}
-                        style={styles.qtyBtn}
-                        activeOpacity={0.6}
-                      >
-                        <Icon name="minus" size={14} color="#10B981" />
-                      </TouchableOpacity>
-                      <View style={styles.qtyDisplay}>
-                        <Text style={styles.qtyText}>{safeQty}</Text>
-                      </View>
-                      <TouchableOpacity
-                        onPress={() => updateQty(item.id, 1)}
-                        style={[styles.qtyBtn, styles.qtyBtnPlus]}
-                        activeOpacity={0.6}
-                      >
-                        <Icon name="plus" size={14} color="#FFFFFF" />
-                      </TouchableOpacity>
-                    </View>
-
-                    {/* GST */}
-                    {isGstRegistered && <Text style={[styles.itemGst, { flex: 0.6, textAlign: 'center' }]}>{safeGstPct}%</Text>}
-
-                    {/* Total */}
-                    <Text style={[styles.itemTotal, { flex: 1, textAlign: 'right' }]}>₹{itemTotal.toFixed(2)}</Text>
-
-                    {/* Delete */}
-                    <TouchableOpacity onPress={() => removeFromCart(item.id)} style={styles.deleteBtn} activeOpacity={0.6}>
-                      <Icon name="trash-can-outline" size={16} color="#F44336" />
-                    </TouchableOpacity>
+            {/* Bill Line Items */}
+            <ScrollView style={styles.billItemsScroll} showsVerticalScrollIndicator={false}>
+              {cart.map((item) => (
+                <View key={item.id} style={styles.billItemRow}>
+                  <View style={styles.billItemImgWrap}>
+                    <Icon name={item.icon || 'package-variant-closed'} size={18} color="#EA580C" />
                   </View>
-                );
-              })}
-
+                  <View style={{ flex: 1, marginLeft: 8 }}>
+                    <Text style={styles.billItemName} numberOfLines={1}>{item.name}</Text>
+                    <Text style={styles.billItemQtyPrice}>{item.qty} x ₹{item.price}</Text>
+                  </View>
+                  <Text style={styles.billItemLineTotal}>₹{(item.qty * item.price).toFixed(2)}</Text>
+                  <TouchableOpacity
+                    style={{ marginLeft: 8, padding: 2 }}
+                    onPress={() => removeFromCart(item.id)}
+                  >
+                    <Icon name="trash-can-outline" size={15} color="#94A3B8" />
+                  </TouchableOpacity>
+                </View>
+              ))}
               {cart.length === 0 && (
-                <View style={styles.emptyCartContainer}>
-                  <Icon name="cart-outline" size={48} color="#94A3B8" />
-                  <Text style={styles.emptyCartTitle}>Billing Cart is Ready</Text>
-                  <Text style={styles.emptyCartSubtitle}>Scan barcode gun or tap fast-selling items below to add instantly:</Text>
-
-                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 14, justifyContent: 'center', maxWidth: 540 }}>
-                    {products.slice(0, 6).map((item: any) => (
-                      <TouchableOpacity
-                        key={item.id}
-                        onPress={() => addToCart({
-                          id: item.id,
-                          name: item.name,
-                          price: item.price,
-                          mrp: item.mrp || item.price,
-                          qty: 1,
-                          gst_pct: item.gst_pct || 0,
-                          barcode: item.barcode,
-                        })}
-                        style={{
-                          backgroundColor: '#F8FAFC',
-                          borderWidth: 1,
-                          borderColor: '#E2E8F0',
-                          borderRadius: 8,
-                          paddingVertical: 8,
-                          paddingHorizontal: 12,
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          gap: 6
-                        }}
-                      >
-                        <Icon name="plus-circle" size={16} color="#16A34A" />
-                        <View>
-                          <Text style={{ fontSize: 12, fontWeight: '700', color: '#0F172A' }}>{item.name}</Text>
-                          <Text style={{ fontSize: 11, color: '#16A34A', fontWeight: '800' }}>₹{item.price}</Text>
-                        </View>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
+                <View style={styles.emptyBillBox}>
+                  <Icon name="cart-outline" size={28} color="#CBD5E1" />
+                  <Text style={styles.emptyBillText}>No items added yet</Text>
                 </View>
               )}
             </ScrollView>
-          </View>
-        </FadeIn>
 
-        <FadeIn delay={200} style={{ flex: 1 }}>
-          <ScrollView style={styles.rightPane} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
-            {/* Quick Customer Info Card */}
-            <Surface style={{ borderRadius: 12, padding: 12, marginBottom: 12, backgroundColor: appTheme.colors.surface, borderWidth: 1, borderColor: '#E2E8F0' }} elevation={0}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <Icon name="account-details" size={18} color="#10B981" />
-                  <Text style={{ fontSize: 13, fontWeight: '700', color: appTheme.colors.onSurface }}>Customer (WhatsApp / SMS)</Text>
-                </View>
-                {custPhone ? (
-                  <Chip compact textStyle={{ fontSize: 10, color: '#10B981', fontWeight: '700' }} style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)', height: 22 }}>
-                    Ready
-                  </Chip>
-                ) : null}
+            {/* Calculations Breakdown */}
+            <View style={styles.billCalculationsArea}>
+              <View style={styles.calcRow}>
+                <Text style={styles.calcLabel}>Subtotal</Text>
+                <Text style={styles.calcVal}>₹{subtotal.toFixed(2)}</Text>
               </View>
-              <TextInput
-                placeholder="Customer Mobile (10 digits)"
-                value={custPhone}
-                onChangeText={setCustPhone}
-                keyboardType="phone-pad"
-                mode="outlined"
-                dense
-                outlineColor="#E2E8F0"
-                activeOutlineColor="#10B981"
-                style={{ backgroundColor: isDarkMode ? '#1E293B' : '#FFFFFF', fontSize: 13, marginBottom: 6 }}
-                left={<TextInput.Icon icon="phone" size={18} color="#10B981" />}
-                right={custPhone ? <TextInput.Icon icon="close-circle" size={16} onPress={() => setCustPhone('')} /> : undefined}
-              />
-              <TextInput
-                placeholder="Customer Name (Optional)"
-                value={custName}
-                onChangeText={setCustName}
-                mode="outlined"
-                dense
-                outlineColor="#E2E8F0"
-                activeOutlineColor="#10B981"
-                style={{ backgroundColor: isDarkMode ? '#1E293B' : '#FFFFFF', fontSize: 13 }}
-                left={<TextInput.Icon icon="account" size={18} color="#64748B" />}
-              />
-            </Surface>
-
-            {/* 💳 Payment Mode Selector (Pay Mode) */}
-            <Surface style={{ borderRadius: 12, padding: 12, marginBottom: 12, backgroundColor: appTheme.colors.surface, borderWidth: 1, borderColor: '#E2E8F0' }} elevation={0}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <Icon name="credit-card-check-outline" size={18} color="#10B981" />
-                  <Text style={{ fontSize: 13, fontWeight: '700', color: appTheme.colors.onSurface }}>Payment Mode (Pay Mode)</Text>
-                </View>
-                <Chip compact textStyle={{ fontSize: 10, color: '#10B981', fontWeight: '800' }} style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)', height: 22 }}>
-                  {payMethod}
-                </Chip>
+              <View style={styles.calcRow}>
+                <Text style={styles.calcLabel}>GST (5%)</Text>
+                <Text style={styles.calcVal}>₹{gstBreakdown.totalGst.toFixed(2)}</Text>
+              </View>
+              <Divider style={{ marginVertical: 8, backgroundColor: '#E2E8F0' }} />
+              <View style={[styles.calcRow, { marginBottom: 12 }]}>
+                <Text style={styles.totalLabel}>Total</Text>
+                <Text style={styles.totalVal}>₹{finalTotal.toFixed(2)}</Text>
               </View>
 
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-                {[
-                  { key: 'UPI', label: 'UPI / QR', icon: 'qrcode-scan', color: '#10B981' },
-                  { key: 'Cash', label: 'Cash', icon: 'cash', color: '#16A34A' },
-                  { key: 'Card', label: 'Card', icon: 'credit-card', color: '#10B981' },
-                  { key: 'Credit', label: 'Credit', icon: 'account-clock-outline', color: '#D97706' }
-                ].map(mode => {
-                  const active = payMethod === mode.key;
-                  return (
-                    <TouchableOpacity
-                      key={mode.key}
-                      onPress={() => setPayMethod(mode.key)}
-                      activeOpacity={0.7}
-                      style={{
-                        flex: 1,
-                        minWidth: '45%',
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: 6,
-                        paddingVertical: 9,
-                        paddingHorizontal: 8,
-                        borderRadius: 8,
-                        borderWidth: 1.5,
-                        borderColor: active ? mode.color : (isDarkMode ? '#334155' : '#E2E8F0'),
-                        backgroundColor: active ? (isDarkMode ? 'rgba(16, 185, 129, 0.15)' : '#F0FDF4') : (isDarkMode ? '#1E293B' : '#FFFFFF')
-                      }}
-                    >
-                      <Icon name={mode.icon} size={16} color={active ? mode.color : '#64748B'} />
-                      <Text style={{ fontSize: 12, fontWeight: active ? '800' : '600', color: active ? mode.color : appTheme.colors.onSurface }}>
-                        {mode.label}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            </Surface>
-
-            {/* Payment Summary Card */}
-            <Surface style={styles.summaryCard} elevation={0}>
-              <View style={styles.summaryHeader}>
-                <Icon name="receipt" size={20} color="#10B981" />
-                <Text style={styles.summaryTitle}>Payment Summary</Text>
-              </View>
-
-              <Divider style={styles.summaryDivider} />
-
-              {/* Subtotal */}
-              <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>Subtotal</Text>
-                <Text style={styles.summaryValue}>₹{subtotal.toFixed(2)}</Text>
-              </View>
-
-              {/* Discount Row (Interactive for Store Owner) */}
-              <View style={styles.summaryRow}>
-                <TouchableOpacity
-                  style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}
-                  onPress={() => {
-                    setDiscountInput(discount > 0 ? String(discount) : '');
-                    setShowDiscountModal(true);
-                  }}
-                  activeOpacity={0.7}
-                >
-                  <Text style={[styles.summaryLabel, { color: discount > 0 ? '#10B981' : '#10B981', fontWeight: '700' }]}>
-                    Discount {discount > 0 ? `(Applied)` : `(+ Add % or ₹)`}
-                  </Text>
-                  <Icon name="pencil-circle-outline" size={16} color={discount > 0 ? '#10B981' : '#10B981'} />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => {
-                    setDiscountInput(discount > 0 ? String(discount) : '');
-                    setShowDiscountModal(true);
-                  }}
-                  activeOpacity={0.7}
-                >
-                  <Text style={[styles.summaryValue, { color: discount > 0 ? '#10B981' : appTheme.colors.onSurface, fontWeight: discount > 0 ? '800' : '500' }]}>
-                    - ₹{discount.toFixed(2)}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-
-              {isGstRegistered && (
-                <>
-                  <Divider style={styles.summaryDividerLight} />
-
-                  {/* GST Breakdown Header */}
-                  <View style={styles.gstHeader}>
-                    <Icon name="bank" size={14} color="#888" />
-                    <Text style={styles.gstHeaderText}>GST Breakdown</Text>
-                  </View>
-
-                  {/* CGST */}
-                  <View style={styles.summaryRow}>
-                    <Text style={styles.gstLabel}>CGST</Text>
-                    <Text style={styles.gstValue}>₹{gstBreakdown.cgst.toFixed(2)}</Text>
-                  </View>
-
-                  {/* SGST */}
-                  <View style={styles.summaryRow}>
-                    <Text style={styles.gstLabel}>SGST</Text>
-                    <Text style={styles.gstValue}>₹{gstBreakdown.sgst.toFixed(2)}</Text>
-                  </View>
-
-                  {/* Total GST */}
-                  <View style={styles.summaryRow}>
-                    <Text style={[styles.gstLabel, { fontWeight: '700' }]}>Total GST</Text>
-                    <Text style={[styles.gstValue, { fontWeight: '700', color: appTheme.colors.onSurface }]}>₹{gstBreakdown.totalGst.toFixed(2)}</Text>
-                  </View>
-                </>
-              )}
-
-              <Divider style={styles.summaryDivider} />
-
-              {/* Grand Total */}
-              <View style={styles.grandTotalRow}>
-                <Text style={styles.grandTotalLabel}>Grand Total</Text>
-                <Text style={styles.grandTotalValue}>₹{finalTotal.toFixed(2)}</Text>
-              </View>
-
-              {/* Savings Callout */}
-              {discount > 0 && (
-                <View style={styles.savingsCallout}>
-                  <Icon name="tag-heart" size={14} color="#10B981" />
-                  <Text style={styles.savingsText}>You save ₹{discount.toFixed(2)} on this order!</Text>
-                </View>
-              )}
-
-              <Divider style={styles.summaryDividerLight} />
-
-              {/* Action Buttons */}
-              <View style={styles.actionButtons}>
-                <TouchableOpacity style={styles.holdBtn} onPress={handleHoldBill} activeOpacity={0.7}>
-                  <Icon name="pause-circle-outline" size={18} color="#10B981" />
-                  <Text style={styles.holdBtnText}>Hold</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.clearBtn} onPress={() => {
-                  if (cart.length === 0) {
-                    Alert.alert('Empty Cart', 'Cart is already empty.');
-                  } else {
-                    clearCart();
-                  }
-                }} activeOpacity={0.7}>
-                  <Icon name="delete-outline" size={18} color="#EF4444" />
-                  <Text style={styles.clearBtnText}>Clear</Text>
-                </TouchableOpacity>
-              </View>
-
-              {/* Pay Button */}
+              {/* Take Payment CTA Button */}
               <TouchableOpacity
-                style={[styles.payBtn, cart.length === 0 && styles.payBtnDisabled]}
-                onPress={handlePay}
+                style={[styles.takePaymentOrangeBtn, cart.length === 0 && { opacity: 0.5 }]}
                 disabled={cart.length === 0}
+                onPress={() => setShowCheckout(true)}
                 activeOpacity={0.8}
               >
-                <Icon name="credit-card-check-outline" size={22} color="#fff" />
-                <Text style={styles.payBtnText}>Pay ₹{finalTotal.toFixed(2)}</Text>
-              </TouchableOpacity>
-
-              {/* Quick Bill Actions: Print, Save, WhatsApp */}
-              <View style={{ marginTop: 12, gap: 8 }}>
-                <View style={styles.secondaryActions}>
-                  <TouchableOpacity
-                    style={[styles.secondaryBtn, cart.length === 0 && { opacity: 0.4 }]}
-                    onPress={handlePrint}
-                    disabled={cart.length === 0}
-                    activeOpacity={0.7}
-                  >
-                    <Icon name="printer" size={16} color="#10B981" />
-                    <Text style={styles.secondaryBtnText}>Print Bill</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[styles.secondaryBtn, cart.length === 0 && { opacity: 0.4 }]}
-                    onPress={handleSave}
-                    disabled={cart.length === 0}
-                    activeOpacity={0.7}
-                  >
-                    <Icon name="content-save-outline" size={16} color="#10B981" />
-                    <Text style={[styles.secondaryBtnText, { color: appTheme.colors.onSurface }]}>Save Bill</Text>
-                  </TouchableOpacity>
+                <Text style={styles.takePaymentBtnText}>Take Payment  →</Text>
+                <View style={styles.f8Badge}>
+                  <Text style={styles.f8BadgeText}>F8</Text>
                 </View>
-
-                {/* WhatsApp Bill Sharing */}
-                <TouchableOpacity
-                  style={[
-                    styles.secondaryBtn,
-                    {
-                      backgroundColor: isDarkMode ? 'rgba(46, 125, 50, 0.2)' : '#E8F5E9',
-                      borderWidth: 1.5,
-                      borderColor: '#2E7D32',
-                      paddingVertical: 12
-                    },
-                    cart.length === 0 && { opacity: 0.4 }
-                  ]}
-                  onPress={() => handleWhatsAppShare()}
-                  disabled={cart.length === 0}
-                  activeOpacity={0.7}
-                >
-                  <Icon name="whatsapp" size={18} color="#2E7D32" />
-                  <Text style={[styles.secondaryBtnText, { color: '#2E7D32', fontWeight: '800', fontSize: 13 }]}>
-                    Share Bill on WhatsApp
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </Surface>
-          </ScrollView>
-        </FadeIn>
+              </TouchableOpacity>
+            </View>
+          </Surface>
+        </View>
       </View>
 
+      {/* ── 4. Bottom 3 Summary Metric Cards ── */}
+      <View style={styles.bottomCardsGrid}>
+        {/* Today's Sales Card */}
+        <Surface style={styles.bottomStatCard} elevation={0}>
+          <View style={styles.statHeaderRow}>
+            <Text style={styles.statHeading}>Today's Sales</Text>
+            <Text style={styles.statSubdate}>7 Oct 2025</Text>
+          </View>
+          <Text style={styles.statBigNumber}>₹42,840</Text>
+          <View style={styles.trendRow}>
+            <Icon name="arrow-up" size={13} color="#16A34A" />
+            <Text style={styles.trendText}>12.4% vs yesterday</Text>
+          </View>
+          {/* Mini Bar Chart */}
+          <View style={styles.miniChartBarRow}>
+            {[14, 22, 28, 18, 35, 26, 42, 50, 38, 46, 30, 48].map((h, i) => (
+              <View key={i} style={[styles.chartBar, { height: h }]} />
+            ))}
+          </View>
+          <Divider style={{ marginVertical: 8, backgroundColor: '#F1F5F9' }} />
+          <View style={styles.threeMetricsRow}>
+            <View>
+              <Text style={styles.metricLabelSmall}>Bills</Text>
+              <Text style={styles.metricValBold}>184</Text>
+            </View>
+            <View>
+              <Text style={styles.metricLabelSmall}>Avg. Bill</Text>
+              <Text style={styles.metricValBold}>₹233</Text>
+            </View>
+            <View>
+              <Text style={styles.metricLabelSmall}>Customers</Text>
+              <Text style={styles.metricValBold}>142</Text>
+            </View>
+          </View>
+        </Surface>
+
+        {/* Low Stock Alerts Card */}
+        <Surface style={styles.bottomStatCard} elevation={0}>
+          <View style={styles.statHeaderRow}>
+            <Text style={styles.statHeading}>Low Stock Alerts</Text>
+            <TouchableOpacity onPress={() => router.push('/(owner)/inventory')}>
+              <Text style={styles.viewAllSmall}>View All</Text>
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.statAlertSubtitle}>12 products running low</Text>
+          <View style={styles.alertListContainer}>
+            {[
+              { name: 'Tata Salt 1kg', left: 5, icon: 'shaker-outline' },
+              { name: 'Cooking Oil 1L', left: 3, icon: 'bottle-tonic-outline' },
+              { name: 'Amul Milk 1L', left: 8, icon: 'cup-water' },
+              { name: 'Maggi Noodles', left: 4, icon: 'noodles' },
+            ].map((item, idx) => (
+              <View key={idx} style={styles.alertItemLine}>
+                <View style={styles.alertItemImg}>
+                  <Icon name={item.icon} size={15} color="#F97316" />
+                </View>
+                <Text style={styles.alertItemTitle} numberOfLines={1}>{item.name}</Text>
+                <Text style={styles.alertItemBadge}>Only {item.left} left</Text>
+              </View>
+            ))}
+          </View>
+        </Surface>
+
+        {/* Recent Transactions Card */}
+        <Surface style={styles.bottomStatCard} elevation={0}>
+          <View style={styles.statHeaderRow}>
+            <Text style={styles.statHeading}>Recent Transactions</Text>
+            <TouchableOpacity onPress={() => router.push('/(owner)/day_book')}>
+              <Text style={styles.viewAllSmall}>View All</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.txListContainer}>
+            {[
+              { id: '#INV-10482', amount: '₹278.25', time: '10:24 AM' },
+              { id: '#INV-10481', amount: '₹512.00', time: '09:47 AM' },
+              { id: '#INV-10480', amount: '₹342.00', time: '09:12 AM' },
+              { id: '#INV-10479', amount: '₹198.00', time: '08:45 AM' },
+              { id: '#INV-10478', amount: '₹620.00', time: '08:20 AM' },
+            ].map((tx, idx) => (
+              <View key={idx} style={styles.txRowLine}>
+                <Text style={styles.txIdText}>{tx.id}</Text>
+                <Text style={styles.txAmountText}>{tx.amount}</Text>
+                <Text style={styles.txTimeText}>{tx.time}</Text>
+              </View>
+            ))}
+          </View>
+        </Surface>
+      </View>
+
+      {/* ── 5. Bottom Key Features Strip ── */}
+      <Surface style={styles.keyFeaturesFooterStrip} elevation={0}>
+        <Text style={styles.footerFeaturesTitle}>Retail / Wholesale POS – Key Features</Text>
+        <View style={styles.featuresRowStrip}>
+          {[
+            { title: 'Fast Billing', sub: '(Barcode + Search)', icon: 'barcode-scan' },
+            { title: 'Inventory &', sub: 'Godowns', icon: 'clipboard-list-outline' },
+            { title: 'Purchase Orders', sub: '& Suppliers', icon: 'cart-arrow-down' },
+            { title: 'GST Invoicing', sub: '& Reports', icon: 'file-percent-outline' },
+            { title: 'Customer Credit', sub: '& Price Lists', icon: 'account-cash-outline' },
+            { title: 'Multi-Location', sub: 'Support', icon: 'domain' },
+          ].map((feat, idx) => (
+            <View key={idx} style={styles.featureStripItem}>
+              <View style={styles.featureStripIconWrap}>
+                <Icon name={feat.icon} size={16} color="#0284C7" />
+              </View>
+              <Text style={styles.featureStripTitle}>{feat.title}</Text>
+              <Text style={styles.featureStripSub}>{feat.sub}</Text>
+            </View>
+          ))}
+        </View>
+      </Surface>
       {/* ── 1. CHECKOUT PAYMENT DETAILS DIALOG ──────────────── */}
       <Portal>
         <Dialog visible={showCheckout} onDismiss={() => setShowCheckout(false)} style={styles.dialog}>
@@ -2180,7 +2040,7 @@ export default function POSBillingScreen() {
           cartItems: cart,
         }}
       />
-    </View>
+    </ScrollView>
   );
 }
 
@@ -2458,4 +2318,548 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#FFFFFF',
   },
+
+  // ── Retail Redesign Styles ──
+  newSaleHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 10,
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  newSaleTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  newSaleActionsWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  actionPillBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.02,
+    shadowRadius: 3,
+    elevation: 1,
+  },
+  actionPillLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0F172A',
+    lineHeight: 14,
+  },
+  actionPillSub: {
+    fontSize: 10,
+    color: '#64748B',
+    lineHeight: 12,
+  },
+  actionFBadge: {
+    backgroundColor: '#F1F5F9',
+    borderRadius: 4,
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+    marginLeft: 8,
+  },
+  actionFBadgeText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#0284C7',
+  },
+  categoryScrollRow: {
+    paddingHorizontal: 20,
+    marginBottom: 12,
+  },
+  categoryFilterPill: {
+    paddingHorizontal: 16,
+    paddingVertical: 7,
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  categoryFilterPillActive: {
+    backgroundColor: '#F97316',
+    borderColor: '#F97316',
+  },
+  categoryFilterText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#475569',
+  },
+  categoryFilterTextActive: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+  },
+  posColumnsRow: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    gap: 16,
+    flexWrap: 'wrap',
+  },
+  posLeftCatalog: {
+    flex: 2.2,
+    minWidth: 320,
+  },
+  productGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  productCard: {
+    width: '23%',
+    minWidth: 120,
+    flexGrow: 1,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    padding: 12,
+    justifyContent: 'space-between',
+    shadowColor: '#000',
+    shadowOpacity: 0.02,
+    shadowRadius: 3,
+    elevation: 1,
+  },
+  productCardImgWrap: {
+    height: 70,
+    backgroundColor: '#FFF7ED',
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  productCardName: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#0F172A',
+    marginBottom: 6,
+  },
+  productCardBottom: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  productCardPrice: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  productCardPlusBtn: {
+    width: 26,
+    height: 26,
+    borderRadius: 6,
+    backgroundColor: '#F97316',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  frequentlySoldSection: {
+    marginTop: 20,
+  },
+  frequentlySoldHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  frequentlySoldTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  viewAllText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0284C7',
+  },
+  frequentlySoldGrid: {
+    flexDirection: 'row',
+    gap: 10,
+    flexWrap: 'wrap',
+  },
+  freqCard: {
+    flex: 1,
+    minWidth: 140,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    padding: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  freqImgWrap: {
+    width: 34,
+    height: 34,
+    borderRadius: 6,
+    backgroundColor: '#FFF7ED',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  freqName: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  freqPrice: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#0F172A',
+    marginTop: 2,
+  },
+  freqPlusBtn: {
+    padding: 4,
+  },
+  posRightBill: {
+    flex: 1.1,
+    minWidth: 280,
+  },
+  billCardSurface: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    padding: 16,
+    shadowColor: '#000',
+    shadowOpacity: 0.03,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  billCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  billCardTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  clearBillBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#F97316',
+  },
+  custSelectorPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    marginBottom: 12,
+  },
+  custSelectorText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#334155',
+  },
+  billItemsScroll: {
+    maxHeight: 220,
+    marginBottom: 12,
+  },
+  billItemRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
+  billItemImgWrap: {
+    width: 28,
+    height: 28,
+    borderRadius: 6,
+    backgroundColor: '#FFF7ED',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  billItemName: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  billItemQtyPrice: {
+    fontSize: 11,
+    color: '#64748B',
+    marginTop: 1,
+  },
+  billItemLineTotal: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  emptyBillBox: {
+    paddingVertical: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyBillText: {
+    fontSize: 12,
+    color: '#94A3B8',
+    marginTop: 6,
+  },
+  billCalculationsArea: {
+    paddingTop: 8,
+  },
+  calcRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 6,
+  },
+  calcLabel: {
+    fontSize: 12,
+    color: '#64748B',
+  },
+  calcVal: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#0F172A',
+  },
+  totalLabel: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  totalVal: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: '#0F172A',
+  },
+  takePaymentOrangeBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F97316',
+    borderRadius: 8,
+    paddingVertical: 12,
+    shadowColor: '#F97316',
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  takePaymentBtnText: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    marginRight: 8,
+  },
+  f8Badge: {
+    backgroundColor: 'rgba(255,255,255,0.25)',
+    borderRadius: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  f8BadgeText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+  bottomCardsGrid: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    marginTop: 24,
+    gap: 16,
+    flexWrap: 'wrap',
+  },
+  bottomStatCard: {
+    flex: 1,
+    minWidth: 260,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    padding: 16,
+  },
+  statHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+  statHeading: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  statSubdate: {
+    fontSize: 11,
+    color: '#64748B',
+  },
+  statBigNumber: {
+    fontSize: 24,
+    fontWeight: '900',
+    color: '#0F172A',
+    marginTop: 4,
+  },
+  trendRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
+    marginBottom: 8,
+  },
+  trendText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#16A34A',
+    marginLeft: 3,
+  },
+  miniChartBarRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    height: 52,
+    gap: 4,
+    paddingVertical: 4,
+  },
+  chartBar: {
+    flex: 1,
+    backgroundColor: '#86EFAC',
+    borderRadius: 2,
+  },
+  threeMetricsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: 4,
+  },
+  metricLabelSmall: {
+    fontSize: 10,
+    color: '#64748B',
+  },
+  metricValBold: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#0F172A',
+    marginTop: 1,
+  },
+  viewAllSmall: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#0284C7',
+  },
+  statAlertSubtitle: {
+    fontSize: 11,
+    color: '#EF4444',
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  alertListContainer: {
+    gap: 6,
+  },
+  alertItemLine: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 4,
+  },
+  alertItemImg: {
+    width: 22,
+    height: 22,
+    borderRadius: 4,
+    backgroundColor: '#FFF7ED',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 6,
+  },
+  alertItemTitle: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#0F172A',
+    flex: 1,
+  },
+  alertItemBadge: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#EF4444',
+  },
+  txListContainer: {
+    gap: 6,
+    marginTop: 6,
+  },
+  txRowLine: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F8FAFC',
+  },
+  txIdText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#0284C7',
+  },
+  txAmountText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  txTimeText: {
+    fontSize: 10,
+    color: '#94A3B8',
+  },
+  keyFeaturesFooterStrip: {
+    marginTop: 24,
+    marginHorizontal: 20,
+    marginBottom: 32,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    padding: 18,
+  },
+  footerFeaturesTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#0F172A',
+    marginBottom: 14,
+  },
+  featuresRowStrip: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  featureStripItem: {
+    flex: 1,
+    minWidth: 120,
+    alignItems: 'center',
+    textAlign: 'center',
+  },
+  featureStripIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    backgroundColor: '#EFF6FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 6,
+  },
+  featureStripTitle: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#0F172A',
+    textAlign: 'center',
+  },
+  featureStripSub: {
+    fontSize: 10,
+    color: '#64748B',
+    textAlign: 'center',
+  },
+
 });
