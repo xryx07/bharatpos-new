@@ -1,8 +1,9 @@
 {
-  "buildCommand": "cd frontend && npm install && npx expo export -p web && cd .. && node -e \"const fs=require('fs'); fs.cpSync('frontend/dist', 'dist', {recursive:true});\"",
+  "buildCommand": "cd frontend && npm install && npx expo export -p web && cd .. && node -e \"const fs=require('fs'); fs.rmSync('dist', {recursive:true, force:true}); fs.cpSync('frontend/dist', 'dist', {recursive:true});\"",
   "outputDirectory": "dist",
   "framework": null,
   "cleanUrls": true,
+  "trailingSlash": false,
   "headers": [
     {
       "source": "/(.*)",
@@ -20,12 +21,15 @@
           "value": "0"
         }
       ]
-    }
-  ],
-  "rewrites": [
+    },
     {
-      "source": "/((?!api/).*)",
-      "destination": "/index.html"
+      "source": "/_expo/static/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
     }
   ]
 }

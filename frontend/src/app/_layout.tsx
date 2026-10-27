@@ -223,20 +223,76 @@ if (Platform.OS === 'web' && typeof document !== 'undefined' && !document.getEle
 
 // Theme is now managed by ThemeProvider in src/providers/ThemeProvider.tsx
 
+import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { View, Text, TouchableOpacity } from 'react-native';
+
+interface ErrorBoundaryProps {
+  children: ReactNode;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+}
+
+export class GlobalErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  state: ErrorBoundaryState = { hasError: false, error: null };
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    if (typeof console !== 'undefined') {
+      console.error('Captured by GlobalErrorBoundary:', error, errorInfo);
+    }
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <View style={{ flex: 1, backgroundColor: '#0B132B', justifyContent: 'center', alignItems: 'center', padding: 24 }}>
+          <View style={{ backgroundColor: '#1E293B', borderRadius: 16, padding: 32, maxWidth: 540, width: '100%', alignItems: 'center', borderWidth: 1, borderColor: '#334155' }}>
+            <Text style={{ fontSize: 24, fontWeight: '800', color: '#F97316', marginBottom: 12 }}>Application Notice</Text>
+            <Text style={{ fontSize: 14, color: '#94A3B8', textAlign: 'center', marginBottom: 20, lineHeight: 20 }}>
+              {this.state.error?.message || 'An unexpected rendering issue occurred. Click below to reload the application.'}
+            </Text>
+            <TouchableOpacity
+              onPress={() => {
+                if (typeof window !== 'undefined') {
+                  window.location.reload();
+                } else {
+                  this.setState({ hasError: false, error: null });
+                }
+              }}
+              style={{ backgroundColor: '#F97316', paddingVertical: 12, paddingHorizontal: 28, borderRadius: 10 }}
+            >
+              <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 14 }}>Reload Application</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 export default function RootLayout() {
   return (
-    <AuthProvider>
-      <CartProvider>
-        <ThemeProvider>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="index" />
-            <Stack.Screen name="(auth)" />
-            <Stack.Screen name="(owner)" />
-            <Stack.Screen name="(vendor)" />
-            <Stack.Screen name="invoice" />
-          </Stack>
-        </ThemeProvider>
-      </CartProvider>
-    </AuthProvider>
+    <GlobalErrorBoundary>
+      <AuthProvider>
+        <CartProvider>
+          <ThemeProvider>
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="index" />
+              <Stack.Screen name="(auth)" />
+              <Stack.Screen name="(owner)" />
+              <Stack.Screen name="(vendor)" />
+              <Stack.Screen name="invoice" />
+            </Stack>
+          </ThemeProvider>
+        </CartProvider>
+      </AuthProvider>
+    </GlobalErrorBoundary>
   );
 }
