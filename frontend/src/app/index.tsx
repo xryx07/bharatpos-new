@@ -252,39 +252,11 @@ export default function Index() {
             <TouchableOpacity onPress={() => scrollToSection('pricing')}><Text style={styles.navLink}>Pricing</Text></TouchableOpacity>
             <TouchableOpacity onPress={() => scrollToSection('demo')}><Text style={styles.navLink}>Demo</Text></TouchableOpacity>
             <TouchableOpacity onPress={() => scrollToSection('faq')}><Text style={styles.navLink}>FAQ</Text></TouchableOpacity>
-            <TouchableOpacity 
-              onPress={() => {
-                if (Platform.OS === 'web' && typeof window !== 'undefined') {
-                  window.localStorage.setItem('ownerBypass', 'true');
-                }
-                router.push('/(owner)' as any);
-              }}
-            >
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Icon name="shield-crown-outline" size={15} color="#16A34A" style={{ marginRight: 4 }} />
-                <Text style={[styles.navLink, { color: '#16A34A', fontWeight: '700' }]}>Admin Dashboard</Text>
-              </View>
-            </TouchableOpacity>
             <TouchableOpacity onPress={() => scrollToSection('contact')}><Text style={styles.navLink}>Contact</Text></TouchableOpacity>
           </View>
         )}
 
         <View style={styles.headerRight}>
-          <Button 
-            mode="contained" 
-            style={[styles.headerBtnSolid, { backgroundColor: '#0F172A', marginRight: 8 }]}
-            labelStyle={styles.btnLabelSolid}
-            icon="view-dashboard-outline"
-            onPress={() => {
-              if (Platform.OS === 'web' && typeof window !== 'undefined') {
-                window.localStorage.setItem('ownerBypass', 'true');
-              }
-              router.push('/(owner)' as any);
-            }}
-          >
-            Admin Dashboard
-          </Button>
-
           {user ? (
             <>
               <Button 
@@ -374,21 +346,6 @@ export default function Index() {
               </View>
 
               <View style={styles.heroActionsRow}>
-                <Button 
-                  mode="contained" 
-                  style={[styles.heroBtnSolid, { backgroundColor: '#0F172A' }]} 
-                  contentStyle={{ paddingVertical: 6 }} 
-                  labelStyle={{ fontWeight: 'bold' }} 
-                  icon="shield-account"
-                  onPress={() => {
-                    if (Platform.OS === 'web' && typeof window !== 'undefined') {
-                      window.localStorage.setItem('ownerBypass', 'true');
-                    }
-                    router.push('/(owner)' as any);
-                  }}
-                >
-                  Admin Dashboard
-                </Button>
                 <Button 
                   mode="contained" 
                   style={styles.heroBtnSolid} 
@@ -1537,12 +1494,6 @@ export default function Index() {
 
             <View style={styles.footerCol}>
               <Text style={styles.footerColTitle}>Product</Text>
-              <TouchableOpacity onPress={() => {
-                if (Platform.OS === 'web' && typeof window !== 'undefined') window.localStorage.setItem('ownerBypass', 'true');
-                router.push('/(owner)' as any);
-              }}>
-                <Text style={[styles.footerLink, { color: '#16A34A', fontWeight: 'bold' }]}>Admin Dashboard</Text>
-              </TouchableOpacity>
               <TouchableOpacity onPress={() => router.push('/(owner)/pos_billing' as any)}>
                 <Text style={[styles.footerLink, { color: '#16A34A' }]}>POS Billing Terminal</Text>
               </TouchableOpacity>
