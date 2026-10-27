@@ -252,11 +252,39 @@ export default function Index() {
             <TouchableOpacity onPress={() => scrollToSection('pricing')}><Text style={styles.navLink}>Pricing</Text></TouchableOpacity>
             <TouchableOpacity onPress={() => scrollToSection('demo')}><Text style={styles.navLink}>Demo</Text></TouchableOpacity>
             <TouchableOpacity onPress={() => scrollToSection('faq')}><Text style={styles.navLink}>FAQ</Text></TouchableOpacity>
+            <TouchableOpacity 
+              onPress={() => {
+                if (Platform.OS === 'web' && typeof window !== 'undefined') {
+                  window.localStorage.setItem('ownerBypass', 'true');
+                }
+                router.push('/(owner)' as any);
+              }}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Icon name="shield-crown-outline" size={15} color="#16A34A" style={{ marginRight: 4 }} />
+                <Text style={[styles.navLink, { color: '#16A34A', fontWeight: '700' }]}>Admin Dashboard</Text>
+              </View>
+            </TouchableOpacity>
             <TouchableOpacity onPress={() => scrollToSection('contact')}><Text style={styles.navLink}>Contact</Text></TouchableOpacity>
           </View>
         )}
 
         <View style={styles.headerRight}>
+          <Button 
+            mode="contained" 
+            style={[styles.headerBtnSolid, { backgroundColor: '#0F172A', marginRight: 8 }]}
+            labelStyle={styles.btnLabelSolid}
+            icon="view-dashboard-outline"
+            onPress={() => {
+              if (Platform.OS === 'web' && typeof window !== 'undefined') {
+                window.localStorage.setItem('ownerBypass', 'true');
+              }
+              router.push('/(owner)' as any);
+            }}
+          >
+            Admin Dashboard
+          </Button>
+
           {user ? (
             <>
               <Button 
@@ -346,13 +374,52 @@ export default function Index() {
               </View>
 
               <View style={styles.heroActionsRow}>
-                <Button mode="contained" style={styles.heroBtnSolid} contentStyle={{ paddingVertical: 6 }} labelStyle={{ fontWeight: 'bold' }} onPress={() => router.push('/signup' as any)}>
+                <Button 
+                  mode="contained" 
+                  style={[styles.heroBtnSolid, { backgroundColor: '#0F172A' }]} 
+                  contentStyle={{ paddingVertical: 6 }} 
+                  labelStyle={{ fontWeight: 'bold' }} 
+                  icon="shield-account"
+                  onPress={() => {
+                    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+                      window.localStorage.setItem('ownerBypass', 'true');
+                    }
+                    router.push('/(owner)' as any);
+                  }}
+                >
+                  Admin Dashboard
+                </Button>
+                <Button 
+                  mode="contained" 
+                  style={styles.heroBtnSolid} 
+                  contentStyle={{ paddingVertical: 6 }} 
+                  labelStyle={{ fontWeight: 'bold' }} 
+                  onPress={() => router.push('/signup' as any)}
+                >
                   Start Free Trial
                 </Button>
-                <Button mode="outlined" style={styles.heroBtnOutline} contentStyle={{ paddingVertical: 6 }} labelStyle={{ fontWeight: 'bold', color: '#374151' }} onPress={() => setShowDemoModal(true)}>
-                  Book Live Demo
+                <Button 
+                  mode="outlined" 
+                  style={styles.heroBtnOutline} 
+                  contentStyle={{ paddingVertical: 6 }} 
+                  labelStyle={{ fontWeight: 'bold', color: '#16A34A' }} 
+                  icon="receipt"
+                  onPress={() => {
+                    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+                      window.localStorage.setItem('ownerBypass', 'true');
+                    }
+                    router.push('/(owner)/pos_billing' as any);
+                  }}
+                >
+                  POS Terminal
                 </Button>
-                <Button mode="text" style={styles.heroBtnText} icon="play-circle" labelStyle={{ color: '#374151', fontWeight: '600' }} onPress={() => setDemoVideoPlaying(true)}>
+                <Button 
+                  mode="text" 
+                  style={styles.heroBtnText} 
+                  icon="play-circle" 
+                  labelStyle={{ color: '#374151', fontWeight: '600' }} 
+                  onPress={() => setDemoVideoPlaying(true)}
+                >
                   Watch Demo
                 </Button>
               </View>
@@ -360,7 +427,16 @@ export default function Index() {
 
             {/* Right Mockup Panel */}
             <View style={[styles.heroRight, { width: screenWidth > 992 ? '50%' : '100%', marginTop: screenWidth > 992 ? 0 : 40 }]}>
-              <View style={styles.laptopFrame}>
+              <TouchableOpacity 
+                activeOpacity={0.92}
+                onPress={() => {
+                  if (Platform.OS === 'web' && typeof window !== 'undefined') {
+                    window.localStorage.setItem('ownerBypass', 'true');
+                  }
+                  router.push('/(owner)' as any);
+                }}
+                style={styles.laptopFrame}
+              >
                 {/* Mock Sidebar */}
                 <View style={styles.mockSidebar}>
                   <Icon name="store" size={18} color="#16A34A" style={{ marginBottom: 20 }} />
@@ -486,7 +562,7 @@ export default function Index() {
                     </View>
                   </View>
                 </View>
-              </View>
+              </TouchableOpacity>
             </View>
 
           </View>
@@ -1461,11 +1537,19 @@ export default function Index() {
 
             <View style={styles.footerCol}>
               <Text style={styles.footerColTitle}>Product</Text>
+              <TouchableOpacity onPress={() => {
+                if (Platform.OS === 'web' && typeof window !== 'undefined') window.localStorage.setItem('ownerBypass', 'true');
+                router.push('/(owner)' as any);
+              }}>
+                <Text style={[styles.footerLink, { color: '#16A34A', fontWeight: 'bold' }]}>Admin Dashboard</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => router.push('/(owner)/pos_billing' as any)}>
+                <Text style={[styles.footerLink, { color: '#16A34A' }]}>POS Billing Terminal</Text>
+              </TouchableOpacity>
               <Text style={styles.footerLink}>Features</Text>
               <Text style={styles.footerLink}>Pricing</Text>
               <Text style={styles.footerLink}>Demo Tour</Text>
               <Text style={styles.footerLink}>Mobile App</Text>
-              <Text style={styles.footerLink}>Desktop App</Text>
             </View>
 
             <View style={styles.footerCol}>

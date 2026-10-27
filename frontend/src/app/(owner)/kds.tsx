@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Alert } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Alert, Platform } from 'react-native';
 import { Text, Card, Button, Surface, Chip, Divider, IconButton, Badge } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
@@ -11,73 +11,26 @@ interface KOTOrder {
   waiter: string;
   orderType: 'Dine-In' | 'Takeaway' | 'Delivery';
   minutesAgo: number;
-  status: 'preparing' | 'ready' | 'served';
-  items: { name: string; qty: number; done: boolean; note?: string }[];
+  status: 'preparing' | 'ready';
+  items: {
+    name: string;
+    qty: number;
+    done: boolean;
+    note?: string;
+  }[];
 }
 
-const INITIAL_KOTS: KOTOrder[] = [
-  {
-    id: 'kot-1',
-    kotNo: 13,
-    table: 'AC 3',
-    section: 'AC Hall',
-    waiter: 'Sameer',
-    orderType: 'Dine-In',
-    minutesAgo: 8,
-    status: 'preparing',
-    items: [
-      { name: 'Chicken Biryani Special', qty: 2, done: true, note: 'Extra raita' },
-      { name: 'Mirchi Ka Salan', qty: 1, done: false },
-      { name: 'Butter Tandoori Naan', qty: 4, done: false },
-    ]
-  },
-  {
-    id: 'kot-2',
-    kotNo: 14,
-    table: 'D 2',
-    section: 'Main Dining',
-    waiter: 'Amit',
-    orderType: 'Dine-In',
-    minutesAgo: 14,
-    status: 'preparing',
-    items: [
-      { name: 'Dal Makhani Bukhara', qty: 1, done: false },
-      { name: 'Jeera Rice', qty: 1, done: true },
-      { name: 'Garlic Butter Naan', qty: 2, done: false },
-    ]
-  },
-  {
-    id: 'kot-3',
-    kotNo: 16,
-    table: 'Counter 2',
-    section: 'Takeaway',
-    waiter: 'Priya',
-    orderType: 'Takeaway',
-    minutesAgo: 4,
-    status: 'preparing',
-    items: [
-      { name: 'Paneer Tikka Roll', qty: 2, done: false, note: 'Parcel pack foil' },
-      { name: 'Masala Lemonade Soda', qty: 2, done: true },
-    ]
-  },
-  {
-    id: 'kot-4',
-    kotNo: 15,
-    table: 'G 2',
-    section: 'Garden Patio',
-    waiter: 'Sameer',
-    orderType: 'Dine-In',
-    minutesAgo: 18,
-    status: 'preparing',
-    items: [
-      { name: 'Crispy Chilli Corn', qty: 1, done: true },
-      { name: 'Cold Coffee with Ice Cream', qty: 2, done: true },
-    ]
-  },
-];
-
 export default function KitchenDisplayScreen() {
-  const [kots, setKots] = useState<KOTOrder[]>(INITIAL_KOTS);
+  const [kots, setKots] = useState<KOTOrder[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = window.localStorage.getItem('bharatpos_live_kots');
+        if (saved) return JSON.parse(saved);
+      } catch (_) {}
+    }
+    return [];
+  });
+
   const [filterType, setFilterType] = useState<string>('All');
 
   // Elapsed timer tick simulation
@@ -87,6 +40,15 @@ export default function KitchenDisplayScreen() {
     }, 60000);
     return () => clearInterval(timer);
   }, []);
+
+  // Save changes locally
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage.setItem('bharatpos_live_kots', JSON.stringify(kots));
+      } catch (_) {}
+    }
+  }, [kots]);
 
   const toggleItemDone = (kotId: string, itemIdx: number) => {
     setKots(prev => prev.map(kot => {
@@ -114,6 +76,24 @@ export default function KitchenDisplayScreen() {
     setKots(prev => prev.filter(k => k.id !== kotId));
   };
 
+  const handleLoadSampleKot = () => {
+    const sample: KOTOrder = {
+      id: `sample-${Date.now()}`,
+      kotNo: 101,
+      table: 'AC 1',
+      section: 'AC Hall',
+      waiter: 'Captain 1',
+      orderType: 'Dine-In',
+      minutesAgo: 2,
+      status: 'preparing',
+      items: [
+        { name: 'Chicken Biryani Special', qty: 2, done: false, note: 'Extra raita' },
+        { name: 'Butter Tandoori Naan', qty: 3, done: true },
+      ]
+    };
+    setKots(prev => [sample, ...prev]);
+  };
+
   const filteredKots = kots.filter(k => {
     if (filterType === 'All') return true;
     return k.orderType === filterType;
@@ -139,7 +119,7 @@ export default function KitchenDisplayScreen() {
           </View>
         </View>
 
-        <View style={{ flexDirection: 'row', gap: 8 }}>
+        <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
           {['All', 'Dine-In', 'Takeaway', 'Delivery'].map(t => (
             <Chip
               key={t}
@@ -151,109 +131,134 @@ export default function KitchenDisplayScreen() {
               {t}
             </Chip>
           ))}
+          {kots.length === 0 && (
+            <Button mode="text" compact onPress={handleLoadSampleKot} textColor="#7C3AED">
+              + Sample Ticket
+            </Button>
+          )}
         </View>
       </View>
 
       {/* 2. Live Tickets Board */}
       <ScrollView contentContainerStyle={styles.board} showsVerticalScrollIndicator={false}>
-        <View style={styles.cardsGrid}>
-          {filteredKots.map(kot => {
-            const timerStyle = getTimerColor(kot.minutesAgo);
-            const allDone = kot.items.every(i => i.done);
+        {filteredKots.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <View style={styles.emptyIconCircle}>
+              <Icon name="chef-hat" size={48} color="#94A3B8" />
+            </View>
+            <Text style={styles.emptyTitle}>Kitchen Queue is All Clear!</Text>
+            <Text style={styles.emptySubtitle}>
+              No active KOT tickets to prepare right now. When servers fire tickets from "Tables & KOT", they will appear here with live prep timers.
+            </Text>
+            <Button 
+              mode="contained" 
+              buttonColor="#7C3AED" 
+              style={{ marginTop: 16, borderRadius: 10 }}
+              onPress={handleLoadSampleKot}
+            >
+              Load Sample Test Ticket
+            </Button>
+          </View>
+        ) : (
+          <View style={styles.cardsGrid}>
+            {filteredKots.map(kot => {
+              const timerStyle = getTimerColor(kot.minutesAgo);
+              const allDone = kot.items.every(i => i.done);
 
-            return (
-              <Surface
-                key={kot.id}
-                style={[
-                  styles.ticketCard,
-                  kot.status === 'ready' && styles.ticketCardReady,
-                  kot.minutesAgo >= 15 && styles.ticketCardOverdue,
-                ]}
-                elevation={2}
-              >
-                {/* Ticket Top Header */}
-                <View style={styles.ticketHeader}>
-                  <View>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                      <Text style={styles.ticketTable}>Table: {kot.table}</Text>
-                      <Chip compact style={{ height: 20, backgroundColor: '#F1F5F9' }} textStyle={{ fontSize: 9 }}>
-                        {kot.orderType}
-                      </Chip>
+              return (
+                <Surface
+                  key={kot.id}
+                  style={[
+                    styles.ticketCard,
+                    kot.status === 'ready' && styles.ticketCardReady,
+                    kot.minutesAgo >= 15 && styles.ticketCardOverdue,
+                  ]}
+                  elevation={2}
+                >
+                  {/* Ticket Top Header */}
+                  <View style={styles.ticketHeader}>
+                    <View>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <Text style={styles.ticketTable}>Table: {kot.table}</Text>
+                        <Chip compact style={{ height: 20, backgroundColor: '#F1F5F9' }} textStyle={{ fontSize: 9 }}>
+                          {kot.orderType}
+                        </Chip>
+                      </View>
+                      <Text style={styles.ticketSub}>KOT #{kot.kotNo} • Server: {kot.waiter}</Text>
                     </View>
-                    <Text style={styles.ticketSub}>KOT #{kot.kotNo} • Waiter: {kot.waiter}</Text>
+
+                    <View style={[styles.timerBadge, { backgroundColor: timerStyle.bg, borderColor: timerStyle.border }]}>
+                      <Icon name="timer-outline" size={13} color={timerStyle.text} />
+                      <Text style={[styles.timerText, { color: timerStyle.text }]}>{kot.minutesAgo}m</Text>
+                    </View>
                   </View>
 
-                  <View style={[styles.timerBadge, { backgroundColor: timerStyle.bg, borderColor: timerStyle.border }]}>
-                    <Icon name="timer-outline" size={13} color={timerStyle.text} />
-                    <Text style={[styles.timerText, { color: timerStyle.text }]}>{kot.minutesAgo}m</Text>
-                  </View>
-                </View>
+                  <Divider style={{ marginVertical: 8 }} />
 
-                <Divider style={{ marginVertical: 8 }} />
-
-                {/* Items Checklist */}
-                <View style={styles.itemsList}>
-                  {kot.items.map((item, idx) => (
-                    <TouchableOpacity
-                      key={idx}
-                      style={[styles.itemRow, item.done && styles.itemRowDone]}
-                      onPress={() => toggleItemDone(kot.id, idx)}
-                      activeOpacity={0.7}
-                    >
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}>
-                        <View style={[styles.itemCheck, item.done && styles.itemCheckDone]}>
-                          {item.done && <Icon name="check" size={12} color="#FFFFFF" />}
-                        </View>
-                        <View style={{ flex: 1 }}>
-                          <Text style={[styles.itemName, item.done && styles.itemNameDone]}>
-                            {item.name}
-                          </Text>
-                          {item.note && (
-                            <Text style={{ fontSize: 10, color: '#DC2626', fontWeight: '600' }}>
-                              ⚠️ {item.note}
+                  {/* Items Checklist */}
+                  <View style={styles.itemsList}>
+                    {kot.items.map((item, idx) => (
+                      <TouchableOpacity
+                        key={idx}
+                        style={[styles.itemRow, item.done && styles.itemRowDone]}
+                        onPress={() => toggleItemDone(kot.id, idx)}
+                        activeOpacity={0.7}
+                      >
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}>
+                          <View style={[styles.itemCheck, item.done && styles.itemCheckDone]}>
+                            {item.done && <Icon name="check" size={12} color="#FFFFFF" />}
+                          </View>
+                          <View style={{ flex: 1 }}>
+                            <Text style={[styles.itemName, item.done && styles.itemNameDone]}>
+                              {item.name}
                             </Text>
-                          )}
+                            {item.note && (
+                              <Text style={{ fontSize: 10, color: '#DC2626', fontWeight: '600' }}>
+                                ⚠️ {item.note}
+                              </Text>
+                            )}
+                          </View>
                         </View>
-                      </View>
-                      <View style={styles.qtyBadge}>
-                        <Text style={styles.qtyText}>x{item.qty}</Text>
-                      </View>
-                    </TouchableOpacity>
-                  ))}
-                </View>
+                        <View style={styles.qtyBadge}>
+                          <Text style={styles.qtyText}>x{item.qty}</Text>
+                        </View>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
 
-                <Divider style={{ marginVertical: 10 }} />
+                  <Divider style={{ marginVertical: 10 }} />
 
-                {/* Bottom Action */}
-                <View style={styles.ticketFooter}>
-                  {allDone || kot.status === 'ready' ? (
-                    <Button
-                      mode="contained"
-                      buttonColor="#16A34A"
-                      icon="bell-ring"
-                      labelStyle={{ fontSize: 12, fontWeight: '700' }}
-                      style={{ flex: 1 }}
-                      onPress={() => dismissKot(kot.id)}
-                    >
-                      Served & Clear Ticket
-                    </Button>
-                  ) : (
-                    <Button
-                      mode="contained"
-                      buttonColor="#7C3AED"
-                      icon="check-all"
-                      labelStyle={{ fontSize: 12, fontWeight: '700' }}
-                      style={{ flex: 1 }}
-                      onPress={() => markKotReady(kot.id)}
-                    >
-                      Mark All Prepared
-                    </Button>
-                  )}
-                </View>
-              </Surface>
-            );
-          })}
-        </View>
+                  {/* Bottom Action */}
+                  <View style={styles.ticketFooter}>
+                    {allDone || kot.status === 'ready' ? (
+                      <Button
+                        mode="contained"
+                        buttonColor="#16A34A"
+                        icon="bell-ring"
+                        labelStyle={{ fontSize: 12, fontWeight: '700' }}
+                        style={{ flex: 1 }}
+                        onPress={() => dismissKot(kot.id)}
+                      >
+                        Served & Clear Ticket
+                      </Button>
+                    ) : (
+                      <Button
+                        mode="contained"
+                        buttonColor="#7C3AED"
+                        icon="check-all"
+                        labelStyle={{ fontSize: 12, fontWeight: '700' }}
+                        style={{ flex: 1 }}
+                        onPress={() => markKotReady(kot.id)}
+                      >
+                        Mark All Ready
+                      </Button>
+                    )}
+                  </View>
+                </Surface>
+              );
+            })}
+          </View>
+        )}
       </ScrollView>
     </View>
   );
@@ -262,37 +267,69 @@ export default function KitchenDisplayScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#0F172A',
     padding: 20,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
     flexWrap: 'wrap',
     gap: 12,
+    marginBottom: 20,
   },
   headerIcon: {
-    width: 42,
-    height: 42,
-    borderRadius: 10,
-    backgroundColor: '#EDE9FE',
-    justifyContent: 'center',
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: '#312E81',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '800',
-    color: '#0F172A',
-    fontFamily: 'Plus Jakarta Sans',
+    color: '#F8FAFC',
   },
   headerSubtitle: {
-    fontSize: 12,
-    color: '#64748B',
+    fontSize: 13,
+    color: '#94A3B8',
   },
   board: {
     paddingBottom: 40,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 80,
+    paddingHorizontal: 24,
+    backgroundColor: '#1E293B',
+    borderRadius: 16,
+    maxWidth: 600,
+    marginHorizontal: 'auto',
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  emptyIconCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#0F172A',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  emptyTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#F8FAFC',
+    marginBottom: 8,
+  },
+  emptySubtitle: {
+    fontSize: 13,
+    color: '#94A3B8',
+    textAlign: 'center',
+    lineHeight: 20,
   },
   cardsGrid: {
     flexDirection: 'row',
@@ -300,22 +337,19 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   ticketCard: {
-    width: 280,
+    width: 290,
     backgroundColor: '#FFFFFF',
     borderRadius: 14,
     padding: 14,
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: '#E2E8F0',
   },
   ticketCardReady: {
     borderColor: '#86EFAC',
-    borderLeftWidth: 4,
-    borderLeftColor: '#16A34A',
+    backgroundColor: '#F0FDF4',
   },
   ticketCardOverdue: {
     borderColor: '#FCA5A5',
-    borderLeftWidth: 4,
-    borderLeftColor: '#DC2626',
   },
   ticketHeader: {
     flexDirection: 'row',
@@ -323,8 +357,8 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   ticketTable: {
-    fontSize: 15,
-    fontWeight: '800',
+    fontSize: 16,
+    fontWeight: '900',
     color: '#0F172A',
   },
   ticketSub: {
@@ -337,8 +371,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 3,
     paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 12,
+    paddingVertical: 4,
+    borderRadius: 8,
     borderWidth: 1,
   },
   timerText: {
@@ -347,16 +381,21 @@ const styles = StyleSheet.create({
   },
   itemsList: {
     gap: 8,
-    minHeight: 120,
   },
   itemRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 4,
+    justifyContent: 'space-between',
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   itemRowDone: {
-    opacity: 0.5,
+    backgroundColor: '#DCFCE7',
+    borderColor: '#BBF7D0',
   },
   itemCheck: {
     width: 18,
@@ -364,8 +403,8 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     borderWidth: 1.5,
     borderColor: '#94A3B8',
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   itemCheckDone: {
     backgroundColor: '#16A34A',
@@ -374,25 +413,25 @@ const styles = StyleSheet.create({
   itemName: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#0F172A',
+    color: '#1E293B',
   },
   itemNameDone: {
     textDecorationLine: 'line-through',
-    color: '#94A3B8',
+    color: '#64748B',
   },
   qtyBadge: {
-    backgroundColor: '#F1F5F9',
+    backgroundColor: '#E2E8F0',
     paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: 6,
+    borderRadius: 4,
   },
   qtyText: {
     fontSize: 12,
     fontWeight: '800',
-    color: '#334155',
+    color: '#0F172A',
   },
   ticketFooter: {
     flexDirection: 'row',
-    gap: 6,
+    gap: 8,
   },
 });

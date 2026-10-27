@@ -29,6 +29,19 @@ const FadeIn = ({ delay = 0, style, children }: { delay?: number; style?: any; c
   return <Animated.View style={[{ opacity }, style]}>{children}</Animated.View>;
 };
 
+const DEFAULT_STORE_PRODUCTS = [
+  { id: 'p1', name: 'Amul Taaza Milk 500ml', price: 28, mrp: 28, barcode: '8901262010053', category: 'Dairy', gst_pct: 0, stock_qty: 48 },
+  { id: 'p2', name: 'Aashirvaad Shudh Chakki Atta 5kg', price: 235, mrp: 250, barcode: '8901030383709', category: 'Staples', gst_pct: 0, stock_qty: 25 },
+  { id: 'p3', name: 'Madhur Pure Sugar 1kg', price: 48, mrp: 52, barcode: '8906007280016', category: 'Staples', gst_pct: 5, stock_qty: 60 },
+  { id: 'p4', name: 'Fortune Sunlite Sunflower Oil 1L', price: 145, mrp: 165, barcode: '8906007281013', category: 'Oils', gst_pct: 5, stock_qty: 30 },
+  { id: 'p5', name: 'Tata Tea Premium 250g', price: 130, mrp: 140, barcode: '8901052002011', category: 'Beverages', gst_pct: 5, stock_qty: 40 },
+  { id: 'p6', name: 'Maggi 2-Minute Masala Noodles 70g', price: 14, mrp: 14, barcode: '8901058852276', category: 'Snacks', gst_pct: 12, stock_qty: 120 },
+  { id: 'p7', name: 'Tata Salt Vacuum Evaporated 1kg', price: 28, mrp: 28, barcode: '8901052000017', category: 'Staples', gst_pct: 0, stock_qty: 85 },
+  { id: 'p8', name: 'Surf Excel Quick Wash Detergent 1kg', price: 140, mrp: 155, barcode: '8901030704405', category: 'Cleaning', gst_pct: 18, stock_qty: 35 },
+  { id: 'p9', name: 'Dettol Original Soap 75g (Buy 3 Get 1)', price: 125, mrp: 140, barcode: '8901396112203', category: 'Personal Care', gst_pct: 18, stock_qty: 50 },
+  { id: 'p10', name: 'Britannia Good Day Butter Cookies 100g', price: 30, mrp: 30, barcode: '8901063012016', category: 'Snacks', gst_pct: 12, stock_qty: 90 },
+];
+
 // ── Main POS Billing Screen ────────────────────────────────────────────
 export default function POSBillingScreen() {
   const { isDarkMode, toggleTheme } = useAppTheme();
@@ -44,10 +57,13 @@ export default function POSBillingScreen() {
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
       try {
         const cached = window.localStorage.getItem('cachedProductsList');
-        if (cached) return JSON.parse(cached);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
       } catch (_) {}
     }
-    return [];
+    return DEFAULT_STORE_PRODUCTS;
   });
   // Weighing Scale Calculator States
   const [weighProduct, setWeighProduct] = useState<any>(null);
@@ -217,6 +233,7 @@ export default function POSBillingScreen() {
   const [payMethod, setPayMethod] = useState('UPI'); // 'Cash' | 'UPI' | 'Card'
   const [showReceipt, setShowReceipt] = useState(false);
   const [activeBillNo, setActiveBillNo] = useState('');
+  const [lastCompletedBill, setLastCompletedBill] = useState<any>(null);
 
   useEffect(() => {
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
@@ -481,11 +498,60 @@ export default function POSBillingScreen() {
       }
     }
 
+    // Create complete invoice object
+    const finalBillNo = activeBillNo || ('INV-' + Date.now().toString().slice(-6));
+    const invoicePayload = {
+      billNo: finalBillNo,
+      tenantId: tenantId || 'default',
+      storeName: storeName || 'BharatPOS',
+      storeAddress: storeAddress || '',
+      gstNum: gstNum || '',
+      isGst: isGstRegistered,
+      date: dateStr,
+      time: timeStr,
+      payMethod: payMethod,
+      custName: custName || 'Walk-in Customer',
+      custPhone: custPhone || '',
+      custGstin: custGstin || '',
+      items: cart.map(item => ({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        qty: item.qty,
+        gst_pct: item.gst_pct || 0,
+        hsn: (item as any).hsn || ''
+      })),
+      subtotal: subtotal,
+      discount: discount,
+      gstAmount: gstBreakdown.totalGst,
+      finalTotal: finalTotal,
+      createdAt: dateObj.toISOString()
+    };
+
+    setLastCompletedBill(invoicePayload);
+
+    // Save in LocalStorage for instant access by /invoice page & local thermal receipts
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      try {
+        const storedInvoices = JSON.parse(window.localStorage.getItem('bharatpos_invoices') || '{}');
+        storedInvoices[finalBillNo] = invoicePayload;
+        window.localStorage.setItem('bharatpos_invoices', JSON.stringify(storedInvoices));
+        window.localStorage.setItem('bharatpos_last_bill', JSON.stringify(invoicePayload));
+      } catch (e) {
+        console.warn('LocalStorage invoice write error:', e);
+      }
+    }
+
+    // Save to Cloud Invoices
+    if (isFirebaseConfigured) {
+      saveInvoiceToCloud(invoicePayload);
+    }
+
     setShowCheckout(false);
     if (sendInvoice) {
       setShowReceipt(true);
     } else {
-      Alert.alert('Payment Successful', `Sale completed successfully.\nBill No: ${activeBillNo}`);
+      Alert.alert('Payment Successful', `Sale completed successfully.\nBill No: ${finalBillNo}`);
       clearCart();
       setCustName('');
       setCustPhone('');
@@ -1208,9 +1274,43 @@ export default function POSBillingScreen() {
 
               {cart.length === 0 && (
                 <View style={styles.emptyCartContainer}>
-                  <Icon name="cart-off" size={56} color="#D0D0D0" />
-                  <Text style={styles.emptyCartTitle}>Cart is empty</Text>
-                  <Text style={styles.emptyCartSubtitle}>Scan a barcode or search products to begin billing</Text>
+                  <Icon name="cart-outline" size={48} color="#94A3B8" />
+                  <Text style={styles.emptyCartTitle}>Billing Cart is Ready</Text>
+                  <Text style={styles.emptyCartSubtitle}>Scan barcode gun or tap fast-selling items below to add instantly:</Text>
+
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 14, justifyContent: 'center', maxWidth: 540 }}>
+                    {products.slice(0, 6).map((item: any) => (
+                      <TouchableOpacity
+                        key={item.id}
+                        onPress={() => addToCart({
+                          id: item.id,
+                          name: item.name,
+                          price: item.price,
+                          mrp: item.mrp || item.price,
+                          qty: 1,
+                          gst_pct: item.gst_pct || 0,
+                          barcode: item.barcode,
+                        })}
+                        style={{
+                          backgroundColor: '#F8FAFC',
+                          borderWidth: 1,
+                          borderColor: '#E2E8F0',
+                          borderRadius: 8,
+                          paddingVertical: 8,
+                          paddingHorizontal: 12,
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          gap: 6
+                        }}
+                      >
+                        <Icon name="plus-circle" size={16} color="#16A34A" />
+                        <View>
+                          <Text style={{ fontSize: 12, fontWeight: '700', color: '#0F172A' }}>{item.name}</Text>
+                          <Text style={{ fontSize: 11, color: '#16A34A', fontWeight: '800' }}>₹{item.price}</Text>
+                        </View>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
                 </View>
               )}
             </ScrollView>
@@ -1552,26 +1652,26 @@ export default function POSBillingScreen() {
             {/* Live Bill Receipt Preview */}
             <ScrollView style={styles.receiptPreview} showsVerticalScrollIndicator={false}>
               <View style={styles.receiptHeader}>
-                <Text style={styles.receiptStoreName}>{storeName}</Text>
-                <Text style={styles.receiptStoreMeta}>GSTIN: {isGstRegistered ? gstNum : 'None'}</Text>
-                <Text style={styles.receiptStoreMeta}>Date: {new Date().toLocaleDateString('en-IN')}</Text>
-                <Text style={styles.receiptStoreMeta}>Bill No: {activeBillNo}</Text>
-                <Text style={styles.receiptStoreMeta}>Payment: {payMethod}</Text>
+                <Text style={styles.receiptStoreName}>{lastCompletedBill?.storeName || storeName}</Text>
+                <Text style={styles.receiptStoreMeta}>GSTIN: {(lastCompletedBill ? lastCompletedBill.isGst : isGstRegistered) ? (lastCompletedBill?.gstNum || gstNum) : 'None'}</Text>
+                <Text style={styles.receiptStoreMeta}>Date: {lastCompletedBill?.date || new Date().toLocaleDateString('en-IN')}</Text>
+                <Text style={styles.receiptStoreMeta}>Bill No: {lastCompletedBill?.billNo || activeBillNo}</Text>
+                <Text style={styles.receiptStoreMeta}>Payment: {lastCompletedBill?.payMethod || payMethod}</Text>
               </View>
 
-              {custPhone ? (
+              {(lastCompletedBill?.custPhone || custPhone) ? (
                 <View style={styles.receiptCustomerBox}>
-                  <Text style={styles.receiptCustomerText}>Billed To: {custName || 'Walk-in Customer'}</Text>
-                  <Text style={styles.receiptCustomerText}>Phone: +91 {custPhone}</Text>
+                  <Text style={styles.receiptCustomerText}>Billed To: {lastCompletedBill?.custName || custName || 'Walk-in Customer'}</Text>
+                  <Text style={styles.receiptCustomerText}>Phone: +91 {lastCompletedBill?.custPhone || custPhone}</Text>
                 </View>
               ) : null}
 
               <Divider style={{ marginVertical: 10, backgroundColor: appTheme.colors.surface }} />
 
-              {cart.map((item) => (
+              {(lastCompletedBill?.items || cart).map((item: any) => (
                 <View key={item.id} style={styles.receiptItemRow}>
                   <Text style={styles.receiptItemName} numberOfLines={1}>{item.name} x{item.qty}</Text>
-                  <Text style={styles.receiptItemTotal}>₹{(item.price * item.qty).toFixed(0)}</Text>
+                  <Text style={styles.receiptItemTotal}>₹{(Number(item.price) * Number(item.qty)).toFixed(0)}</Text>
                 </View>
               ))}
 
@@ -1579,25 +1679,25 @@ export default function POSBillingScreen() {
 
               <View style={styles.receiptRow}>
                 <Text style={styles.receiptLabel}>Subtotal</Text>
-                <Text style={styles.receiptValue}>₹{subtotal.toFixed(2)}</Text>
+                <Text style={styles.receiptValue}>₹{Number(lastCompletedBill?.subtotal ?? subtotal).toFixed(2)}</Text>
               </View>
-              {isGstRegistered && (
+              {(lastCompletedBill ? lastCompletedBill.isGst : isGstRegistered) && (
                 <View style={styles.receiptRow}>
                   <Text style={styles.receiptLabel}>GST Tax</Text>
-                  <Text style={styles.receiptValue}>₹{gstBreakdown.totalGst.toFixed(2)}</Text>
+                  <Text style={styles.receiptValue}>₹{Number(lastCompletedBill?.gstAmount ?? gstBreakdown.totalGst).toFixed(2)}</Text>
                 </View>
               )}
               <View style={styles.receiptRow}>
                 <Text style={[styles.receiptLabel, { fontWeight: 'bold' }]}>Grand Total</Text>
-                <Text style={[styles.receiptValue, { fontWeight: 'bold', fontSize: 16 }]}>₹{finalTotal.toFixed(2)}</Text>
+                <Text style={[styles.receiptValue, { fontWeight: 'bold', fontSize: 16 }]}>₹{Number(lastCompletedBill?.finalTotal ?? finalTotal).toFixed(2)}</Text>
               </View>
 
               <View style={styles.receiptFooter}>
                 <Text style={styles.receiptFooterText}>Thank you for shopping!</Text>
-                {custPhone ? (
+                {(lastCompletedBill?.custPhone || custPhone) ? (
                   <View style={styles.smsAlertBox}>
                     <Icon name="whatsapp" size={14} color="#2E7D32" />
-                    <Text style={[styles.smsAlertText, { color: '#2E7D32' }]}>WhatsApp invoice ready for +91 {custPhone}</Text>
+                    <Text style={[styles.smsAlertText, { color: '#2E7D32' }]}>WhatsApp invoice ready for +91 {lastCompletedBill?.custPhone || custPhone}</Text>
                   </View>
                 ) : null}
               </View>
@@ -1607,8 +1707,8 @@ export default function POSBillingScreen() {
             <View style={{ backgroundColor: appTheme.colors.surface, padding: 12, borderRadius: 10, borderLeftWidth: 4, borderLeftColor: '#10B981', marginVertical: 8 }}>
               <Text style={{ fontSize: 10, fontWeight: 'bold', color: appTheme.colors.onSurface, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>Digital Invoice Ready</Text>
               <Text style={{ fontSize: 12, color: appTheme.colors.onSurface, lineHeight: 17, fontStyle: 'italic' }}>
-                "Thank you for shopping at {storeName}.{"\n"}
-                Bill No: {activeBillNo} · Grand Total: ₹{finalTotal.toFixed(2)}"
+                "Thank you for shopping at {lastCompletedBill?.storeName || storeName}.{"\n"}
+                Bill No: {lastCompletedBill?.billNo || activeBillNo} · Grand Total: ₹{Number(lastCompletedBill?.finalTotal ?? finalTotal).toFixed(2)}"
               </Text>
             </View>
 

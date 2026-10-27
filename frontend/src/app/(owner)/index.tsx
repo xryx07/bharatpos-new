@@ -165,17 +165,55 @@ export default function AdminDashboard() {
   const [isGstRegistered, setIsGstRegistered] = useState(true);
   const [showAssistantModal, setShowAssistantModal] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
-  const [liveTableStats, setLiveTableStats] = useState({ occupied: 4, total: 12, openAmount: 3840 });
-  const [liveKdsStats, setLiveKdsStats] = useState({ pendingKots: 3, avgPrepMins: 9 });
-  const [liveStaffStats, setLiveStaffStats] = useState({ clockedIn: 4, total: 5 });
-  const [liveTaskStats, setLiveTaskStats] = useState({ completed: 5, total: 6 });
-
-  const [loading, setLoading] = useState(() => {
+  const [posBusinessMode, setPosBusinessMode] = useState<'retail' | 'wholesale' | 'restaurant' | 'hybrid'>(() => {
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
-      return !window.localStorage.getItem('cachedTodaySales');
+      const saved = window.localStorage.getItem('posBusinessMode') as any;
+      if (saved) return saved;
     }
-    return true;
+    return 'retail';
   });
+
+  const [liveTableStats, setLiveTableStats] = useState(() => {
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      try {
+        const saved = window.localStorage.getItem('bharatpos_tables_data');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          const occupied = parsed.filter((t: any) => t.status && t.status !== 'vacant').length;
+          const openAmount = parsed.reduce((acc: number, t: any) => acc + (t.total || 0), 0);
+          return { occupied, total: parsed.length || 12, openAmount };
+        }
+      } catch (_) {}
+    }
+    return { occupied: 0, total: 12, openAmount: 0 };
+  });
+
+  const [liveKdsStats, setLiveKdsStats] = useState(() => {
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      try {
+        const saved = window.localStorage.getItem('bharatpos_live_kots');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          const pendingKots = parsed.filter((k: any) => k.status !== 'ready').length;
+          return { pendingKots, avgPrepMins: pendingKots > 0 ? 8 : 0 };
+        }
+      } catch (_) {}
+    }
+    return { pendingKots: 0, avgPrepMins: 0 };
+  });
+
+  const [liveStaffStats, setLiveStaffStats] = useState({ clockedIn: 1, total: 1 });
+  const [liveTaskStats, setLiveTaskStats] = useState({ completed: 0, total: 0 });
+
+  const handleSwitchBusinessMode = (mode: 'retail' | 'restaurant' | 'hybrid') => {
+    setPosBusinessMode(mode);
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      window.localStorage.setItem('posBusinessMode', mode);
+      window.dispatchEvent(new Event('posBusinessModeChanged'));
+    }
+  };
+
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -604,6 +642,13 @@ export default function AdminDashboard() {
                   AI Copilot 🎙️
                 </Text>
               </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.greetingBadge, { backgroundColor: '#F0FDF4', borderColor: '#BBF7D0' }]}
+                onPress={() => router.push('/')}
+              >
+                <Icon name="home" size={16} color="#16A34A" />
+                <Text style={[styles.greetingBadgeText, { color: '#16A34A', fontWeight: 'bold' }]}>Back to Homepage</Text>
+              </TouchableOpacity>
               <View style={styles.greetingBadge}>
                 <Icon name="store" size={16} color="#10B981" />
                 <Text style={styles.greetingBadgeText}>Main Branch</Text>
@@ -646,104 +691,450 @@ export default function AdminDashboard() {
           </TouchableOpacity>
         </FadeInSection>
  
-        {/* ── Petpooja Live Operations Radar Strip ────────────────── */}
+        {/* ── Store Mode Identity Banner (Tailored to Shop Persona) ── */}
+        <FadeInSection delay={60}>
+          <View style={styles.businessModeBanner}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1, flexWrap: 'wrap' }}>
+              <View style={[styles.modeIndicatorPill, { 
+                backgroundColor: posBusinessMode === 'retail' 
+                  ? '#DCFCE7' 
+                  : posBusinessMode === 'wholesale' 
+                  ? '#DBEAFE' 
+                  : posBusinessMode === 'restaurant' 
+                  ? '#F3E8FF' 
+                  : '#E2E8F0' 
+              }]}>
+                <Icon 
+                  name={
+                    posBusinessMode === 'retail' 
+                      ? 'barcode-scan' 
+                      : posBusinessMode === 'wholesale' 
+                      ? 'warehouse' 
+                      : posBusinessMode === 'restaurant' 
+                      ? 'silverware-fork-knife' 
+                      : 'lightning-bolt'
+                  } 
+                  size={16} 
+                  color={
+                    posBusinessMode === 'retail' 
+                      ? '#16A34A' 
+                      : posBusinessMode === 'wholesale' 
+                      ? '#2563EB' 
+                      : posBusinessMode === 'restaurant' 
+                      ? '#7C3AED' 
+                      : '#0F172A'
+                  } 
+                />
+                <Text style={{ 
+                  fontSize: 12.5, 
+                  fontWeight: '700', 
+                  color: posBusinessMode === 'retail' 
+                    ? '#166534' 
+                    : posBusinessMode === 'wholesale' 
+                    ? '#1E40AF' 
+                    : posBusinessMode === 'restaurant' 
+                    ? '#6D28D9' 
+                    : '#0F172A' 
+                }}>
+                  {posBusinessMode === 'retail' 
+                    ? '🛒 Active Mode: Retail POS (Zoho Style)' 
+                    : posBusinessMode === 'wholesale' 
+                    ? '🏢 Active Mode: Wholesale & Distribution ERP' 
+                    : posBusinessMode === 'restaurant' 
+                    ? '🍽️ Active Mode: Restaurant & Cafe (Petpooja Style)' 
+                    : '⚡ Active Mode: Enterprise Multi-Mode'}
+                </Text>
+              </View>
+              <Text style={{ fontSize: 12, color: '#64748B' }}>
+                {posBusinessMode === 'retail' 
+                  ? 'Showing retail counter checkout, barcode catalog & GST invoices.' 
+                  : posBusinessMode === 'wholesale' 
+                  ? 'Showing B2B sales orders, customer credit limits, supplier POs & godowns.' 
+                  : posBusinessMode === 'restaurant' 
+                  ? 'Showing dining table floor, kitchen KDS queue & food menu.' 
+                  : 'Showing unified retail, wholesale and restaurant tools.'}
+              </Text>
+            </View>
+            <TouchableOpacity 
+              style={styles.switchModeLink}
+              onPress={() => router.push('/(owner)/settings' as any)}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.switchModeLinkText}>Change in Settings ⚙️</Text>
+            </TouchableOpacity>
+          </View>
+        </FadeInSection>
+
+        {/* ── Dynamic Live Operations Radar Strip ────────────────── */}
         <FadeInSection delay={75}>
           <View style={styles.liveOpsContainer}>
             <View style={styles.liveOpsHeader}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                 <View style={styles.livePulseDot} />
-                <Text style={styles.liveOpsHeading}>STORE LIVE OPERATIONS RADAR</Text>
+                <Text style={styles.liveOpsHeading}>
+                  {posBusinessMode === 'retail' 
+                    ? 'RETAIL COUNTER & STOCK RADAR' 
+                    : posBusinessMode === 'wholesale' 
+                    ? 'WHOLESALE B2B & PROCUREMENT RADAR' 
+                    : posBusinessMode === 'restaurant' 
+                    ? 'RESTAURANT & KITCHEN RADAR' 
+                    : 'ENTERPRISE UNIFIED RADAR'}
+                </Text>
                 <View style={styles.liveTagPill}>
                   <Text style={styles.liveTagText}>REAL-TIME</Text>
                 </View>
               </View>
-              <Text style={styles.liveOpsSubtitle}>Unified synchronization across counters, kitchen & staff</Text>
+              <Text style={styles.liveOpsSubtitle}>
+                {posBusinessMode === 'retail' 
+                  ? 'High-speed counter checkout, catalog SKUs & inventory refills' 
+                  : posBusinessMode === 'wholesale' 
+                  ? 'B2B orders fulfillment, customer credit khata & supplier goods receipt' 
+                  : posBusinessMode === 'restaurant' 
+                  ? 'Live table floor occupancy, chef prep queue & steward shifts' 
+                  : 'Unified synchronization across barcode billing, wholesale orders & dining'}
+              </Text>
             </View>
 
             <View style={styles.liveOpsGrid}>
-              {/* Tables & KOT */}
-              <TouchableOpacity
-                style={styles.liveOpsCard}
-                onPress={() => router.push('/(owner)/tables_kot' as any)}
-                activeOpacity={0.8}
-              >
-                <View style={styles.liveOpsCardTop}>
-                  <View style={[styles.liveOpsIconBox, { backgroundColor: '#FEE2E2' }]}>
-                    <Icon name="silverware-fork-knife" size={20} color="#DC2626" />
-                  </View>
-                  <View style={[styles.microBadge, { backgroundColor: '#FEE2E2' }]}>
-                    <Text style={[styles.microBadgeText, { color: '#DC2626' }]}>DINE-IN</Text>
-                  </View>
-                </View>
-                <Text style={styles.liveOpsVal}>{liveTableStats.occupied} / {liveTableStats.total}</Text>
-                <Text style={styles.liveOpsLabel}>Tables Occupied</Text>
-                <View style={styles.liveOpsFoot}>
-                  <Text style={styles.liveOpsFootText}>₹{liveTableStats.openAmount.toLocaleString('en-IN')} active KOTs →</Text>
-                </View>
-              </TouchableOpacity>
+              {/* RETAIL MODE CARDS */}
+              {posBusinessMode === 'retail' && (
+                <>
+                  <TouchableOpacity
+                    style={styles.liveOpsCard}
+                    onPress={() => router.push('/(owner)/pos_billing' as any)}
+                    activeOpacity={0.8}
+                  >
+                    <View style={styles.liveOpsCardTop}>
+                      <View style={[styles.liveOpsIconBox, { backgroundColor: '#DCFCE7' }]}>
+                        <Icon name="barcode-scan" size={20} color="#16A34A" />
+                      </View>
+                      <View style={[styles.microBadge, { backgroundColor: '#DCFCE7' }]}>
+                        <Text style={[styles.microBadgeText, { color: '#16A34A' }]}>BILLING POS</Text>
+                      </View>
+                    </View>
+                    <Text style={styles.liveOpsVal}>₹{todaySales.toLocaleString('en-IN')}</Text>
+                    <Text style={styles.liveOpsLabel}>Today's Sales</Text>
+                    <View style={styles.liveOpsFoot}>
+                      <Text style={styles.liveOpsFootText}>{totalOrders} bills processed today →</Text>
+                    </View>
+                  </TouchableOpacity>
 
-              {/* Kitchen KDS */}
-              <TouchableOpacity
-                style={styles.liveOpsCard}
-                onPress={() => router.push('/(owner)/kds' as any)}
-                activeOpacity={0.8}
-              >
-                <View style={styles.liveOpsCardTop}>
-                  <View style={[styles.liveOpsIconBox, { backgroundColor: '#FEF3C7' }]}>
-                    <Icon name="chef-hat" size={20} color="#D97706" />
-                  </View>
-                  <View style={[styles.microBadge, { backgroundColor: '#FEF3C7' }]}>
-                    <Text style={[styles.microBadgeText, { color: '#D97706' }]}>KDS LIVE</Text>
-                  </View>
-                </View>
-                <Text style={styles.liveOpsVal}>{liveKdsStats.pendingKots} Tickets</Text>
-                <Text style={styles.liveOpsLabel}>Kitchen Queue</Text>
-                <View style={styles.liveOpsFoot}>
-                  <Text style={styles.liveOpsFootText}>~{liveKdsStats.avgPrepMins} min avg prep time →</Text>
-                </View>
-              </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.liveOpsCard}
+                    onPress={() => router.push('/(owner)/products_management' as any)}
+                    activeOpacity={0.8}
+                  >
+                    <View style={styles.liveOpsCardTop}>
+                      <View style={[styles.liveOpsIconBox, { backgroundColor: '#E0F2FE' }]}>
+                        <Icon name="package-variant-closed" size={20} color="#0284C7" />
+                      </View>
+                      <View style={[styles.microBadge, { backgroundColor: '#E0F2FE' }]}>
+                        <Text style={[styles.microBadgeText, { color: '#0284C7' }]}>CATALOG</Text>
+                      </View>
+                    </View>
+                    <Text style={styles.liveOpsVal}>{products.length} SKUs</Text>
+                    <Text style={styles.liveOpsLabel}>Products Listed</Text>
+                    <View style={styles.liveOpsFoot}>
+                      <Text style={styles.liveOpsFootText}>Manage barcodes & MRP →</Text>
+                    </View>
+                  </TouchableOpacity>
 
-              {/* Attendo Staff */}
-              <TouchableOpacity
-                style={styles.liveOpsCard}
-                onPress={() => router.push('/(owner)/attendance' as any)}
-                activeOpacity={0.8}
-              >
-                <View style={styles.liveOpsCardTop}>
-                  <View style={[styles.liveOpsIconBox, { backgroundColor: '#EEF2FF' }]}>
-                    <Icon name="badge-account-horizontal-outline" size={20} color="#4F46E5" />
-                  </View>
-                  <View style={[styles.microBadge, { backgroundColor: '#EEF2FF' }]}>
-                    <Text style={[styles.microBadgeText, { color: '#4F46E5' }]}>ATTENDO</Text>
-                  </View>
-                </View>
-                <Text style={styles.liveOpsVal}>{liveStaffStats.clockedIn} / {liveStaffStats.total}</Text>
-                <Text style={styles.liveOpsLabel}>Staff On-Duty</Text>
-                <View style={styles.liveOpsFoot}>
-                  <Text style={styles.liveOpsFootText}>Biometric shift active →</Text>
-                </View>
-              </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.liveOpsCard}
+                    onPress={() => router.push('/(owner)/reorder_list' as any)}
+                    activeOpacity={0.8}
+                  >
+                    <View style={[styles.liveOpsCardTop]}>
+                      <View style={[styles.liveOpsIconBox, { backgroundColor: lowStockAlertCount > 0 ? '#FEE2E2' : '#DCFCE7' }]}>
+                        <Icon name="alert-outline" size={20} color={lowStockAlertCount > 0 ? '#DC2626' : '#16A34A'} />
+                      </View>
+                      <View style={[styles.microBadge, { backgroundColor: lowStockAlertCount > 0 ? '#FEE2E2' : '#DCFCE7' }]}>
+                        <Text style={[styles.microBadgeText, { color: lowStockAlertCount > 0 ? '#DC2626' : '#16A34A' }]}>STOCK</Text>
+                      </View>
+                    </View>
+                    <Text style={styles.liveOpsVal}>{lowStockAlertCount} Items</Text>
+                    <Text style={styles.liveOpsLabel}>Need Reorder</Text>
+                    <View style={styles.liveOpsFoot}>
+                      <Text style={styles.liveOpsFootText}>{lowStockAlertCount > 0 ? 'Refill inventory now →' : 'All items in healthy stock →'}</Text>
+                    </View>
+                  </TouchableOpacity>
 
-              {/* Store SOP Tasks */}
-              <TouchableOpacity
-                style={styles.liveOpsCard}
-                onPress={() => router.push('/(owner)/tasks' as any)}
-                activeOpacity={0.8}
-              >
-                <View style={styles.liveOpsCardTop}>
-                  <View style={[styles.liveOpsIconBox, { backgroundColor: '#E0F2FE' }]}>
-                    <Icon name="clipboard-check-outline" size={20} color="#0284C7" />
-                  </View>
-                  <View style={[styles.microBadge, { backgroundColor: '#E0F2FE' }]}>
-                    <Text style={[styles.microBadgeText, { color: '#0284C7' }]}>STORE SOP</Text>
-                  </View>
-                </View>
-                <Text style={styles.liveOpsVal}>{liveTaskStats.completed} / {liveTaskStats.total}</Text>
-                <Text style={styles.liveOpsLabel}>Checklist Done</Text>
-                <View style={styles.liveOpsFoot}>
-                  <Text style={styles.liveOpsFootText}>{Math.round((liveTaskStats.completed / (liveTaskStats.total || 1)) * 100)}% shift compliance →</Text>
-                </View>
-              </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.liveOpsCard}
+                    onPress={() => router.push('/(owner)/attendance' as any)}
+                    activeOpacity={0.8}
+                  >
+                    <View style={styles.liveOpsCardTop}>
+                      <View style={[styles.liveOpsIconBox, { backgroundColor: '#EEF2FF' }]}>
+                        <Icon name="badge-account-horizontal-outline" size={20} color="#4F46E5" />
+                      </View>
+                      <View style={[styles.microBadge, { backgroundColor: '#EEF2FF' }]}>
+                        <Text style={[styles.microBadgeText, { color: '#4F46E5' }]}>CASHIER</Text>
+                      </View>
+                    </View>
+                    <Text style={styles.liveOpsVal}>{liveStaffStats.clockedIn} Active</Text>
+                    <Text style={styles.liveOpsLabel}>Staff On Counter</Text>
+                    <View style={styles.liveOpsFoot}>
+                      <Text style={styles.liveOpsFootText}>Biometric attendance active →</Text>
+                    </View>
+                  </TouchableOpacity>
+                </>
+              )}
+
+              {/* WHOLESALE MODE CARDS */}
+              {posBusinessMode === 'wholesale' && (
+                <>
+                  <TouchableOpacity
+                    style={styles.liveOpsCard}
+                    onPress={() => router.push('/(owner)/wholesale' as any)}
+                    activeOpacity={0.8}
+                  >
+                    <View style={styles.liveOpsCardTop}>
+                      <View style={[styles.liveOpsIconBox, { backgroundColor: '#DBEAFE' }]}>
+                        <Icon name="warehouse" size={20} color="#2563EB" />
+                      </View>
+                      <View style={[styles.microBadge, { backgroundColor: '#DBEAFE' }]}>
+                        <Text style={[styles.microBadgeText, { color: '#2563EB' }]}>B2B ORDERS</Text>
+                      </View>
+                    </View>
+                    <Text style={styles.liveOpsVal}>Wholesale ERP</Text>
+                    <Text style={styles.liveOpsLabel}>Sales Orders & MOQs</Text>
+                    <View style={styles.liveOpsFoot}>
+                      <Text style={styles.liveOpsFootText}>Manage bulk B2B orders →</Text>
+                    </View>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.liveOpsCard}
+                    onPress={() => router.push('/(owner)/wholesale' as any)}
+                    activeOpacity={0.8}
+                  >
+                    <View style={styles.liveOpsCardTop}>
+                      <View style={[styles.liveOpsIconBox, { backgroundColor: '#FEE2E2' }]}>
+                        <Icon name="account-cash-outline" size={20} color="#DC2626" />
+                      </View>
+                      <View style={[styles.microBadge, { backgroundColor: '#FEE2E2' }]}>
+                        <Text style={[styles.microBadgeText, { color: '#DC2626' }]}>CREDIT KHATA</Text>
+                      </View>
+                    </View>
+                    <Text style={styles.liveOpsVal}>Customer Udhar</Text>
+                    <Text style={styles.liveOpsLabel}>Receivables & Terms</Text>
+                    <View style={styles.liveOpsFoot}>
+                      <Text style={styles.liveOpsFootText}>Track credit & collect payments →</Text>
+                    </View>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.liveOpsCard}
+                    onPress={() => router.push('/(owner)/suppliers' as any)}
+                    activeOpacity={0.8}
+                  >
+                    <View style={styles.liveOpsCardTop}>
+                      <View style={[styles.liveOpsIconBox, { backgroundColor: '#DCFCE7' }]}>
+                        <Icon name="truck-delivery-outline" size={20} color="#16A34A" />
+                      </View>
+                      <View style={[styles.microBadge, { backgroundColor: '#DCFCE7' }]}>
+                        <Text style={[styles.microBadgeText, { color: '#16A34A' }]}>PROCUREMENT</Text>
+                      </View>
+                    </View>
+                    <Text style={styles.liveOpsVal}>Purchase Orders</Text>
+                    <Text style={styles.liveOpsLabel}>Supplier Goods Receipt</Text>
+                    <View style={styles.liveOpsFoot}>
+                      <Text style={styles.liveOpsFootText}>Vendor POs & GRN updates →</Text>
+                    </View>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.liveOpsCard}
+                    onPress={() => router.push('/(owner)/inventory' as any)}
+                    activeOpacity={0.8}
+                  >
+                    <View style={styles.liveOpsCardTop}>
+                      <View style={[styles.liveOpsIconBox, { backgroundColor: '#EDE9FE' }]}>
+                        <Icon name="domain" size={20} color="#7C3AED" />
+                      </View>
+                      <View style={[styles.microBadge, { backgroundColor: '#EDE9FE' }]}>
+                        <Text style={[styles.microBadgeText, { color: '#7C3AED' }]}>GODOWNS</Text>
+                      </View>
+                    </View>
+                    <Text style={styles.liveOpsVal}>Stock Transfers</Text>
+                    <Text style={styles.liveOpsLabel}>Multi-Warehouse Stock</Text>
+                    <View style={styles.liveOpsFoot}>
+                      <Text style={styles.liveOpsFootText}>Manage stock locations & transfers →</Text>
+                    </View>
+                  </TouchableOpacity>
+                </>
+              )}
+
+              {/* RESTAURANT MODE CARDS */}
+              {posBusinessMode === 'restaurant' && (
+                <>
+                  <TouchableOpacity
+                    style={styles.liveOpsCard}
+                    onPress={() => router.push('/(owner)/tables_kot' as any)}
+                    activeOpacity={0.8}
+                  >
+                    <View style={styles.liveOpsCardTop}>
+                      <View style={[styles.liveOpsIconBox, { backgroundColor: '#FEE2E2' }]}>
+                        <Icon name="silverware-fork-knife" size={20} color="#DC2626" />
+                      </View>
+                      <View style={[styles.microBadge, { backgroundColor: '#FEE2E2' }]}>
+                        <Text style={[styles.microBadgeText, { color: '#DC2626' }]}>DINE-IN</Text>
+                      </View>
+                    </View>
+                    <Text style={styles.liveOpsVal}>{liveTableStats.occupied} / {liveTableStats.total}</Text>
+                    <Text style={styles.liveOpsLabel}>Tables Occupied</Text>
+                    <View style={styles.liveOpsFoot}>
+                      <Text style={styles.liveOpsFootText}>₹{liveTableStats.openAmount.toLocaleString('en-IN')} active KOTs →</Text>
+                    </View>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.liveOpsCard}
+                    onPress={() => router.push('/(owner)/kds' as any)}
+                    activeOpacity={0.8}
+                  >
+                    <View style={styles.liveOpsCardTop}>
+                      <View style={[styles.liveOpsIconBox, { backgroundColor: '#FEF3C7' }]}>
+                        <Icon name="chef-hat" size={20} color="#D97706" />
+                      </View>
+                      <View style={[styles.microBadge, { backgroundColor: '#FEF3C7' }]}>
+                        <Text style={[styles.microBadgeText, { color: '#D97706' }]}>KDS LIVE</Text>
+                      </View>
+                    </View>
+                    <Text style={styles.liveOpsVal}>{liveKdsStats.pendingKots} Tickets</Text>
+                    <Text style={styles.liveOpsLabel}>Kitchen Queue</Text>
+                    <View style={styles.liveOpsFoot}>
+                      <Text style={styles.liveOpsFootText}>{liveKdsStats.pendingKots > 0 ? `~${liveKdsStats.avgPrepMins} min avg prep time →` : 'Kitchen queue is clear →'}</Text>
+                    </View>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.liveOpsCard}
+                    onPress={() => router.push('/(owner)/attendance' as any)}
+                    activeOpacity={0.8}
+                  >
+                    <View style={styles.liveOpsCardTop}>
+                      <View style={[styles.liveOpsIconBox, { backgroundColor: '#EEF2FF' }]}>
+                        <Icon name="badge-account-horizontal-outline" size={20} color="#4F46E5" />
+                      </View>
+                      <View style={[styles.microBadge, { backgroundColor: '#EEF2FF' }]}>
+                        <Text style={[styles.microBadgeText, { color: '#4F46E5' }]}>STEWARDS</Text>
+                      </View>
+                    </View>
+                    <Text style={styles.liveOpsVal}>{liveStaffStats.clockedIn} On-Duty</Text>
+                    <Text style={styles.liveOpsLabel}>Floor Captains</Text>
+                    <View style={styles.liveOpsFoot}>
+                      <Text style={styles.liveOpsFootText}>Floor shifts active →</Text>
+                    </View>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.liveOpsCard}
+                    onPress={() => router.push('/(owner)/tasks' as any)}
+                    activeOpacity={0.8}
+                  >
+                    <View style={styles.liveOpsCardTop}>
+                      <View style={[styles.liveOpsIconBox, { backgroundColor: '#E0F2FE' }]}>
+                        <Icon name="clipboard-check-outline" size={20} color="#0284C7" />
+                      </View>
+                      <View style={[styles.microBadge, { backgroundColor: '#E0F2FE' }]}>
+                        <Text style={[styles.microBadgeText, { color: '#0284C7' }]}>STORE SOP</Text>
+                      </View>
+                    </View>
+                    <Text style={styles.liveOpsVal}>{liveTaskStats.completed} / {liveTaskStats.total || 0}</Text>
+                    <Text style={styles.liveOpsLabel}>Checklist Done</Text>
+                    <View style={styles.liveOpsFoot}>
+                      <Text style={styles.liveOpsFootText}>Shift compliance tracker →</Text>
+                    </View>
+                  </TouchableOpacity>
+                </>
+              )}
+
+              {/* HYBRID ALL-IN-ONE MODE */}
+              {posBusinessMode === 'hybrid' && (
+                <>
+                  <TouchableOpacity
+                    style={styles.liveOpsCard}
+                    onPress={() => router.push('/(owner)/pos_billing' as any)}
+                    activeOpacity={0.8}
+                  >
+                    <View style={styles.liveOpsCardTop}>
+                      <View style={[styles.liveOpsIconBox, { backgroundColor: '#DCFCE7' }]}>
+                        <Icon name="barcode-scan" size={20} color="#16A34A" />
+                      </View>
+                      <View style={[styles.microBadge, { backgroundColor: '#DCFCE7' }]}>
+                        <Text style={[styles.microBadgeText, { color: '#16A34A' }]}>COUNTER</Text>
+                      </View>
+                    </View>
+                    <Text style={styles.liveOpsVal}>₹{todaySales.toLocaleString('en-IN')}</Text>
+                    <Text style={styles.liveOpsLabel}>Retail Sales</Text>
+                    <View style={styles.liveOpsFoot}>
+                      <Text style={styles.liveOpsFootText}>{totalOrders} bills processed →</Text>
+                    </View>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.liveOpsCard}
+                    onPress={() => router.push('/(owner)/tables_kot' as any)}
+                    activeOpacity={0.8}
+                  >
+                    <View style={styles.liveOpsCardTop}>
+                      <View style={[styles.liveOpsIconBox, { backgroundColor: '#FEE2E2' }]}>
+                        <Icon name="silverware-fork-knife" size={20} color="#DC2626" />
+                      </View>
+                      <View style={[styles.microBadge, { backgroundColor: '#FEE2E2' }]}>
+                        <Text style={[styles.microBadgeText, { color: '#DC2626' }]}>DINE-IN</Text>
+                      </View>
+                    </View>
+                    <Text style={styles.liveOpsVal}>{liveTableStats.occupied} / {liveTableStats.total}</Text>
+                    <Text style={styles.liveOpsLabel}>Tables Active</Text>
+                    <View style={styles.liveOpsFoot}>
+                      <Text style={styles.liveOpsFootText}>₹{liveTableStats.openAmount.toLocaleString('en-IN')} open KOTs →</Text>
+                    </View>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.liveOpsCard}
+                    onPress={() => router.push('/(owner)/kds' as any)}
+                    activeOpacity={0.8}
+                  >
+                    <View style={styles.liveOpsCardTop}>
+                      <View style={[styles.liveOpsIconBox, { backgroundColor: '#FEF3C7' }]}>
+                        <Icon name="chef-hat" size={20} color="#D97706" />
+                      </View>
+                      <View style={[styles.microBadge, { backgroundColor: '#FEF3C7' }]}>
+                        <Text style={[styles.microBadgeText, { color: '#D97706' }]}>KDS</Text>
+                      </View>
+                    </View>
+                    <Text style={styles.liveOpsVal}>{liveKdsStats.pendingKots} Tickets</Text>
+                    <Text style={styles.liveOpsLabel}>Kitchen Queue</Text>
+                    <View style={styles.liveOpsFoot}>
+                      <Text style={styles.liveOpsFootText}>{liveKdsStats.pendingKots > 0 ? `~${liveKdsStats.avgPrepMins}m prep →` : 'Kitchen clear →'}</Text>
+                    </View>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.liveOpsCard}
+                    onPress={() => router.push('/(owner)/reorder_list' as any)}
+                    activeOpacity={0.8}
+                  >
+                    <View style={[styles.liveOpsCardTop]}>
+                      <View style={[styles.liveOpsIconBox, { backgroundColor: lowStockAlertCount > 0 ? '#FEE2E2' : '#DCFCE7' }]}>
+                        <Icon name="alert-outline" size={20} color={lowStockAlertCount > 0 ? '#DC2626' : '#16A34A'} />
+                      </View>
+                      <View style={[styles.microBadge, { backgroundColor: lowStockAlertCount > 0 ? '#FEE2E2' : '#DCFCE7' }]}>
+                        <Text style={[styles.microBadgeText, { color: lowStockAlertCount > 0 ? '#DC2626' : '#16A34A' }]}>STOCK</Text>
+                      </View>
+                    </View>
+                    <Text style={styles.liveOpsVal}>{lowStockAlertCount} Items</Text>
+                    <Text style={styles.liveOpsLabel}>Reorder Alert</Text>
+                    <View style={styles.liveOpsFoot}>
+                      <Text style={styles.liveOpsFootText}>{lowStockAlertCount > 0 ? 'Refill inventory →' : 'Healthy inventory →'}</Text>
+                    </View>
+                  </TouchableOpacity>
+                </>
+              )}
             </View>
           </View>
         </FadeInSection>
@@ -762,31 +1153,96 @@ export default function AdminDashboard() {
           {renderShopModeWidget()}
         </FadeInSection>
 
-        {/* ── Petpooja Suite Quick Launch ─────────────────────────── */}
+        {/* ── Store Persona Quick Launch (Tailored Zoho Retail vs Petpooja Restaurant) ── */}
         <FadeInSection delay={175}>
           <View style={styles.quickLaunchContainer}>
             <View style={styles.quickLaunchHeader}>
               <View>
-                <Text style={styles.quickLaunchTitle}>Petpooja Suite Quick Launch</Text>
-                <Text style={styles.quickLaunchSubtitle}>One-touch access to billing, kitchen, stock & reports</Text>
+                <Text style={styles.quickLaunchTitle}>
+                  {posBusinessMode === 'retail' 
+                    ? 'Zoho Retail Quick Launch' 
+                    : posBusinessMode === 'wholesale' 
+                    ? 'Wholesale ERP Quick Launch' 
+                    : posBusinessMode === 'restaurant' 
+                    ? 'Petpooja Restaurant Quick Launch' 
+                    : 'BharatPOS Enterprise Suite'}
+                </Text>
+                <Text style={styles.quickLaunchSubtitle}>
+                  {posBusinessMode === 'retail' 
+                    ? 'One-touch access to barcode billing, product catalog, barcode studio & GST' 
+                    : posBusinessMode === 'wholesale' 
+                    ? 'One-touch access to B2B orders, credit limits, suppliers & multi-godowns' 
+                    : posBusinessMode === 'restaurant' 
+                    ? 'One-touch access to table floor, kitchen KDS, food menu & floor captains' 
+                    : 'Unified access to billing, kitchen, wholesale & reports'}
+                </Text>
               </View>
-              <View style={styles.proPill}>
-                <Icon name="lightning-bolt" size={14} color="#16A34A" />
-                <Text style={styles.proPillText}>FAST ACTIONS</Text>
+              <View style={[styles.proPill, { 
+                backgroundColor: posBusinessMode === 'restaurant' 
+                  ? '#F3E8FF' 
+                  : posBusinessMode === 'wholesale' 
+                  ? '#DBEAFE' 
+                  : '#DCFCE7' 
+              }]}>
+                <Icon 
+                  name="lightning-bolt" 
+                  size={14} 
+                  color={
+                    posBusinessMode === 'restaurant' 
+                      ? '#7C3AED' 
+                      : posBusinessMode === 'wholesale' 
+                      ? '#2563EB' 
+                      : '#16A34A'
+                  } 
+                />
+                <Text style={[styles.proPillText, { 
+                  color: posBusinessMode === 'restaurant' 
+                    ? '#7C3AED' 
+                    : posBusinessMode === 'wholesale' 
+                    ? '#2563EB' 
+                    : '#16A34A' 
+                }]}>FAST ACTIONS</Text>
               </View>
             </View>
 
             <View style={styles.quickLaunchGrid}>
-              {[
+              {(posBusinessMode === 'restaurant' ? [
+                { title: 'Tables & KOT', desc: 'Dine-in floor plan', icon: 'silverware-fork-knife', color: '#7C3AED', bg: '#F3E8FF', route: '/(owner)/tables_kot' },
+                { title: 'Kitchen KDS', desc: 'Live chef prep station', icon: 'chef-hat', color: '#D97706', bg: '#FEF3C7', route: '/(owner)/kds' },
+                { title: 'Food Menu', desc: 'Add dishes & pricing', icon: 'silverware-clean', color: '#059669', bg: '#D1FAE5', route: '/(owner)/products_management' },
+                { title: 'Floor Captains', desc: 'Staff shifts & payroll', icon: 'badge-account-horizontal-outline', color: '#4F46E5', bg: '#EEF2FF', route: '/(owner)/attendance' },
+                { title: 'Restaurant Day Book', desc: 'Daily cash & UPI register', icon: 'book-open-page-variant-outline', color: '#0284C7', bg: '#E0F2FE', route: '/(owner)/day_book' },
+                { title: 'Dining Sales & P&L', desc: 'Food profit & margins', icon: 'chart-line', color: '#16A34A', bg: '#DCFCE7', route: '/(owner)/profit_loss' },
+                { title: 'Kitchen SOPs', desc: 'Opening / closing checklist', icon: 'clipboard-check-outline', color: '#D97706', bg: '#FEF3C7', route: '/(owner)/tasks' },
+                { title: 'Shop Settings', desc: 'Configure store & profile', icon: 'cog-outline', color: '#64748B', bg: '#F1F5F9', route: '/(owner)/settings' },
+              ] : posBusinessMode === 'wholesale' ? [
+                { title: 'Wholesale B2B Orders', desc: 'Sales orders & quotations', icon: 'warehouse', color: '#2563EB', bg: '#DBEAFE', route: '/(owner)/wholesale' },
+                { title: 'B2B Customers & Khata', desc: 'Credit limits & payments', icon: 'account-group', color: '#16A34A', bg: '#DCFCE7', route: '/(owner)/wholesale' },
+                { title: 'Suppliers & POs', desc: 'Procurement & GRN stock', icon: 'truck-delivery-outline', color: '#059669', bg: '#D1FAE5', route: '/(owner)/suppliers' },
+                { title: 'B2B Price Lists & SKUs', desc: 'Tiered wholesale rates', icon: 'tag-multiple', color: '#7C3AED', bg: '#EDE9FE', route: '/(owner)/products_management' },
+                { title: 'Warehouse Stock', desc: 'Multi-godown breakdown', icon: 'domain', color: '#0284C7', bg: '#E0F2FE', route: '/(owner)/inventory' },
+                { title: 'Double-Entry Day Book', desc: 'Daily voucher transactions', icon: 'book-open-page-variant-outline', color: '#4F46E5', bg: '#EEF2FF', route: '/(owner)/day_book' },
+                { title: 'GST Tax Invoices', desc: 'B2B tax invoices & GSTR', icon: 'file-percent-outline', color: '#D97706', bg: '#FEF3C7', route: '/(owner)/gst_management' },
+                { title: 'Wholesale Settings', desc: 'Store profile & policies', icon: 'cog-outline', color: '#64748B', bg: '#F1F5F9', route: '/(owner)/settings' },
+              ] : posBusinessMode === 'retail' ? [
+                { title: 'Barcode Billing POS', desc: 'Fast scanner checkout', icon: 'barcode-scan', color: '#16A34A', bg: '#DCFCE7', route: '/(owner)/pos_billing' },
+                { title: 'Product Catalog', desc: 'Add & price SKU items', icon: 'package-variant-closed', color: '#059669', bg: '#D1FAE5', route: '/(owner)/products_management' },
+                { title: 'Inventory & Godowns', desc: 'Multi-location stock', icon: 'clipboard-list-outline', color: '#7C3AED', bg: '#EDE9FE', route: '/(owner)/inventory' },
+                { title: 'Barcode Studio', desc: 'Print custom labels & tags', icon: 'barcode', color: '#2563EB', bg: '#DBEAFE', route: '/(owner)/barcode_generator' },
+                { title: 'Low Stock Reorders', desc: 'Inventory replenishment alerts', icon: 'alert-circle-outline', color: '#DC2626', bg: '#FEE2E2', route: '/(owner)/reorder_list' },
+                { title: 'Cashier Shifts', desc: 'Counter staff & payroll', icon: 'badge-account-horizontal-outline', color: '#4F46E5', bg: '#EEF2FF', route: '/(owner)/attendance' },
+                { title: 'Day Book Register', desc: 'Daily cash & UPI register', icon: 'book-open-page-variant-outline', color: '#0284C7', bg: '#E0F2FE', route: '/(owner)/day_book' },
+                { title: 'GST Returns (GSTR)', desc: 'GSTR-1 & tax compliance', icon: 'file-percent-outline', color: '#D97706', bg: '#FEF3C7', route: '/(owner)/gst_management' },
+              ] : [
                 { title: 'POS Billing', desc: 'Fast barcode register', icon: 'barcode-scan', color: '#16A34A', bg: '#DCFCE7', route: '/(owner)/pos_billing' },
-                { title: 'Tables & KOT', desc: 'Dine-in floor plan', icon: 'silverware-fork-knife', color: '#DC2626', bg: '#FEE2E2', route: '/(owner)/tables_kot' },
+                { title: 'Wholesale B2B', desc: 'Bulk sales & credit orders', icon: 'warehouse', color: '#2563EB', bg: '#DBEAFE', route: '/(owner)/wholesale' },
+                { title: 'Tables & KOT', desc: 'Dine-in floor plan', icon: 'silverware-fork-knife', color: '#7C3AED', bg: '#F3E8FF', route: '/(owner)/tables_kot' },
                 { title: 'Kitchen KDS', desc: 'Live prep station', icon: 'chef-hat', color: '#D97706', bg: '#FEF3C7', route: '/(owner)/kds' },
-                { title: 'Store Tasks', desc: 'Opening / closing SOPs', icon: 'clipboard-check-outline', color: '#0284C7', bg: '#E0F2FE', route: '/(owner)/tasks' },
-                { title: 'Attendo Payroll', desc: 'Staff shifts & salary', icon: 'badge-account-horizontal-outline', color: '#4F46E5', bg: '#EEF2FF', route: '/(owner)/attendance' },
+                { title: 'Suppliers & POs', desc: 'Procurement & GRN stock', icon: 'truck-delivery-outline', color: '#059669', bg: '#D1FAE5', route: '/(owner)/suppliers' },
                 { title: 'Product Catalog', desc: 'Add & price items', icon: 'package-variant-plus', color: '#059669', bg: '#D1FAE5', route: '/(owner)/products_management' },
                 { title: 'Inventory & Godowns', desc: 'Multi-location stock', icon: 'domain', color: '#7C3AED', bg: '#EDE9FE', route: '/(owner)/inventory' },
                 { title: 'Barcode Studio', desc: 'Print custom labels', icon: 'barcode', color: '#2563EB', bg: '#DBEAFE', route: '/(owner)/barcode_generator' },
-              ].map((item, idx) => (
+              ]).map((item, idx) => (
                 <TouchableOpacity
                   key={idx}
                   style={styles.quickLaunchItem}
@@ -1144,5 +1600,121 @@ const styles = StyleSheet.create({
     backgroundColor: '#10B981',
     borderWidth: 2,
     borderColor: '#FFFFFF',
+  },
+  // Store POS Business Mode Engine
+  businessModeBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    marginBottom: 20,
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  modeIndicatorPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  switchModeLink: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: '#F1F5F9',
+  },
+  switchModeLinkText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#334155',
+  },
+  businessModeWrapper: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 6,
+    elevation: 1,
+  },
+  businessModeTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 14,
+  },
+  businessModeTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#0F172A',
+    letterSpacing: 0.5,
+  },
+  businessModeSubtitle: {
+    fontSize: 12,
+    color: '#64748B',
+  },
+  businessModeRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  engineCard: {
+    flex: 1,
+    minWidth: 260,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 14,
+    borderRadius: 12,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+  },
+  engineCardActive: {
+    backgroundColor: '#F0FDF4',
+    borderColor: '#16A34A',
+  },
+  engineIconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  engineTitle: {
+    fontSize: 13.5,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  engineDesc: {
+    fontSize: 11,
+    color: '#64748B',
+    marginTop: 2,
+    lineHeight: 15,
+  },
+  activePill: {
+    backgroundColor: '#16A34A',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  activePillText: {
+    fontSize: 9.5,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    letterSpacing: 0.5,
   },
 });

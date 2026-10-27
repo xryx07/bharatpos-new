@@ -18,6 +18,24 @@ export default function PublicInvoiceScreen() {
   useEffect(() => {
     let isMounted = true;
     async function fetchInvoice() {
+      // 1. Try checking local storage first for instant offline/direct load
+      if (Platform.OS === 'web' && typeof window !== 'undefined') {
+        try {
+          const storedInvoices = JSON.parse(window.localStorage.getItem('bharatpos_invoices') || '{}');
+          if (billId && storedInvoices[billId]) {
+            if (isMounted) setCloudInvoice(storedInvoices[billId]);
+          } else if (!billId) {
+            const lastBillStr = window.localStorage.getItem('bharatpos_last_bill');
+            if (lastBillStr) {
+              if (isMounted) setCloudInvoice(JSON.parse(lastBillStr));
+            }
+          }
+        } catch (err) {
+          console.warn('Local invoice read error:', err);
+        }
+      }
+
+      // 2. Fetch from Firebase Firestore if available
       if (billId) {
         try {
           const snap = await getDoc(doc(db, 'invoices', billId));
@@ -47,24 +65,37 @@ export default function PublicInvoiceScreen() {
         } catch (_) {}
       }
     }
+
+    // Check localStorage fallback for store metadata
+    let localStoreName = 'BharatPOS Merchant Store';
+    let localStoreAddress = '';
+    let localGstNum = '';
+    let localIsGst = false;
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      localStoreName = window.localStorage.getItem('storeName') || localStoreName;
+      localStoreAddress = window.localStorage.getItem('storeAddress') || '';
+      localGstNum = window.localStorage.getItem('gstNumber') || '';
+      localIsGst = window.localStorage.getItem('isGstRegistered') === 'true';
+    }
+
     return {
-      storeName: (params.storeName as string) || 'BharatPOS Merchant Store',
-      storeAddress: (params.storeAddress as string) || '',
-      gstNum: (params.gstNum as string) || '',
-      isGst: params.isGst === 'true' || Boolean(params.isGst),
+      storeName: (params.storeName as string) || localStoreName,
+      storeAddress: (params.storeAddress as string) || localStoreAddress,
+      gstNum: (params.gstNum as string) || localGstNum,
+      isGst: params.isGst === 'true' || Boolean(params.isGst) || localIsGst,
       billNo: billId || 'INV-' + Date.now().toString().slice(-6),
       date: (params.date as string) || new Date().toLocaleDateString('en-IN'),
       time: (params.time as string) || new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }),
       payMethod: (params.payMethod as string) || 'UPI',
-      custName: (params.custName as string) || 'Valued Customer',
+      custName: (params.custName as string) || 'Walk-in Customer',
       custPhone: (params.custPhone as string) || '',
       custGstin: (params.custGstin as string) || '',
       items: params.items ? (typeof params.items === 'string' ? JSON.parse(params.items) : params.items) : [
-        { name: 'Standard Item', qty: 1, price: Number(params.total) || 0 }
+        { name: 'Store Bill Item', qty: 1, price: Number(params.total) || 50 }
       ],
-      subtotal: Number(params.subtotal) || Number(params.total) || 0,
+      subtotal: Number(params.subtotal) || Number(params.total) || 50,
       discount: Number(params.discount) || 0,
-      finalTotal: Number(params.total) || Number(params.finalTotal) || 0,
+      finalTotal: Number(params.total) || Number(params.finalTotal) || 50,
     };
   }, [cloudInvoice, params, billId]);
 

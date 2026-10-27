@@ -50,6 +50,12 @@ export default function AdminSettingsScreen() {
     }
     return 'Mobile Only';
   });
+  const [posBusinessMode, setPosBusinessMode] = useState<'retail' | 'wholesale' | 'restaurant' | 'hybrid'>(() => {
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      return (window.localStorage.getItem('posBusinessMode') as any) || 'retail';
+    }
+    return 'retail';
+  });
   const [emailNotifs, setEmailNotifs] = useState(true);
   const [lowStockNotif, setLowStockNotif] = useState(() => {
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
@@ -225,12 +231,14 @@ export default function AdminSettingsScreen() {
       window.localStorage.setItem('gstNumber', gstNumber);
       window.localStorage.setItem('isGstRegistered', String(businessType === 'GST'));
       window.localStorage.setItem('shopMode', shopMode);
+      window.localStorage.setItem('posBusinessMode', posBusinessMode);
       window.localStorage.setItem('lowStockEmailNotif', String(lowStockNotif));
       window.localStorage.setItem('webhookUrl', webhookUrl);
       window.localStorage.setItem('autoOutOfStock', String(autoOutOfStock));
       
-      // Dispatch custom event to notify other components (e.g. sidebar)
+      // Dispatch custom events to notify other components (e.g. sidebar and dashboard)
       window.dispatchEvent(new Event('storeNameUpdated'));
+      window.dispatchEvent(new Event('posBusinessModeChanged'));
     }
 
     if (isFirebaseConfigured && auth.currentUser) {
@@ -242,6 +250,7 @@ export default function AdminSettingsScreen() {
           gst_number: gstNumber,
           is_gst_registered: businessType === 'GST',
           shop_mode: shopMode,
+          pos_business_mode: posBusinessMode,
           low_stock_notif: lowStockNotif,
           webhook_url: webhookUrl,
           auto_out_of_stock: autoOutOfStock
@@ -411,8 +420,159 @@ export default function AdminSettingsScreen() {
               style={styles.segmentedBtn}
             />
 
+            <View style={{ marginTop: 16, marginBottom: 8 }}>
+              <Text style={[styles.label, { fontSize: 13, fontWeight: '700', color: '#0F172A', marginBottom: 4 }]}>
+                Store Experience & POS Type
+              </Text>
+              <Text style={{ fontSize: 12, color: '#64748B', marginBottom: 12 }}>
+                Tailor your sidebar and dashboard so you only see the tools specific to your shop.
+              </Text>
+
+              <View style={{ gap: 10 }}>
+                {/* 1. Retail Option */}
+                <TouchableOpacity
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    padding: 12,
+                    borderRadius: 12,
+                    borderWidth: 1.5,
+                    borderColor: posBusinessMode === 'retail' ? '#16A34A' : '#E2E8F0',
+                    backgroundColor: posBusinessMode === 'retail' ? '#F0FDF4' : '#FFFFFF',
+                    gap: 12,
+                  }}
+                  onPress={() => setPosBusinessMode('retail')}
+                  activeOpacity={0.8}
+                >
+                  <View style={{ width: 38, height: 38, borderRadius: 10, backgroundColor: posBusinessMode === 'retail' ? '#16A34A' : '#DCFCE7', alignItems: 'center', justifyContent: 'center' }}>
+                    <Icon name="barcode-scan" size={20} color={posBusinessMode === 'retail' ? '#FFFFFF' : '#16A34A'} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <Text style={{ fontSize: 13.5, fontWeight: '700', color: posBusinessMode === 'retail' ? '#166534' : '#1E293B' }}>
+                        Retail & Supermarket (Zoho Style)
+                      </Text>
+                      {posBusinessMode === 'retail' && (
+                        <View style={{ backgroundColor: '#16A34A', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>
+                          <Text style={{ color: '#FFFFFF', fontSize: 10, fontWeight: '800' }}>ACTIVE</Text>
+                        </View>
+                      )}
+                    </View>
+                    <Text style={{ fontSize: 11.5, color: '#64748B', marginTop: 2 }}>
+                      Barcode scanner billing, wholesale/retail pricing, batch stock & GST tax invoices. Restaurant tables & KOT are completely hidden.
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+
+                {/* 2. Wholesale Option */}
+                <TouchableOpacity
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    padding: 12,
+                    borderRadius: 12,
+                    borderWidth: 1.5,
+                    borderColor: posBusinessMode === 'wholesale' ? '#2563EB' : '#E2E8F0',
+                    backgroundColor: posBusinessMode === 'wholesale' ? '#EFF6FF' : '#FFFFFF',
+                    gap: 12,
+                  }}
+                  onPress={() => setPosBusinessMode('wholesale')}
+                  activeOpacity={0.8}
+                >
+                  <View style={{ width: 38, height: 38, borderRadius: 10, backgroundColor: posBusinessMode === 'wholesale' ? '#2563EB' : '#DBEAFE', alignItems: 'center', justifyContent: 'center' }}>
+                    <Icon name="warehouse" size={20} color={posBusinessMode === 'wholesale' ? '#FFFFFF' : '#2563EB'} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <Text style={{ fontSize: 13.5, fontWeight: '700', color: posBusinessMode === 'wholesale' ? '#1E40AF' : '#1E293B' }}>
+                        Wholesale & Distribution ERP
+                      </Text>
+                      {posBusinessMode === 'wholesale' && (
+                        <View style={{ backgroundColor: '#2563EB', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>
+                          <Text style={{ color: '#FFFFFF', fontSize: 10, fontWeight: '800' }}>ACTIVE</Text>
+                        </View>
+                      )}
+                    </View>
+                    <Text style={{ fontSize: 11.5, color: '#64748B', marginTop: 2 }}>
+                      B2B sales orders, customer credit limits, tiered quantity pricing (MOQ), supplier purchase orders & dispatch tracking.
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+
+                {/* 3. Restaurant Option */}
+                <TouchableOpacity
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    padding: 12,
+                    borderRadius: 12,
+                    borderWidth: 1.5,
+                    borderColor: posBusinessMode === 'restaurant' ? '#7C3AED' : '#E2E8F0',
+                    backgroundColor: posBusinessMode === 'restaurant' ? '#FAF5FF' : '#FFFFFF',
+                    gap: 12,
+                  }}
+                  onPress={() => setPosBusinessMode('restaurant')}
+                  activeOpacity={0.8}
+                >
+                  <View style={{ width: 38, height: 38, borderRadius: 10, backgroundColor: posBusinessMode === 'restaurant' ? '#7C3AED' : '#F3E8FF', alignItems: 'center', justifyContent: 'center' }}>
+                    <Icon name="silverware-fork-knife" size={20} color={posBusinessMode === 'restaurant' ? '#FFFFFF' : '#7C3AED'} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <Text style={{ fontSize: 13.5, fontWeight: '700', color: posBusinessMode === 'restaurant' ? '#6D28D9' : '#1E293B' }}>
+                        Restaurant & Cafe (Petpooja Style)
+                      </Text>
+                      {posBusinessMode === 'restaurant' && (
+                        <View style={{ backgroundColor: '#7C3AED', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>
+                          <Text style={{ color: '#FFFFFF', fontSize: 10, fontWeight: '800' }}>ACTIVE</Text>
+                        </View>
+                      )}
+                    </View>
+                    <Text style={{ fontSize: 11.5, color: '#64748B', marginTop: 2 }}>
+                      Dine-in floor plan, Captain KOT tickets, Kitchen KDS queue & table split billing. Retail barcodes & godowns are completely hidden.
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+
+                {/* 3. Hybrid Option */}
+                <TouchableOpacity
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    padding: 12,
+                    borderRadius: 12,
+                    borderWidth: 1.5,
+                    borderColor: posBusinessMode === 'hybrid' ? '#0F172A' : '#E2E8F0',
+                    backgroundColor: posBusinessMode === 'hybrid' ? '#F8FAFC' : '#FFFFFF',
+                    gap: 12,
+                  }}
+                  onPress={() => setPosBusinessMode('hybrid')}
+                  activeOpacity={0.8}
+                >
+                  <View style={{ width: 38, height: 38, borderRadius: 10, backgroundColor: posBusinessMode === 'hybrid' ? '#0F172A' : '#E2E8F0', alignItems: 'center', justifyContent: 'center' }}>
+                    <Icon name="lightning-bolt" size={20} color={posBusinessMode === 'hybrid' ? '#FFFFFF' : '#0F172A'} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <Text style={{ fontSize: 13.5, fontWeight: '700', color: posBusinessMode === 'hybrid' ? '#0F172A' : '#1E293B' }}>
+                        Hybrid All-In-One (Mart + Cafe)
+                      </Text>
+                      {posBusinessMode === 'hybrid' && (
+                        <View style={{ backgroundColor: '#0F172A', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>
+                          <Text style={{ color: '#FFFFFF', fontSize: 10, fontWeight: '800' }}>ACTIVE</Text>
+                        </View>
+                      )}
+                    </View>
+                    <Text style={{ fontSize: 11.5, color: '#64748B', marginTop: 2 }}>
+                      Combined counter checkout plus dining tables & kitchen orders (ideal for bakeries, food courts & hybrid marts).
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
+            </View>
+
             <Button mode="contained" onPress={handleSave} buttonColor="#16A34A" style={styles.saveBtn}>
-              Save Shop Profile
+              Save Shop Profile & Mode
             </Button>
           </Card.Content>
         </Card>

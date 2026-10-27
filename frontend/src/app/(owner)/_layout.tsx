@@ -16,6 +16,7 @@ interface MenuItemDef {
   isGstOnly?: boolean;
   badge?: string;
   badgeColor?: string;
+  mode?: 'retail' | 'wholesale' | 'restaurant' | 'all';
 }
 
 interface MenuSection {
@@ -25,36 +26,53 @@ interface MenuSection {
 
 const menuSections: MenuSection[] = [
   {
+    title: 'Navigation',
+    items: [
+      { name: 'Back to Homepage', icon: 'home-outline', path: '/', badge: 'HOME', badgeColor: '#16A34A', mode: 'all' },
+    ]
+  },
+  {
     title: 'Point of Sale',
     items: [
-      { name: 'Dashboard', icon: 'view-dashboard-outline', path: '/(owner)' },
-      { name: 'POS Billing', icon: 'receipt', path: '/(owner)/pos_billing' },
-      { name: 'Tables & KOT', icon: 'silverware-fork-knife', path: '/(owner)/tables_kot', badge: 'NEW', badgeColor: '#7C3AED' },
-      { name: 'Kitchen KDS', icon: 'chef-hat', path: '/(owner)/kds', badge: 'LIVE', badgeColor: '#DC2626' },
+      { name: 'Dashboard', icon: 'view-dashboard-outline', path: '/(owner)', mode: 'all' },
+      { name: 'Barcode Billing POS', icon: 'barcode-scan', path: '/(owner)/pos_billing', badge: 'COUNTER', badgeColor: '#16A34A', mode: 'retail' },
+      { name: 'Wholesale B2B Orders', icon: 'warehouse', path: '/(owner)/wholesale', badge: 'B2B', badgeColor: '#2563EB', mode: 'wholesale' },
+      { name: 'Tables & KOT Floor', icon: 'silverware-fork-knife', path: '/(owner)/tables_kot', badge: 'DINE-IN', badgeColor: '#7C3AED', mode: 'restaurant' },
+      { name: 'Kitchen KDS', icon: 'chef-hat', path: '/(owner)/kds', badge: 'CHEF', badgeColor: '#DC2626', mode: 'restaurant' },
     ]
   },
   {
     title: 'Operations & Staff',
     items: [
-      { name: 'Store Tasks', icon: 'checkbox-marked-circle-auto-outline', path: '/(owner)/tasks', badge: 'SOP', badgeColor: '#0284C7' },
-      { name: 'Staff & Payroll', icon: 'badge-account-horizontal-outline', path: '/(owner)/attendance' },
-      { name: 'Inventory & Stock', icon: 'clipboard-list-outline', path: '/(owner)/inventory' },
-      { name: 'Products Catalog', icon: 'package-variant-closed', path: '/(owner)/products_management' },
-      { name: 'Barcode Generator', icon: 'barcode-scan', path: '/(owner)/barcode_generator' },
-      { name: 'Reorder Alerts', icon: 'alert-circle-outline', path: '/(owner)/reorder_list' },
+      { name: 'Products Catalog', icon: 'package-variant-closed', path: '/(owner)/products_management', mode: 'retail' },
+      { name: 'B2B Price Lists & SKUs', icon: 'tag-multiple', path: '/(owner)/products_management', badge: 'B2B', badgeColor: '#2563EB', mode: 'wholesale' },
+      { name: 'Suppliers & POs', icon: 'truck-delivery-outline', path: '/(owner)/suppliers', badge: 'PROCURE', badgeColor: '#059669', mode: 'wholesale' },
+      { name: 'Food Menu & Pricing', icon: 'silverware-clean', path: '/(owner)/products_management', badge: 'KITCHEN', badgeColor: '#7C3AED', mode: 'restaurant' },
+      { name: 'Barcode Generator', icon: 'barcode', path: '/(owner)/barcode_generator', mode: 'retail' },
+      { name: 'Inventory & Godowns', icon: 'clipboard-list-outline', path: '/(owner)/inventory', mode: 'retail' },
+      { name: 'Warehouse Stock', icon: 'domain', path: '/(owner)/inventory', badge: 'STOCK', badgeColor: '#2563EB', mode: 'wholesale' },
+      { name: 'Reorder Alerts', icon: 'alert-circle-outline', path: '/(owner)/reorder_list', mode: 'retail' },
+      { name: 'Staff & Payroll', icon: 'badge-account-horizontal-outline', path: '/(owner)/attendance', mode: 'all' },
+      { name: 'Store Tasks (SOP)', icon: 'checkbox-marked-circle-auto-outline', path: '/(owner)/tasks', badge: 'SOP', badgeColor: '#0284C7', mode: 'all' },
     ]
   },
   {
     title: 'Accounting & GST',
     items: [
-      { name: 'Day Book', icon: 'book-open-page-variant-outline', path: '/(owner)/day_book' },
-      { name: 'Cash & Bank Books', icon: 'cash-multiple', path: '/(owner)/cash_bank_book' },
-      { name: 'Journal Vouchers', icon: 'notebook-outline', path: '/(owner)/journal_entry' },
-      { name: 'General Ledgers', icon: 'account-details-outline', path: '/(owner)/ledgers' },
-      { name: 'Profit & Loss', icon: 'chart-line', path: '/(owner)/profit_loss' },
-      { name: 'Balance Sheet', icon: 'scale-balance', path: '/(owner)/balance_sheet' },
-      { name: 'GST Returns (GSTR)', icon: 'file-percent-outline', path: '/(owner)/gst_management', isGstOnly: true },
-      { name: 'Data Import / Export', icon: 'file-import-outline', path: '/(owner)/data_import' },
+      { name: 'Day Book', icon: 'book-open-page-variant-outline', path: '/(owner)/day_book', mode: 'all' },
+      { name: 'Cash & Bank Books', icon: 'cash-multiple', path: '/(owner)/cash_bank_book', mode: 'all' },
+      { name: 'Journal Vouchers', icon: 'notebook-outline', path: '/(owner)/journal_entry', mode: 'all' },
+      { name: 'General Ledgers', icon: 'account-details-outline', path: '/(owner)/ledgers', mode: 'all' },
+      { name: 'Profit & Loss', icon: 'chart-line', path: '/(owner)/profit_loss', mode: 'all' },
+      { name: 'Balance Sheet', icon: 'scale-balance', path: '/(owner)/balance_sheet', mode: 'all' },
+      { name: 'GST Returns (GSTR)', icon: 'file-percent-outline', path: '/(owner)/gst_management', isGstOnly: true, mode: 'all' },
+      { name: 'Data Import / Export', icon: 'file-import-outline', path: '/(owner)/data_import', mode: 'all' },
+    ]
+  },
+  {
+    title: 'Settings',
+    items: [
+      { name: 'Shop Settings', icon: 'cog-outline', path: '/(owner)/settings', badge: 'CONFIG', badgeColor: '#64748B', mode: 'all' },
     ]
   }
 ];
@@ -121,6 +139,26 @@ export default function OwnerLayout() {
   const [shopMode, setShopMode] = useState('Mobile Only');
   const { width: screenWidth } = useWindowDimensions();
   const [isGstRegistered, setIsGstRegistered] = useState(true);
+
+  const [posBusinessMode, setPosBusinessMode] = useState<'retail' | 'wholesale' | 'restaurant' | 'hybrid'>(() => {
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      return (window.localStorage.getItem('posBusinessMode') as any) || 'retail';
+    }
+    return 'retail';
+  });
+
+  useEffect(() => {
+    const handleModeUpdate = () => {
+      if (Platform.OS === 'web' && typeof window !== 'undefined') {
+        const m = (window.localStorage.getItem('posBusinessMode') as any) || 'retail';
+        setPosBusinessMode(m);
+      }
+    };
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      window.addEventListener('posBusinessModeChanged', handleModeUpdate);
+      return () => window.removeEventListener('posBusinessModeChanged', handleModeUpdate);
+    }
+  }, []);
 
   // Announcement/Notification state & synchronization
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -260,7 +298,7 @@ export default function OwnerLayout() {
     }
   };
 
-  if (loading) {
+  if (loading && Platform.OS !== 'web') {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F8FAFC' }}>
         <ActivityIndicator size="large" color="#16A34A" />
@@ -369,7 +407,12 @@ export default function OwnerLayout() {
         {/* Menu */}
         <ScrollView style={styles.sidebarMenu} showsVerticalScrollIndicator={false}>
           {menuSections.map((sec, sIdx) => {
-            const filteredItems = sec.items.filter(item => !item.isGstOnly || isGstRegistered);
+            const filteredItems = sec.items.filter(item => {
+              if (item.isGstOnly && !isGstRegistered) return false;
+              if (posBusinessMode === 'hybrid') return true;
+              if (item.mode === 'all') return true;
+              return item.mode === posBusinessMode;
+            });
             if (filteredItems.length === 0) return null;
             return (
               <View key={sIdx} style={styles.menuSectionGroup}>
@@ -404,6 +447,50 @@ export default function OwnerLayout() {
                 <View style={styles.topBarDivider} />
                 <Icon name="store-outline" size={18} color="#6B7280" />
                 <Text style={styles.storeName}>Main Branch</Text>
+                <View style={styles.topBarDivider} />
+                <TouchableOpacity 
+                  style={styles.modePillTopBar}
+                  activeOpacity={0.8}
+                  onPress={() => {
+                    const nextMode = posBusinessMode === 'retail' 
+                      ? 'wholesale' 
+                      : posBusinessMode === 'wholesale' 
+                      ? 'restaurant' 
+                      : posBusinessMode === 'restaurant' 
+                      ? 'hybrid' 
+                      : 'retail';
+                    setPosBusinessMode(nextMode);
+                    if (typeof window !== 'undefined') {
+                      window.localStorage.setItem('posBusinessMode', nextMode);
+                      window.dispatchEvent(new Event('posBusinessModeChanged'));
+                    }
+                  }}
+                >
+                  <Icon 
+                    name={
+                      posBusinessMode === 'retail' 
+                        ? 'barcode-scan' 
+                        : posBusinessMode === 'wholesale' 
+                        ? 'warehouse' 
+                        : posBusinessMode === 'restaurant' 
+                        ? 'silverware-fork-knife' 
+                        : 'lightning-bolt'
+                    } 
+                    size={14} 
+                    color={posBusinessMode === 'wholesale' ? '#2563EB' : '#16A34A'} 
+                    style={{ marginRight: 5 }}
+                  />
+                  <Text style={[styles.modePillTopBarText, posBusinessMode === 'wholesale' && { color: '#2563EB' }]}>
+                    {posBusinessMode === 'retail' 
+                      ? 'Retail POS (Zoho)' 
+                      : posBusinessMode === 'wholesale' 
+                      ? 'Wholesale B2B ERP' 
+                      : posBusinessMode === 'restaurant' 
+                      ? 'Dining & KOT (Petpooja)' 
+                      : 'Enterprise Multi-Mode'}
+                  </Text>
+                  <Icon name="swap-horizontal" size={12} color="#64748B" style={{ marginLeft: 4 }} />
+                </TouchableOpacity>
               </>
             )}
           </View>
@@ -423,6 +510,16 @@ export default function OwnerLayout() {
           )}
 
           <View style={styles.topBarRight}>
+
+            {/* Back to Homepage Button */}
+            <TouchableOpacity 
+              style={styles.backHomeBtn}
+              activeOpacity={0.8}
+              onPress={() => router.push('/')}
+            >
+              <Icon name="home-outline" size={16} color="#16A34A" style={{ marginRight: 6 }} />
+              <Text style={styles.backHomeText}>Back to Homepage</Text>
+            </TouchableOpacity>
 
             {/* Notification Bell */}
             <View style={styles.bellContainer}>
@@ -518,6 +615,11 @@ export default function OwnerLayout() {
                       <Text style={styles.dropdownRole}>Store Owner</Text>
                     </View>
                     <Divider style={{ backgroundColor: '#F1F5F9' }} />
+                    
+                    <TouchableOpacity style={[styles.dropdownItem, { backgroundColor: '#F0FDF4' }]} onPress={() => { setShowProfileMenu(false); router.push('/'); }}>
+                      <Icon name="home-outline" size={18} color="#16A34A" />
+                      <Text style={[styles.dropdownText, { color: '#16A34A', fontWeight: 'bold' }]}>Back to Homepage</Text>
+                    </TouchableOpacity>
                     
                     <TouchableOpacity style={styles.dropdownItem} onPress={() => { setShowProfileMenu(false); router.push('/(owner)/vendors' as any); }}>
                       <Icon name="account-group" size={18} color="#64748B" />
@@ -793,7 +895,40 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
 
+  // Mode Pill Top Bar
+  modePillTopBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F0FDF4',
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+  },
+  modePillTopBarText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#166534',
+  },
+
   // User
+  backHomeBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F0FDF4',
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    marginRight: 12,
+  },
+  backHomeText: {
+    fontSize: 12.5,
+    fontWeight: '700',
+    color: '#16A34A',
+  },
   userContainer: { flexDirection: 'row', alignItems: 'center' },
   userInfo: { marginRight: 12, alignItems: 'flex-end' },
   userName: { fontSize: 13, fontWeight: '700', color: '#333' },
