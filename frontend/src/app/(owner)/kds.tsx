@@ -214,7 +214,7 @@ export default function KitchenDisplayScreen() {
                             </Text>
                             {item.note && (
                               <Text style={{ fontSize: 10, color: '#DC2626', fontWeight: '600' }}>
-                                ⚠️ {item.note}
+                                {item.note}
                               </Text>
                             )}
                           </View>

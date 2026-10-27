@@ -63,7 +63,7 @@ export default function POSAssistantModal({
     {
       id: 'init-1',
       sender: 'assistant',
-      text: "👋 Hi! I'm your BharatPOS AI Assistant. How can I help you today? You can speak or type your request.",
+      text: "Hi! I'm your BharatPOS AI Assistant. How can I help you today? You can speak or type your request.",
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     },
   ]);
@@ -187,12 +187,12 @@ export default function POSAssistantModal({
   };
 
   const samplePrompts = [
-    '🎙️ Add 2 Milk & 1 Bread',
-    '📊 Today sales summary',
-    '⚠️ Check low stock',
-    '🧾 Clear billing cart',
-    '💳 Pay by UPI',
-    '🔍 Price of Sugar',
+    'Add 2 Milk & 1 Bread',
+    'Today sales summary',
+    'Check low stock',
+    'Clear billing cart',
+    'Pay by UPI',
+    'Price of Sugar',
   ];
 
   return (

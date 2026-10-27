@@ -52,6 +52,7 @@ export default function Index() {
   // Local state
   const [showSignupModal, setShowSignupModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [shopModeSelected, setShopModeSelected] = useState<'retail' | 'restaurant'>('retail');
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [loginLoading, setLoginLoading] = useState(false);
@@ -363,7 +364,7 @@ export default function Index() {
           {/* Top Indian SaaS Platform Pill Badge */}
           <View style={styles.heroBadgeRow}>
             <View style={styles.heroFlagBadge}>
-              <Text style={styles.heroFlagEmoji}>🇮🇳</Text>
+              <Icon name="shield-check" size={16} color="#16A34A" style={{ marginRight: 6 }} />
               <Text style={styles.heroFlagText}>India's All-in-One POS & Business Management Platform</Text>
             </View>
           </View>
@@ -420,11 +421,14 @@ export default function Index() {
                   style={styles.modeBtnBlue}
                   activeOpacity={0.85}
                   onPress={() => {
+                    setShopModeSelected('retail');
+                    setBusinessType('Grocery / Supermarket / Retail');
+                    setOperationMode('Laptop + Mobile');
                     if (Platform.OS === 'web' && typeof window !== 'undefined') {
                       window.localStorage.setItem('posBusinessMode', 'retail');
                       window.dispatchEvent(new Event('posBusinessModeChanged'));
                     }
-                    router.push('/(owner)/pos_billing' as any);
+                    setShowSignupModal(true);
                   }}
                 >
                   <Text style={styles.modeBtnText}>Get Started  →</Text>
@@ -432,10 +436,10 @@ export default function Index() {
 
                 {/* 4 Feature Badges */}
                 <View style={styles.modeChecklistWrap}>
-                  <Text style={styles.modeCheckItem}><Text style={styles.checkBlue}>✓</Text> Fast Billing</Text>
-                  <Text style={styles.modeCheckItem}><Text style={styles.checkBlue}>✓</Text> Inventory</Text>
-                  <Text style={styles.modeCheckItem}><Text style={styles.checkBlue}>✓</Text> GST Invoicing</Text>
-                  <Text style={styles.modeCheckItem}><Text style={styles.checkBlue}>✓</Text> Purchase Orders</Text>
+                  <Text style={styles.modeCheckItem}><Icon name="check" size={12} color="#2563EB" /> Fast Billing</Text>
+                  <Text style={styles.modeCheckItem}><Icon name="check" size={12} color="#2563EB" /> Inventory</Text>
+                  <Text style={styles.modeCheckItem}><Icon name="check" size={12} color="#2563EB" /> GST Invoicing</Text>
+                  <Text style={styles.modeCheckItem}><Icon name="check" size={12} color="#2563EB" /> Purchase Orders</Text>
                 </View>
               </View>
 
@@ -503,11 +507,14 @@ export default function Index() {
                   style={styles.modeBtnOrange}
                   activeOpacity={0.85}
                   onPress={() => {
+                    setShopModeSelected('restaurant');
+                    setBusinessType('Café / Bakery / Restaurant');
+                    setOperationMode('Large Shop');
                     if (Platform.OS === 'web' && typeof window !== 'undefined') {
                       window.localStorage.setItem('posBusinessMode', 'restaurant');
                       window.dispatchEvent(new Event('posBusinessModeChanged'));
                     }
-                    router.push('/(owner)/tables_kot' as any);
+                    setShowSignupModal(true);
                   }}
                 >
                   <Text style={styles.modeBtnText}>Get Started  →</Text>
@@ -515,10 +522,10 @@ export default function Index() {
 
                 {/* 4 Feature Badges */}
                 <View style={styles.modeChecklistWrap}>
-                  <Text style={styles.modeCheckItem}><Text style={styles.checkOrange}>✓</Text> Table Management</Text>
-                  <Text style={styles.modeCheckItem}><Text style={styles.checkOrange}>✓</Text> KOT & Kitchen Display</Text>
-                  <Text style={styles.modeCheckItem}><Text style={styles.checkOrange}>✓</Text> Online Orders</Text>
-                  <Text style={styles.modeCheckItem}><Text style={styles.checkOrange}>✓</Text> Food Costing</Text>
+                  <Text style={styles.modeCheckItem}><Icon name="check" size={12} color="#EA580C" /> Table Management</Text>
+                  <Text style={styles.modeCheckItem}><Icon name="check" size={12} color="#EA580C" /> KOT & Kitchen Display</Text>
+                  <Text style={styles.modeCheckItem}><Icon name="check" size={12} color="#EA580C" /> Online Orders</Text>
+                  <Text style={styles.modeCheckItem}><Icon name="check" size={12} color="#EA580C" /> Food Costing</Text>
                 </View>
               </View>
 
@@ -599,7 +606,7 @@ export default function Index() {
             </View>
 
             <View style={styles.trustPillItem}>
-              <View style={styles.trustIconWrap}><Text style={{ fontSize: 13 }}>🇮🇳</Text></View>
+              <View style={styles.trustIconWrap}><Icon name="check-decagram" size={16} color="#16A34A" /></View>
               <View>
                 <Text style={styles.trustPillTitle}>Made for India</Text>
                 <Text style={styles.trustPillSub}>Local support & compliance</Text>
@@ -934,7 +941,7 @@ export default function Index() {
           
           <Divider style={{ backgroundColor: '#1E293B', width: '100%', marginVertical: 24 }} />
           
-          <Text style={styles.footerCopy}>© 2026 BharatPOS. All rights reserved. Designed for Indian Businesses. Made with ❤ in India</Text>
+          <Text style={styles.footerCopy}>© 2026 BharatPOS. All rights reserved. Designed for Indian Businesses. Engineered for Indian Retail & Food Businesses</Text>
         </View>
 
       </ScrollView>
@@ -1025,9 +1032,75 @@ export default function Index() {
         <Dialog visible={showSignupModal} onDismiss={() => setShowSignupModal(false)} style={styles.dialogStyle}>
           <Dialog.Title style={{ color: '#0F172A', fontWeight: '800', fontSize: 18, fontFamily: 'Plus Jakarta Sans' }}>Start Your 30-Day Free Trial</Dialog.Title>
           <Dialog.Content>
-            <ScrollView style={{ maxHeight: 400 }} showsVerticalScrollIndicator={false}>
-              <Text style={{ fontSize: 12, color: '#475569', marginBottom: 16, lineHeight: 18, fontFamily: 'Plus Jakarta Sans' }}>
-                Get instant access to POS billing, stock management, double-entry accounting ledgers, and barcode generation. No credit card required.
+            <ScrollView style={{ maxHeight: 440 }} showsVerticalScrollIndicator={false}>
+              {/* Selected Mode Banner */}
+              <View style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginBottom: 12,
+                backgroundColor: shopModeSelected === 'restaurant' ? '#FFF7ED' : '#EFF6FF',
+                paddingHorizontal: 12,
+                paddingVertical: 9,
+                borderRadius: 8,
+                borderWidth: 1,
+                borderColor: shopModeSelected === 'restaurant' ? '#FED7AA' : '#BFDBFE'
+              }}>
+                <Icon
+                  name={shopModeSelected === 'restaurant' ? "silverware-fork-knife" : "cart-outline"}
+                  size={18}
+                  color={shopModeSelected === 'restaurant' ? "#EA580C" : "#2563EB"}
+                />
+                <Text style={{
+                  marginLeft: 8,
+                  fontSize: 13,
+                  fontWeight: '700',
+                  color: shopModeSelected === 'restaurant' ? "#C2410C" : "#1D4ED8"
+                }}>
+                  {shopModeSelected === 'restaurant'
+                    ? 'Selected Mode: Café & Restaurant (Tables & KOT)'
+                    : 'Selected Mode: Retail & Wholesale (Fast Billing & Stock)'}
+                </Text>
+              </View>
+
+              {/* Instant 1-Click Terminal Access */}
+              <TouchableOpacity
+                style={{
+                  backgroundColor: '#F0FDF4',
+                  borderColor: '#86EFAC',
+                  borderWidth: 1,
+                  borderRadius: 8,
+                  padding: 10,
+                  marginBottom: 14,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
+                }}
+                activeOpacity={0.85}
+                onPress={() => {
+                  setShowSignupModal(false);
+                  if (shopModeSelected === 'restaurant') {
+                    router.push('/(owner)/tables_kot' as any);
+                  } else {
+                    router.push('/(owner)/pos_billing' as any);
+                  }
+                }}
+              >
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Icon name="lightning-bolt" size={20} color="#16A34A" />
+                  <View style={{ marginLeft: 8 }}>
+                    <Text style={{ fontSize: 13, fontWeight: '700', color: '#166534' }}>
+                      {shopModeSelected === 'restaurant'
+                        ? 'Explore Live Restaurant & KOT Terminal →'
+                        : 'Explore Live Retail POS Billing Terminal →'}
+                    </Text>
+                    <Text style={{ fontSize: 11, color: '#15803D' }}>Instant access • Full interactive experience</Text>
+                  </View>
+                </View>
+                <Icon name="arrow-right" size={16} color="#16A34A" />
+              </TouchableOpacity>
+
+              <Text style={{ fontSize: 12, color: '#475569', marginBottom: 14, lineHeight: 18, fontFamily: 'Plus Jakarta Sans' }}>
+                Create your 30-day trial account to save business data and print customized GST invoices. No credit card required.
               </Text>
               <TextInput label="Full Name" value={fullName} onChangeText={setFullName} mode="outlined" style={styles.formInput} activeOutlineColor="#16A34A" outlineColor="#E5E7EB" />
               <TextInput label="Shop Name" value={shopName} onChangeText={setShopName} mode="outlined" style={styles.formInput} activeOutlineColor="#16A34A" outlineColor="#E5E7EB" />

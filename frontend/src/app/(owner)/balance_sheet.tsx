@@ -271,7 +271,7 @@ export default function BalanceSheetScreen() {
         </View>
         <View style={[styles.balanceStatus, { borderColor: isBalanced ? '#BBF7D0' : '#FEE2E2', backgroundColor: isBalanced ? '#F0FDF4' : '#FEF2F2' }]}>
           <Text style={{ fontWeight: '600', color: isBalanced ? '#16A34A' : '#DC2626' }}>
-            {isBalanced ? '🟢 Books Balanced' : '🔴 Unbalanced'}
+            {isBalanced ? 'Books Balanced' : 'Unbalanced'}
           </Text>
         </View>
       </View>

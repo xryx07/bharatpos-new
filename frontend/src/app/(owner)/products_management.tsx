@@ -857,7 +857,7 @@ export default function ProductsManagementScreen() {
 
                 {filteredProducts.length === 0 && (
                   <View style={styles.emptyStateContainer}>
-                    <Text style={styles.emptyStateIcon}>🔍</Text>
+                    <Icon name="magnify" size={48} color="#94A3B8" />
                     <Text style={styles.emptyStateTitle}>No products matching criteria</Text>
                     <Text style={styles.emptyStateText}>
                       {products.length === 0

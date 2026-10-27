@@ -99,63 +99,55 @@ export default function AdminDashboard() {
       const val = parseFloat(window.localStorage.getItem('cachedTodaySales') || '0');
       if (val > 0) return val;
     }
-    return 42840;
+    return 0;
   });
   const [yesterdaySales, setYesterdaySales] = useState(() => {
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
       const val = parseFloat(window.localStorage.getItem('cachedYesterdaySales') || '0');
       if (val > 0) return val;
     }
-    return 38100;
+    return 0;
   });
   const [monthlySales, setMonthlySales] = useState(() => {
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
       const val = parseFloat(window.localStorage.getItem('cachedMonthlySales') || '0');
       if (val > 0) return val;
     }
-    return 142840;
+    return 0;
   });
   const [totalProfit, setTotalProfit] = useState(() => {
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
       return parseFloat(window.localStorage.getItem('cachedTotalProfit') || '0');
     }
-    return 14500;
+    return 0;
   });
   const [totalOrders, setTotalOrders] = useState(() => {
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
       const val = parseFloat(window.localStorage.getItem('cachedTotalOrders') || '0');
       if (val > 0) return val;
     }
-    return 184;
+    return 0;
   });
   const [lowStockAlertCount, setLowStockAlertCount] = useState(() => {
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
       const val = parseFloat(window.localStorage.getItem('cachedLowStock') || '0');
       if (val > 0) return val;
     }
-    return 3;
+    return 0;
   });
   const [recentActivity, setRecentActivity] = useState<any[]>(() => {
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
       const val = window.localStorage.getItem('cachedRecentActivity');
       if (val) return JSON.parse(val);
     }
-    return [
-      { id: 'b1', text: 'Recent Bill #10482 — ₹278.20', time: '5m ago', icon: 'cart-check' },
-      { id: 'b2', text: 'Sale by Cashier — ₹1,450.00', time: '18m ago', icon: 'cart-check' },
-    ];
+    return [];
   });
   const [topSellingProducts, setTopSellingProducts] = useState<any[]>(() => {
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
       const val = window.localStorage.getItem('cachedTopSelling');
       if (val) return JSON.parse(val);
     }
-    return [
-      { name: 'Amul Butter 100g', qty: 152, revenue: 8250 },
-      { name: 'Britannia Marie Gold 250g', qty: 114, revenue: 4120 },
-      { name: 'Tata Tea Premium 250g', qty: 98, revenue: 3120 },
-      { name: 'Maggi Noodles 70g', qty: 84, revenue: 2450 },
-    ];
+    return [];
   });
   const [chartLabels, setChartLabels] = useState<string[]>(() => {
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
@@ -169,7 +161,7 @@ export default function AdminDashboard() {
       const val = window.localStorage.getItem('cachedChartData');
       if (val) return JSON.parse(val);
     }
-    return [28000, 31000, 29500, 36000, 34500, 41000, 42840];
+    return [0, 0, 0, 0, 0, 0, 0];
   });
   const [workersList, setWorkersList] = useState<any[]>([]);
   const [shopSyncCode, setShopSyncCode] = useState('');
@@ -642,7 +634,7 @@ export default function AdminDashboard() {
         <FadeInSection delay={0}>
           <View style={[styles.greetingContainer, screenWidth <= 600 && { flexDirection: 'column', alignItems: 'flex-start', gap: 12 }]}>
             <View>
-              <Text style={styles.greetingText}>{getGreeting()}, {userName} 👋</Text>
+              <Text style={styles.greetingText}>{getGreeting()}, {userName}</Text>
               <Text style={styles.greetingSubtext}>Here's what's happening with your store today.</Text>
             </View>
             <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
@@ -652,7 +644,7 @@ export default function AdminDashboard() {
               >
                 <Icon name="robot-happy" size={16} color={isDarkMode ? '#FFFFFF' : '#10B981'} />
                 <Text style={[styles.greetingBadgeText, { color: isDarkMode ? '#FFFFFF' : '#10B981', fontWeight: '700' }]}>
-                  AI Copilot 🎙️
+                  AI Copilot
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity 
@@ -750,12 +742,12 @@ export default function AdminDashboard() {
                     : '#0F172A' 
                 }}>
                   {posBusinessMode === 'retail' 
-                    ? '🛒 Active Mode: Retail POS (Zoho Style)' 
+                    ? 'Active Mode: Retail POS (Zoho Style)' 
                     : posBusinessMode === 'wholesale' 
-                    ? '🏢 Active Mode: Wholesale & Distribution ERP' 
+                    ? 'Active Mode: Wholesale & Distribution ERP' 
                     : posBusinessMode === 'restaurant' 
-                    ? '🍽️ Active Mode: Restaurant & Cafe (Petpooja Style)' 
-                    : '⚡ Active Mode: Enterprise Multi-Mode'}
+                    ? 'Active Mode: Restaurant & Café (Petpooja Style)' 
+                    : 'Active Mode: Enterprise Multi-Mode'}
                 </Text>
               </View>
               <Text style={{ fontSize: 12, color: '#64748B' }}>
@@ -773,7 +765,7 @@ export default function AdminDashboard() {
               onPress={() => router.push('/(owner)/settings' as any)}
               activeOpacity={0.7}
             >
-              <Text style={styles.switchModeLinkText}>Change in Settings ⚙️</Text>
+              <Text style={styles.switchModeLinkText}>Change in Settings</Text>
             </TouchableOpacity>
           </View>
         </FadeInSection>
