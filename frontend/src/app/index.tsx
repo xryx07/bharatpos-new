@@ -51,14 +51,40 @@ export default function Index() {
 
   // Local state
   const [showSignupModal, setShowSignupModal] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loginLoading, setLoginLoading] = useState(false);
+
+  const handleLoginSubmit = async () => {
+    if (!loginEmail || !loginPassword) {
+      alert('Please enter your email and password.');
+      return;
+    }
+    setLoginLoading(true);
+    try {
+      await signInWithEmailAndPassword(auth, loginEmail.trim(), loginPassword);
+      setShowLoginModal(false);
+      router.replace('/(owner)' as any);
+    } catch (err: any) {
+      if (loginEmail === 'demo.owner@bharatpos.com') {
+        try {
+          await createUserWithEmailAndPassword(auth, loginEmail, loginPassword);
+          setShowLoginModal(false);
+          router.replace('/(owner)' as any);
+          return;
+        } catch {
+          // ignore
+        }
+      }
+      alert('Login error: ' + (err.message || 'Invalid email or password.'));
+    } finally {
+      setLoginLoading(false);
+    }
+  };
   const [showDemoModal, setShowDemoModal] = useState(false);
   const [demoVideoPlaying, setDemoVideoPlaying] = useState(false);
   
-  // Interactive Demo Tab selection (Screenshot 1 tab tour)
-  const [activeDemoTab, setActiveDemoTab] = useState('billing');
-  
-  // Screenshots filter tab (Screenshot 2 tabs: All Screens, Billing, Inventory, Reports, Analytics, Mobile)
-  const [activeScreenTab, setActiveScreenTab] = useState('all');
   
   // FAQs expanded state
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
@@ -263,7 +289,7 @@ export default function Index() {
             <TouchableOpacity onPress={() => scrollToSection('solutions')} style={styles.navLinkItem}>
               <Text style={styles.navLinkText}>Solutions</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => scrollToSection('demo')} style={[styles.navLinkItem, { flexDirection: 'row', alignItems: 'center' }]}>
+            <TouchableOpacity onPress={() => scrollToSection('faq')} style={[styles.navLinkItem, { flexDirection: 'row', alignItems: 'center' }]}>
               <Text style={styles.navLinkText}>Resources</Text>
               <Icon name="chevron-down" size={14} color="#64748B" style={{ marginLeft: 2 }} />
             </TouchableOpacity>
@@ -313,14 +339,14 @@ export default function Index() {
             <>
               <TouchableOpacity
                 style={styles.headerBtnLogin}
-                onPress={() => router.push('/(auth)/login' as any)}
+                onPress={() => setShowLoginModal(true)}
                 activeOpacity={0.8}
               >
                 <Text style={styles.btnLabelLogin}>Login</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.headerBtnSolid}
-                onPress={() => router.push('/(auth)/signup' as any)}
+                onPress={() => setShowSignupModal(true)}
                 activeOpacity={0.85}
               >
                 <Text style={styles.btnLabelSolid}>Get Started Free</Text>
@@ -703,435 +729,6 @@ export default function Index() {
           </View>
         </View>
 
-        {/* 5. SEE SMARTPOS IN ACTION (INTERACTIVE SHOWCASE) */}
-        <View style={styles.section} onLayout={(e) => handleLayout('demo', e)}>
-          <Text style={styles.sectionTitle}>See BharatPOS in Action</Text>
-          <Text style={styles.sectionSubtitle}>Explore the premium terminal interfaces tailored for maximum speed.</Text>
-
-          <View style={styles.showcaseTabsRow}>
-            <TouchableOpacity onPress={() => setActiveDemoTab('billing')} style={[styles.showcaseTab, activeDemoTab === 'billing' && styles.showcaseTabActive]}>
-              <Text style={[styles.showcaseTabText, activeDemoTab === 'billing' && styles.showcaseTabTextActive]}>Billing Screen</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => setActiveDemoTab('inventory')} style={[styles.showcaseTab, activeDemoTab === 'inventory' && styles.showcaseTabActive]}>
-              <Text style={[styles.showcaseTabText, activeDemoTab === 'inventory' && styles.showcaseTabTextActive]}>Inventory Management</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => setActiveDemoTab('dashboard')} style={[styles.showcaseTab, activeDemoTab === 'dashboard' && styles.showcaseTabActive]}>
-              <Text style={[styles.showcaseTabText, activeDemoTab === 'dashboard' && styles.showcaseTabTextActive]}>Sales Dashboard</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => setActiveDemoTab('reports')} style={[styles.showcaseTab, activeDemoTab === 'reports' && styles.showcaseTabActive]}>
-              <Text style={[styles.showcaseTabText, activeDemoTab === 'reports' && styles.showcaseTabTextActive]}>Reports & Analytics</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Interactive Screen Container */}
-          <Card style={styles.interactiveCard} elevation={0}>
-            {activeDemoTab === 'billing' && (
-              <View style={styles.billingShowcaseWrapper}>
-                <View style={styles.billingShowcaseLeft}>
-                  {/* Table Header */}
-                  <View style={styles.tableHeaderRow}>
-                    <Text style={[styles.tableCol, { flex: 2, fontWeight: 'bold' }]}>Product</Text>
-                    <Text style={[styles.tableCol, { textAlign: 'center', fontWeight: 'bold' }]}>Qty</Text>
-                    <Text style={[styles.tableCol, { textAlign: 'right', fontWeight: 'bold' }]}>Price</Text>
-                    <Text style={[styles.tableCol, { textAlign: 'right', fontWeight: 'bold' }]}>Total</Text>
-                  </View>
-                  <Divider />
-                  
-                  {/* Table Rows */}
-                  <View style={styles.tableRowItem}>
-                    <Text style={[styles.tableCol, { flex: 2, color: '#1E293B' }]}>Amul Butter 100g</Text>
-                    <Text style={[styles.tableCol, { textAlign: 'center' }]}>1</Text>
-                    <Text style={[styles.tableCol, { textAlign: 'right' }]}>₹52.00</Text>
-                    <Text style={[styles.tableCol, { textAlign: 'right', color: '#1E293B', fontWeight: '500' }]}>₹52.00</Text>
-                  </View>
-                  <Divider />
-                  
-                  <View style={styles.tableRowItem}>
-                    <Text style={[styles.tableCol, { flex: 2, color: '#1E293B' }]}>Britannia Marie Gold 250g</Text>
-                    <Text style={[styles.tableCol, { textAlign: 'center' }]}>2</Text>
-                    <Text style={[styles.tableCol, { textAlign: 'right' }]}>₹54.00</Text>
-                    <Text style={[styles.tableCol, { textAlign: 'right', color: '#1E293B', fontWeight: '500' }]}>₹108.00</Text>
-                  </View>
-                  <Divider />
-
-                  <View style={styles.tableRowItem}>
-                    <Text style={[styles.tableCol, { flex: 2, color: '#1E293B' }]}>Surf Excel 1kg</Text>
-                    <Text style={[styles.tableCol, { textAlign: 'center' }]}>1</Text>
-                    <Text style={[styles.tableCol, { textAlign: 'right' }]}>₹240.00</Text>
-                    <Text style={[styles.tableCol, { textAlign: 'right', color: '#1E293B', fontWeight: '500' }]}>₹240.00</Text>
-                  </View>
-                  <Divider />
-
-                  <View style={styles.tableRowItem}>
-                    <Text style={[styles.tableCol, { flex: 2, color: '#1E293B' }]}>Tata Tea Premium 250g</Text>
-                    <Text style={[styles.tableCol, { textAlign: 'center' }]}>1</Text>
-                    <Text style={[styles.tableCol, { textAlign: 'right' }]}>₹156.00</Text>
-                    <Text style={[styles.tableCol, { textAlign: 'right', color: '#1E293B', fontWeight: '500' }]}>₹156.00</Text>
-                  </View>
-                </View>
-
-                {/* Billing Summary Sidebar */}
-                <View style={styles.billingShowcaseRight}>
-                  <View style={styles.scanBarcodeBox}>
-                    <Text style={styles.scanBarcodeLabel}>Scan Barcode</Text>
-                    <View style={styles.scanBarcodeField}>
-                      <Text style={styles.scanBarcodePlaceholder}>Add product...</Text>
-                      <Icon name="barcode" size={20} color="#64748B" />
-                    </View>
-                  </View>
-
-                  <View style={styles.summaryItem}>
-                    <Text style={styles.summaryText}>Total Items</Text>
-                    <Text style={[styles.summaryVal, { fontWeight: '700' }]}>5</Text>
-                  </View>
-                  <View style={styles.summaryItem}>
-                    <Text style={styles.summaryText}>Sub Total</Text>
-                    <Text style={styles.summaryVal}>₹556.00</Text>
-                  </View>
-                  <View style={styles.summaryItem}>
-                    <Text style={styles.summaryText}>Discount</Text>
-                    <Text style={[styles.summaryVal, { color: '#EF4444' }]}>- ₹6.00</Text>
-                  </View>
-                  <Divider style={{ marginVertical: 12 }} />
-                  <View style={styles.summaryItem}>
-                    <Text style={[styles.summaryText, { fontSize: 16, fontWeight: '700', color: '#0F172A' }]}>Grand Total</Text>
-                    <Text style={{ fontSize: 18, fontWeight: '800', color: '#16A34A' }}>₹550.00</Text>
-                  </View>
-
-                  <View style={styles.summaryActions}>
-                    <TouchableOpacity style={styles.heldBillBtn}>
-                      <Text style={styles.heldBillText}>Held Bill</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.printBillBtn} onPress={() => alert('Printing receipt standard dispatch layout...')}>
-                      <Text style={styles.printBillText}>Print Bill</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
-            )}
-
-            {activeDemoTab === 'inventory' && (
-              <View style={[styles.billingShowcaseWrapper, { flexDirection: 'column', padding: 20 }]}>
-                <View style={styles.tableHeaderRow}>
-                  <Text style={[styles.tableCol, { flex: 2, fontWeight: 'bold' }]}>Product</Text>
-                  <Text style={[styles.tableCol, { fontWeight: 'bold' }]}>SKU</Text>
-                  <Text style={[styles.tableCol, { fontWeight: 'bold' }]}>Category</Text>
-                  <Text style={[styles.tableCol, { textAlign: 'center', fontWeight: 'bold' }]}>Stock</Text>
-                  <Text style={[styles.tableCol, { textAlign: 'right', fontWeight: 'bold' }]}>Price</Text>
-                  <Text style={[styles.tableCol, { textAlign: 'center', fontWeight: 'bold' }]}>Status</Text>
-                </View>
-                <Divider />
-
-                <View style={styles.tableRowItem}>
-                  <Text style={[styles.tableCol, { flex: 2, color: '#1E293B', fontWeight: '500' }]}>Amul Butter 100g</Text>
-                  <Text style={styles.tableCol}>AMUL001</Text>
-                  <Text style={styles.tableCol}>Dairy</Text>
-                  <Text style={[styles.tableCol, { textAlign: 'center' }]}>89</Text>
-                  <Text style={[styles.tableCol, { textAlign: 'right' }]}>₹52.00</Text>
-                  <View style={[styles.statusBadgeBg, { backgroundColor: '#F0FDF4' }]}><Text style={[styles.statusBadgeText, { color: '#16A34A' }]}>🟢 In Stock</Text></View>
-                </View>
-                <Divider />
-
-                <View style={styles.tableRowItem}>
-                  <Text style={[styles.tableCol, { flex: 2, color: '#1E293B', fontWeight: '500' }]}>Britannia Marie Gold 250g</Text>
-                  <Text style={styles.tableCol}>BRIT002</Text>
-                  <Text style={styles.tableCol}>Biscuits</Text>
-                  <Text style={[styles.tableCol, { textAlign: 'center' }]}>125</Text>
-                  <Text style={[styles.tableCol, { textAlign: 'right' }]}>₹34.00</Text>
-                  <View style={[styles.statusBadgeBg, { backgroundColor: '#F0FDF4' }]}><Text style={[styles.statusBadgeText, { color: '#16A34A' }]}>🟢 In Stock</Text></View>
-                </View>
-                <Divider />
-
-                <View style={styles.tableRowItem}>
-                  <Text style={[styles.tableCol, { flex: 2, color: '#1E293B', fontWeight: '500' }]}>Surf Excel 1kg</Text>
-                  <Text style={styles.tableCol}>SURF003</Text>
-                  <Text style={styles.tableCol}>Detergent</Text>
-                  <Text style={[styles.tableCol, { textAlign: 'center' }]}>3</Text>
-                  <Text style={[styles.tableCol, { textAlign: 'right' }]}>₹240.00</Text>
-                  <View style={[styles.statusBadgeBg, { backgroundColor: '#FEF9C3' }]}><Text style={[styles.statusBadgeText, { color: '#CA8A04' }]}>🟠 Low Stock</Text></View>
-                </View>
-                <Divider />
-
-                <View style={styles.tableRowItem}>
-                  <Text style={[styles.tableCol, { flex: 2, color: '#1E293B', fontWeight: '500' }]}>Maggi Noodles 70g</Text>
-                  <Text style={styles.tableCol}>MAGG005</Text>
-                  <Text style={styles.tableCol}>Noodles</Text>
-                  <Text style={[styles.tableCol, { textAlign: 'center' }]}>0</Text>
-                  <Text style={[styles.tableCol, { textAlign: 'right' }]}>₹12.00</Text>
-                  <View style={[styles.statusBadgeBg, { backgroundColor: '#FEE2E2' }]}><Text style={[styles.statusBadgeText, { color: '#EF4444' }]}>🔴 Out of Stock</Text></View>
-                </View>
-              </View>
-            )}
-
-            {activeDemoTab === 'dashboard' && (
-              <View style={[styles.billingShowcaseWrapper, { flexDirection: 'column', padding: 24 }]}>
-                <View style={[styles.mockCardsRow, { marginBottom: 20 }]}>
-                  <View style={[styles.mockMiniCard, { padding: 12, borderWidth: 1, borderColor: '#E2E8F0' }]}>
-                    <Text style={styles.mockMiniLabel}>Sales Today</Text>
-                    <Text style={[styles.mockMiniVal, { fontSize: 16 }]}>₹48,250.00</Text>
-                    <Text style={[styles.mockMiniSub, { color: '#16A34A' }]}>▲ +12.5% vs yesterday</Text>
-                  </View>
-                  <View style={[styles.mockMiniCard, { padding: 12, borderWidth: 1, borderColor: '#E2E8F0' }]}>
-                    <Text style={styles.mockMiniLabel}>Stock Alerts</Text>
-                    <Text style={[styles.mockMiniVal, { fontSize: 16 }]}>2 Items</Text>
-                    <Text style={[styles.mockMiniSub, { color: '#EAB308' }]}>⚠ Low Stock Alert</Text>
-                  </View>
-                  <View style={[styles.mockMiniCard, { padding: 12, borderWidth: 1, borderColor: '#E2E8F0' }]}>
-                    <Text style={styles.mockMiniLabel}>Total Profit</Text>
-                    <Text style={[styles.mockMiniVal, { fontSize: 16 }]}>₹12,840.00</Text>
-                    <Text style={[styles.mockMiniSub, { color: '#16A34A' }]}>▲ +10.8% vs yesterday</Text>
-                  </View>
-                </View>
-                <View style={[styles.mockGraphPanel, { borderLeftWidth: 0, paddingLeft: 0 }]}>
-                  <Text style={[styles.mockBlockTitle, { fontSize: 14 }]}>Monthly Sales Trend</Text>
-                  <View style={[styles.mockGraphContainer, { height: 110 }]}>
-                    <View style={styles.graphYAxis}>
-                      <Text style={styles.graphYLabel}>75K</Text>
-                      <Text style={styles.graphYLabel}>50K</Text>
-                      <Text style={styles.graphYLabel}>25K</Text>
-                      <Text style={styles.graphYLabel}>0</Text>
-                    </View>
-                    <View style={styles.graphArea}>
-                      <View style={styles.gridLine} />
-                      <View style={styles.gridLine} />
-                      <View style={styles.gridLine} />
-                      <View style={styles.chartLineWrapper}>
-                        <View style={[styles.chartNode, { left: '10%', bottom: '25%' }]} />
-                        <View style={[styles.chartNode, { left: '35%', bottom: '60%' }]} />
-                        <View style={[styles.chartNode, { left: '60%', bottom: '40%' }]} />
-                        <View style={[styles.chartNode, { left: '85%', bottom: '80%' }]} />
-                      </View>
-                    </View>
-                  </View>
-                </View>
-              </View>
-            )}
-
-            {activeDemoTab === 'reports' && (
-              <View style={[styles.billingShowcaseWrapper, { padding: 24, gap: 16 }]}>
-                <Card style={styles.reportTile} elevation={0}>
-                  <View style={styles.reportIconBg}><Icon name="file-chart" size={24} color="#16A34A" /></View>
-                  <Text style={styles.reportTileTitle}>GST Tax Reports</Text>
-                  <Text style={styles.reportTileDesc}>Auto-generate GSTR-1, GSTR-3B filings data and HSN summaries formatted for immediate upload.</Text>
-                  <TouchableOpacity style={styles.reportTileLink} onPress={() => alert('Downloading simulated GST report...')}>
-                    <Text style={styles.reportLinkText}>Download PDF Report</Text>
-                    <Icon name="download" size={14} color="#16A34A" />
-                  </TouchableOpacity>
-                </Card>
-
-                <Card style={styles.reportTile} elevation={0}>
-                  <View style={[styles.reportIconBg, { backgroundColor: '#EFF6FF' }]}><Icon name="book-open" size={24} color="#3B82F6" /></View>
-                  <Text style={styles.reportTileTitle}>Store Day Book</Text>
-                  <Text style={styles.reportTileDesc}>Track every cashier check-in, transaction logs, cash drops, bank transfers, and payment modes hourly.</Text>
-                  <TouchableOpacity style={styles.reportTileLink} onPress={() => alert('Downloading simulated Day Book...')}>
-                    <Text style={[styles.reportLinkText, { color: '#3B82F6' }]}>Export Spreadsheet</Text>
-                    <Icon name="download" size={14} color="#3B82F6" />
-                  </TouchableOpacity>
-                </Card>
-
-                <Card style={styles.reportTile} elevation={0}>
-                  <View style={[styles.reportIconBg, { backgroundColor: '#FEF3C7' }]}><Icon name="cash-multiple" size={24} color="#D97706" /></View>
-                  <Text style={styles.reportTileTitle}>Profit & Loss Ledger</Text>
-                  <Text style={styles.reportTileDesc}>Automated accounting ledger recording wholesale inventory cost vs final checkout margins.</Text>
-                  <TouchableOpacity style={styles.reportTileLink} onPress={() => alert('Downloading simulated P&L sheet...')}>
-                    <Text style={[styles.reportLinkText, { color: '#D97706' }]}>View Balance Sheet</Text>
-                    <Icon name="download" size={14} color="#D97706" />
-                  </TouchableOpacity>
-                </Card>
-              </View>
-            )}
-          </Card>
-        </View>
-
-        {/* 6. SEE SMARTPOS IN ACTION - LIVE PREVIEWS GRID (Screenshot 2) */}
-        <View style={[styles.section, { backgroundColor: '#F8FAFC' }]}>
-          <Text style={styles.liveHeadingMini}>LIVE PREVIEW</Text>
-          <Text style={styles.sectionTitle}>See BharatPOS in Action</Text>
-          <Text style={styles.sectionSubtitle}>Explore the powerful features through our live demos and screenshots.</Text>
-
-          <View style={styles.showcaseTabsRow}>
-            <TouchableOpacity onPress={() => setActiveScreenTab('all')} style={[styles.showcaseTab, activeScreenTab === 'all' && styles.showcaseTabActive]}>
-              <Text style={[styles.showcaseTabText, activeScreenTab === 'all' && styles.showcaseTabTextActive]}>All Screens</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => setActiveScreenTab('billing')} style={[styles.showcaseTab, activeScreenTab === 'billing' && styles.showcaseTabActive]}>
-              <Text style={[styles.showcaseTabText, activeScreenTab === 'billing' && styles.showcaseTabTextActive]}>Billing</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => setActiveScreenTab('inventory')} style={[styles.showcaseTab, activeScreenTab === 'inventory' && styles.showcaseTabActive]}>
-              <Text style={[styles.showcaseTabText, activeScreenTab === 'inventory' && styles.showcaseTabTextActive]}>Inventory</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => setActiveScreenTab('reports')} style={[styles.showcaseTab, activeScreenTab === 'reports' && styles.showcaseTabActive]}>
-              <Text style={[styles.showcaseTabText, activeScreenTab === 'reports' && styles.showcaseTabTextActive]}>Reports</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => setActiveScreenTab('analytics')} style={[styles.showcaseTab, activeScreenTab === 'analytics' && styles.showcaseTabActive]}>
-              <Text style={[styles.showcaseTabText, activeScreenTab === 'analytics' && styles.showcaseTabTextActive]}>Analytics</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => setActiveScreenTab('mobile')} style={[styles.showcaseTab, activeScreenTab === 'mobile' && styles.showcaseTabActive]}>
-              <Text style={[styles.showcaseTabText, activeScreenTab === 'mobile' && styles.showcaseTabTextActive]}>Mobile</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.screenshotGrid}>
-            {(activeScreenTab === 'all' || activeScreenTab === 'billing') && (
-              <Card style={styles.screenshotCard} elevation={0}>
-                <View style={styles.screenshotContent}>
-                  {/* Top Header Mock */}
-                  <View style={styles.innerMockHeader}>
-                    <Text style={styles.innerMockTitle}>BharatPOS</Text>
-                    <Text style={styles.innerMockWalk}>Walk-in Customer</Text>
-                  </View>
-                  <View style={styles.innerBillingMockLayout}>
-                    <View style={styles.innerBillingTable}>
-                      <Text style={styles.innerMockTableHeader}>Product  |  Price  |  Stock</Text>
-                      <Text style={styles.innerMockTableRow}>Britannia Marie Gold 250g | ₹34.00 | 125</Text>
-                      <Text style={styles.innerMockTableRow}>Amul Butter 100g | ₹52.00 | 89</Text>
-                      <Text style={styles.innerMockTableRow}>Tata Tea Premium 250g | ₹156.00 | 45</Text>
-                    </View>
-                    <View style={styles.innerBillingSidebar}>
-                      <Text style={styles.innerSummaryLabel}>Cart (3 items)</Text>
-                      <Text style={styles.innerSummaryText}>Subtotal: ₹262.00</Text>
-                      <Text style={styles.innerSummaryText}>Discount: -₹12.00</Text>
-                      <Text style={styles.innerSummaryText}>GST (6%): ₹12.50</Text>
-                      <Text style={styles.innerSummaryTotal}>Total: ₹262.50</Text>
-                    </View>
-                  </View>
-                </View>
-                <Card.Content style={styles.screenshotCardText}>
-                  <Text style={styles.screenshotCardTitle}>Billing Screen</Text>
-                  <Text style={styles.screenshotCardDesc}>Fast and intuitive billing with barcode scanning, discounts, and multiple payment options.</Text>
-                </Card.Content>
-              </Card>
-            )}
-
-            {(activeScreenTab === 'all' || activeScreenTab === 'inventory') && (
-              <Card style={styles.screenshotCard} elevation={0}>
-                <View style={styles.screenshotContent}>
-                  <View style={styles.innerMockHeader}>
-                    <Text style={styles.innerMockTitle}>Inventory Management</Text>
-                    <Text style={styles.innerMockWalk}>+ Add Product</Text>
-                  </View>
-                  <View style={[styles.innerBillingMockLayout, { flexDirection: 'column', padding: 8 }]}>
-                    <Text style={styles.innerMockTableHeader}>Product | SKU | Stock | Status</Text>
-                    <Text style={styles.innerMockTableRow}>Amul Butter 100g | AMUL001 | 89 | In Stock</Text>
-                    <Text style={styles.innerMockTableRow}>Britannia Gold 250g | BRIT002 | 125 | In Stock</Text>
-                    <Text style={styles.innerMockTableRow}>Surf Excel 1kg | SURF003 | 34 | In Stock</Text>
-                    <Text style={styles.innerMockTableRow}>Tata Tea Premium 250g | TATA004 | 45 | In Stock</Text>
-                  </View>
-                </View>
-                <Card.Content style={styles.screenshotCardText}>
-                  <Text style={styles.screenshotCardTitle}>Inventory Management</Text>
-                  <Text style={styles.screenshotCardDesc}>Real-time stock tracking, low stock alerts, and inventory control across all outlets.</Text>
-                </Card.Content>
-              </Card>
-            )}
-
-            {(activeScreenTab === 'all' || activeScreenTab === 'reports' || activeScreenTab === 'analytics') && (
-              <Card style={styles.screenshotCard} elevation={0}>
-                <View style={styles.screenshotContent}>
-                  <View style={styles.innerMockHeader}>
-                    <Text style={styles.innerMockTitle}>Reports & Analytics</Text>
-                    <Text style={styles.innerMockWalk}>Export</Text>
-                  </View>
-                  <View style={[styles.innerBillingMockLayout, { padding: 8, gap: 4 }]}>
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.miniOverviewLabel}>Total Sales</Text>
-                      <Text style={styles.miniOverviewVal}>₹48,250.00</Text>
-                      <Text style={styles.miniOverviewSub}>▲ +12.5% vs last 3 days</Text>
-                      
-                      <Text style={styles.miniOverviewLabel}>Total Orders</Text>
-                      <Text style={styles.miniOverviewVal}>156</Text>
-                      <Text style={styles.miniOverviewSub}>▲ +8.2% vs last 3 days</Text>
-                    </View>
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.miniOverviewLabel}>Avg Order Value</Text>
-                      <Text style={styles.miniOverviewVal}>₹309.29</Text>
-                      <Text style={styles.miniOverviewSub}>▲ +4.1% vs last 3 days</Text>
-
-                      <Text style={styles.miniOverviewLabel}>Total Profit</Text>
-                      <Text style={styles.miniOverviewVal}>₹12,840.00</Text>
-                      <Text style={styles.miniOverviewSub}>▲ +10.0% vs last 3 days</Text>
-                    </View>
-                  </View>
-                </View>
-                <Card.Content style={styles.screenshotCardText}>
-                  <Text style={styles.screenshotCardTitle}>Reports & Analytics</Text>
-                  <Text style={styles.screenshotCardDesc}>Detailed reports, charts, and insights to help grow your business.</Text>
-                </Card.Content>
-              </Card>
-            )}
-
-            {(activeScreenTab === 'all' || activeScreenTab === 'mobile') && (
-              <Card style={styles.screenshotCard} elevation={0}>
-                <View style={[styles.screenshotContent, { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 12 }]}>
-                  {/* Phone frame */}
-                  <View style={styles.miniPhoneFrame}>
-                    <View style={styles.miniPhoneNotch} />
-                    <Text style={styles.miniPhoneHeader}>BharatPOS</Text>
-                    <Text style={styles.miniPhoneText}>Grand Total</Text>
-                    <Text style={styles.miniPhonePrice}>₹262.50</Text>
-                    <View style={styles.miniPhoneList}>
-                      <Text style={styles.miniPhoneItem}>- Britannia Gold (x1)</Text>
-                      <Text style={styles.miniPhoneItem}>- Amul Butter (x2)</Text>
-                    </View>
-                    <View style={styles.miniPhoneBtn}><Text style={styles.miniPhoneBtnText}>Pay Now</Text></View>
-                  </View>
-                  <Icon name="barcode-scan" size={48} color="#D1D5DB" />
-                </View>
-                <Card.Content style={styles.screenshotCardText}>
-                  <Text style={styles.screenshotCardTitle}>Mobile Billing</Text>
-                  <Text style={styles.screenshotCardDesc}>Bill from anywhere with our mobile app. Works offline and syncs automatically.</Text>
-                </Card.Content>
-              </Card>
-            )}
-
-            {(activeScreenTab === 'all' || activeScreenTab === 'reports') && (
-              <Card style={styles.screenshotCard} elevation={0}>
-                <View style={styles.screenshotContent}>
-                  <View style={styles.innerMockHeader}>
-                    <Text style={styles.innerMockTitle}>GST Reports</Text>
-                    <Text style={styles.innerMockWalk}>GSTR-1</Text>
-                  </View>
-                  <View style={[styles.innerBillingMockLayout, { flexDirection: 'column', padding: 8, gap: 6 }]}>
-                    <View style={{ flexDirection: 'row', gap: 4 }}>
-                      <View style={styles.miniGstCard}><Text style={styles.miniGstCardLabel}>Total Taxable Value</Text><Text style={styles.miniGstCardVal}>₹4,85,000.00</Text></View>
-                      <View style={styles.miniGstCard}><Text style={styles.miniGstCardLabel}>CGST</Text><Text style={styles.miniGstCardVal}>₹21,825.00</Text></View>
-                      <View style={styles.miniGstCard}><Text style={styles.miniGstCardLabel}>SGST</Text><Text style={styles.miniGstCardVal}>₹21,825.00</Text></View>
-                    </View>
-                    <Text style={styles.innerMockTableHeader}>HSN Code | Description | Taxable Value</Text>
-                    <Text style={styles.innerMockTableRow}>1905 | Bread, biscuits, cakes | ₹1,25,000.00</Text>
-                  </View>
-                </View>
-                <Card.Content style={styles.screenshotCardText}>
-                  <Text style={styles.screenshotCardTitle}>GST & Tax Management</Text>
-                  <Text style={styles.screenshotCardDesc}>Automated GST calculation, returns, and compliance made simple.</Text>
-                </Card.Content>
-              </Card>
-            )}
-
-            {(activeScreenTab === 'all' || activeScreenTab === 'analytics') && (
-              <Card style={styles.screenshotCard} elevation={0}>
-                <View style={styles.screenshotContent}>
-                  <View style={styles.innerMockHeader}>
-                    <Text style={styles.innerMockTitle}>Customer Management</Text>
-                    <Text style={styles.innerMockWalk}>+ Add Customer</Text>
-                  </View>
-                  <View style={[styles.innerBillingMockLayout, { flexDirection: 'column', padding: 8 }]}>
-                    <Text style={styles.innerMockTableHeader}>Customer Name | Phone | Total Due | Status</Text>
-                    <Text style={styles.innerMockTableRow}>Rahul Sharma | 9876543210 | ₹1,250.00 | Active</Text>
-                    <Text style={styles.innerMockTableRow}>Priya Patel | 9876543211 | ₹0.00 | Active</Text>
-                    <Text style={styles.innerMockTableRow}>Amit Kumar | 9876543212 | ₹750.00 | Active</Text>
-                    <Text style={styles.innerMockTableRow}>Neha Singh | 9876543213 | ₹0.00 | Inactive</Text>
-                  </View>
-                </View>
-                <Card.Content style={styles.screenshotCardText}>
-                  <Text style={styles.screenshotCardTitle}>Customer Management</Text>
-                  <Text style={styles.screenshotCardDesc}>Manage customer details, purchase history, and outstanding dues.</Text>
-                </Card.Content>
-              </Card>
-            )}
-          </View>
-        </View>
-
-        
         {/* ── ABOUT BHARATPOS SECTION (Image 11) ── */}
         <View style={[styles.section, { backgroundColor: '#FFFFFF' }]} onLayout={(e) => handleLayout('about', e)}>
           <View style={[styles.aboutContainer, { flexDirection: screenWidth > 960 ? 'row' : 'column' }]}>
@@ -1184,14 +781,7 @@ export default function Index() {
                   <View style={styles.posMachineBase} />
                 </View>
 
-                {/* Trusted Badge */}
-                <View style={styles.trustedBusinessesBadge}>
-                  <Icon name="star" size={20} color="#F59E0B" />
-                  <View style={{ marginLeft: 8 }}>
-                    <Text style={styles.trustedBadgeBold}>5,000+</Text>
-                    <Text style={styles.trustedBadgeSub}>Happy Businesses</Text>
-                  </View>
-                </View>
+
               </View>
             </View>
           </View>
@@ -1353,6 +943,83 @@ export default function Index() {
           MODALS & DIALOGS
           --------------------------------------------------------- */}
 
+      {/* 0. LOGIN DIALOG POPUP */}
+      <Portal>
+        <Dialog visible={showLoginModal} onDismiss={() => setShowLoginModal(false)} style={styles.dialogStyle}>
+          <Dialog.Title style={{ color: '#0F172A', fontWeight: '800', fontSize: 18, fontFamily: 'Plus Jakarta Sans' }}>
+            Login to BharatPOS
+          </Dialog.Title>
+          <Dialog.Content>
+            <Text style={{ fontSize: 13, color: '#475569', marginBottom: 16, lineHeight: 18, fontFamily: 'Plus Jakarta Sans' }}>
+              Sign in to access your retail POS billing, restaurant tables & KOT, and business accounting ledgers.
+            </Text>
+
+            <TextInput
+              label="Email Address"
+              value={loginEmail}
+              onChangeText={setLoginEmail}
+              mode="outlined"
+              style={styles.formInput}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              activeOutlineColor="#16A34A"
+              outlineColor="#E5E7EB"
+            />
+            <TextInput
+              label="Password"
+              value={loginPassword}
+              onChangeText={setLoginPassword}
+              secureTextEntry
+              mode="outlined"
+              style={styles.formInput}
+              activeOutlineColor="#16A34A"
+              outlineColor="#E5E7EB"
+            />
+
+            <View style={{ marginTop: 12, flexDirection: 'row', justifyContent: 'center' }}>
+              <TouchableOpacity
+                onPress={() => {
+                  setShowLoginModal(false);
+                  setShowSignupModal(true);
+                }}
+              >
+                <Text style={{ fontSize: 13, color: '#475569' }}>
+                  Don't have an account? <Text style={{ color: '#16A34A', fontWeight: '700', textDecorationLine: 'underline' }}>Sign Up Free</Text>
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </Dialog.Content>
+          <Dialog.Actions style={{ justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 16 }}>
+            <Button
+              mode="outlined"
+              style={{ borderColor: '#E5E7EB', marginRight: 'auto', backgroundColor: '#F9FAFB' }}
+              labelStyle={{ color: '#374151', fontSize: 11 }}
+              onPress={() => {
+                setLoginEmail('demo.owner@bharatpos.com');
+                setLoginPassword('bharatpos123');
+              }}
+            >
+              Autofill Demo
+            </Button>
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              <Button onPress={() => setShowLoginModal(false)} labelStyle={{ color: '#475569' }}>
+                Cancel
+              </Button>
+              <Button
+                mode="contained"
+                buttonColor="#16A34A"
+                loading={loginLoading}
+                disabled={loginLoading}
+                onPress={handleLoginSubmit}
+                labelStyle={{ fontWeight: 'bold' }}
+              >
+                Login
+              </Button>
+            </View>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
+
       {/* 1. SIGNUP DIALOG */}
       <Portal>
         <Dialog visible={showSignupModal} onDismiss={() => setShowSignupModal(false)} style={styles.dialogStyle}>
@@ -1399,8 +1066,21 @@ export default function Index() {
                   { value: 'Laptop + Mobile', label: 'Laptop + Mobile' },
                   { value: 'Large Shop', label: 'Large Shop' }
                 ]}
-                style={{ marginBottom: 8 }}
+                style={{ marginBottom: 12 }}
               />
+
+              <View style={{ marginTop: 8, marginBottom: 6, flexDirection: 'row', justifyContent: 'center' }}>
+                <TouchableOpacity
+                  onPress={() => {
+                    setShowSignupModal(false);
+                    setShowLoginModal(true);
+                  }}
+                >
+                  <Text style={{ fontSize: 13, color: '#475569' }}>
+                    Already have an account? <Text style={{ color: '#16A34A', fontWeight: '700', textDecorationLine: 'underline' }}>Log In</Text>
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </ScrollView>
           </Dialog.Content>
           <Dialog.Actions style={{ justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 16 }}>
