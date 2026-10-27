@@ -190,15 +190,6 @@ export default function LoginScreen() {
 
   const renderLoginForm = () => (
     <View style={styles.formWrapper}>
-      {/* Top ← Back to Home Page Action */}
-      <TouchableOpacity 
-        onPress={() => router.push('/')} 
-        style={styles.formBackBtn}
-        activeOpacity={0.7}
-      >
-        <Icon name="arrow-left" size={16} color="#16A34A" />
-        <Text style={styles.formBackBtnText}>← Back to Home Page</Text>
-      </TouchableOpacity>
 
       {/* Brand Header */}
       <TouchableOpacity onPress={() => router.push('/')} style={styles.brandHeader} activeOpacity={0.8}>
@@ -286,15 +277,6 @@ export default function LoginScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Return to website bottom anchor */}
-        <TouchableOpacity 
-          onPress={() => router.push('/')} 
-          style={styles.returnHomeFooter}
-          activeOpacity={0.7}
-        >
-          <Icon name="home-outline" size={16} color="#64748B" />
-          <Text style={styles.returnHomeText}>← Back to Home Page</Text>
-        </TouchableOpacity>
       </View>
     </View>
   );

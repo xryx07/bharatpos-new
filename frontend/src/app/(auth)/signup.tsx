@@ -108,15 +108,6 @@ export default function SignupScreen() {
 
   const renderSignupForm = () => (
     <View style={styles.formContainer}>
-      {/* Top ← Back to Home Page Action */}
-      <TouchableOpacity 
-        onPress={() => router.push('/')} 
-        style={styles.formBackBtn}
-        activeOpacity={0.7}
-      >
-        <Icon name="arrow-left" size={16} color="#16A34A" />
-        <Text style={styles.formBackBtnText}>← Back to Home Page</Text>
-      </TouchableOpacity>
 
       <Text style={styles.formTitle}>Start Your 30-Day Free Trial</Text>
       <Text style={styles.formSub}>Get instant access to all features. No credit card required.</Text>
@@ -331,15 +322,6 @@ export default function SignupScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Return to website bottom anchor */}
-        <TouchableOpacity 
-          onPress={() => router.push('/')} 
-          style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 12, paddingVertical: 6 }}
-          activeOpacity={0.7}
-        >
-          <Icon name="home-outline" size={16} color="#64748B" />
-          <Text style={{ fontSize: 12, color: '#64748B', fontWeight: '600' }}>← Back to Home Page</Text>
-        </TouchableOpacity>
       </View>
     </View>
   );
