@@ -260,10 +260,19 @@ export default function OwnerLayout() {
       if (isFirebaseConfigured) {
         await signOut(auth);
       }
+      if (Platform.OS === 'web' && typeof window !== 'undefined') {
+        window.localStorage.removeItem('ownerBypass');
+        window.localStorage.removeItem('cachedUserUid');
+        window.localStorage.removeItem('cachedUserRole');
+        window.localStorage.removeItem('cachedUserPlan');
+        window.localStorage.removeItem('cachedTenantId');
+        window.localStorage.removeItem('cachedPermissions');
+        window.localStorage.clear();
+      }
     } catch (error) {
       console.error("Firebase logout error:", error);
     }
-    router.replace('/login');
+    router.replace('/');
   };
 
   const handleNav = (path: any) => {
@@ -441,17 +450,15 @@ export default function OwnerLayout() {
               <Icon name={isSidebarOpen ? 'menu-open' : 'menu'} size={20} color={posBusinessMode === 'restaurant' ? '#94A3B8' : '#333'} />
             </TouchableOpacity>
 
-            {posBusinessMode !== 'restaurant' && screenWidth > 640 && (
-              <View style={styles.topSearchBarWrap}>
-                <Icon name="magnify" size={17} color="#94A3B8" style={{ marginRight: 8 }} />
-                <RNTextInput
-                  placeholder="Search products, SKU, barcode..."
-                  placeholderTextColor="#94A3B8"
-                  style={styles.topSearchRawInput}
-                  onFocus={() => router.push('/(owner)/pos_billing')}
-                />
-                <View style={styles.fKeyBadge}>
-                  <Text style={styles.fKeyBadgeText}>F2</Text>
+            {/* Brand Mark in Top Bar */}
+            {screenWidth > 850 && (
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 10, marginRight: 14 }}>
+                <View style={{ width: 28, height: 28, borderRadius: 7, backgroundColor: '#16A34A', alignItems: 'center', justifyContent: 'center' }}>
+                  <Icon name="infinity" size={17} color="#FFFFFF" />
+                </View>
+                <View style={{ marginLeft: 8 }}>
+                  <Text style={{ fontSize: 14, fontWeight: '800', color: posBusinessMode === 'restaurant' ? '#FFFFFF' : '#0F172A', letterSpacing: -0.3 }}>BharatPOS</Text>
+                  <Text style={{ fontSize: 8.5, color: posBusinessMode === 'restaurant' ? '#94A3B8' : '#64748B', fontWeight: '500' }}>Smart POS for Every Business</Text>
                 </View>
               </View>
             )}
@@ -484,7 +491,40 @@ export default function OwnerLayout() {
             </TouchableOpacity>
           </View>
 
+          {/* Center Category & Mode Tabs (Image 2 Matching) */}
+          {screenWidth > 1024 && (
+            <View style={styles.topNavCenterTabs}>
+              <TouchableOpacity onPress={() => router.push('/(owner)/pos_billing')} style={styles.topNavTabItem}>
+                <Text style={[styles.topNavTabText, pathname.includes('pos_billing') && styles.topNavTabTextActive]}>Retail</Text>
+              </TouchableOpacity>
+              <Text style={styles.topNavTabDivider}>|</Text>
+              <TouchableOpacity onPress={() => router.push('/(owner)/wholesale')} style={styles.topNavTabItem}>
+                <Text style={[styles.topNavTabText, pathname.includes('wholesale') && styles.topNavTabTextActive]}>Wholesale</Text>
+              </TouchableOpacity>
+              <Text style={styles.topNavTabDivider}>|</Text>
+              <TouchableOpacity onPress={() => router.push('/(owner)/tables_kot')} style={styles.topNavTabItem}>
+                <Text style={[styles.topNavTabText, pathname.includes('tables_kot') && styles.topNavTabTextActive]}>Cafe & Restaurant</Text>
+              </TouchableOpacity>
+              <Text style={styles.topNavTabDivider}>|</Text>
+              <TouchableOpacity onPress={() => router.push('/(owner)/cash_bank_book')} style={styles.topNavTabItem}>
+                <Text style={[styles.topNavTabText, (pathname.includes('cash_bank') || pathname.includes('journal') || pathname.includes('day_book')) && styles.topNavTabTextActive]}>Accounting</Text>
+              </TouchableOpacity>
+              <Text style={styles.topNavTabDivider}>|</Text>
+              <TouchableOpacity onPress={() => router.push('/(owner)/gst_management')} style={styles.topNavTabItem}>
+                <Text style={[styles.topNavTabText, pathname.includes('gst') && styles.topNavTabTextActive]}>GST</Text>
+              </TouchableOpacity>
+              <Text style={styles.topNavTabDivider}>|</Text>
+              <TouchableOpacity onPress={() => router.push('/(owner)/reports')} style={styles.topNavTabItem}>
+                <Text style={[styles.topNavTabText, pathname.includes('reports') && styles.topNavTabTextActive]}>Tally Integration</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
           <View style={styles.topBarRight}>
+            {screenWidth > 1280 && (
+              <Text style={styles.topBarSloganBlue}>One Platform. Complete Business.</Text>
+            )}
+
             {posBusinessMode === 'restaurant' && (
               <View style={styles.cafeLiveClockPill}>
                 <Icon name="clock-outline" size={14} color="#94A3B8" style={{ marginRight: 6 }} />
@@ -807,6 +847,43 @@ const styles = StyleSheet.create({
     color: '#94A3B8',
     fontSize: 12,
     fontWeight: '600',
+  },
+  topNavCenterTabs: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 20,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    marginHorizontal: 8,
+  },
+  topNavTabItem: {
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: 12,
+  },
+  topNavTabText: {
+    fontSize: 11.5,
+    fontWeight: '600',
+    color: '#475569',
+  },
+  topNavTabTextActive: {
+    color: '#16A34A',
+    fontWeight: '700',
+  },
+  topNavTabDivider: {
+    color: '#CBD5E1',
+    marginHorizontal: 3,
+    fontSize: 11,
+  },
+  topBarSloganBlue: {
+    fontSize: 12.5,
+    fontWeight: '700',
+    color: '#2563EB',
+    fontStyle: 'italic',
+    marginRight: 10,
   },
   bellButtonDark: {
     backgroundColor: '#1E293B',

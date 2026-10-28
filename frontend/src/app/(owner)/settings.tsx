@@ -268,10 +268,23 @@ export default function AdminSettingsScreen() {
   };
 
   const handleLogout = async () => {
-    if (isFirebaseConfigured) {
-      await signOut(auth);
+    try {
+      if (isFirebaseConfigured) {
+        await signOut(auth);
+      }
+      if (Platform.OS === 'web' && typeof window !== 'undefined') {
+        window.localStorage.removeItem('ownerBypass');
+        window.localStorage.removeItem('cachedUserUid');
+        window.localStorage.removeItem('cachedUserRole');
+        window.localStorage.removeItem('cachedUserPlan');
+        window.localStorage.removeItem('cachedTenantId');
+        window.localStorage.removeItem('cachedPermissions');
+        window.localStorage.clear();
+      }
+    } catch (e) {
+      console.error("Logout error:", e);
     }
-    router.replace('/login');
+    router.replace('/');
   };
 
   const handleSeedCatalog = async () => {

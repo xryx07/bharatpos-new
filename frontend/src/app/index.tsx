@@ -8,7 +8,6 @@ import { auth, db } from '../lib/firebase';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from '../lib/firestore_adapter';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import BharatPOSShowcase from '../components/BharatPOSShowcase';
 
 // Add Plus Jakarta Sans font link on Web platforms dynamically
 if (Platform.OS === 'web' && typeof document !== 'undefined') {
@@ -652,11 +651,6 @@ export default function Index() {
               </View>
             </View>
           </View>
-        </View>
-
-        {/* ── BHARATPOS 16-MODULE SHOWCASE (Image Matching) ── */}
-        <View style={styles.showcaseSectionContainer} onLayout={(e) => handleLayout('solutions', e)}>
-          <BharatPOSShowcase />
         </View>
 
         {/* ── 4. "WHY BHARATPOS?" + 8 FEATURE TILES (Image 1) ── */}
