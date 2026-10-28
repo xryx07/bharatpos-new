@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, TouchableOpacity, ScrollView, Platform, Animated, useWindowDimensions, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ScrollView, Platform, Animated, useWindowDimensions, ActivityIndicator, TextInput as RNTextInput } from 'react-native';
 import { Text, Divider, useTheme, IconButton, Avatar, Surface, Badge, Button, TextInput, Portal } from 'react-native-paper';
 import { Slot, router, usePathname } from 'expo-router';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
