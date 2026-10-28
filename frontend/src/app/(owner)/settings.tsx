@@ -450,7 +450,7 @@ export default function AdminSettingsScreen() {
                   <View style={{ flex: 1 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                       <Text style={{ fontSize: 13.5, fontWeight: '700', color: posBusinessMode === 'retail' ? '#166534' : '#1E293B' }}>
-                        Retail & Supermarket (Zoho Style)
+                        Retail & Supermarket POS
                       </Text>
                       {posBusinessMode === 'retail' && (
                         <View style={{ backgroundColor: '#16A34A', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>
@@ -520,7 +520,7 @@ export default function AdminSettingsScreen() {
                   <View style={{ flex: 1 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                       <Text style={{ fontSize: 13.5, fontWeight: '700', color: posBusinessMode === 'restaurant' ? '#6D28D9' : '#1E293B' }}>
-                        Restaurant & Cafe (Petpooja Style)
+                        Restaurant & Café POS
                       </Text>
                       {posBusinessMode === 'restaurant' && (
                         <View style={{ backgroundColor: '#7C3AED', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>
@@ -600,7 +600,7 @@ export default function AdminSettingsScreen() {
             <View style={styles.sectionHeaderRow}>
               <View style={styles.iconTitleBox}>
                 <Icon name="lightning-bolt-outline" size={20} color="#F59E0B" />
-                <Text style={styles.sectionTitle}>Workflow Automations (Zoho POS)</Text>
+                <Text style={styles.sectionTitle}>Workflow Automations</Text>
               </View>
             </View>
 

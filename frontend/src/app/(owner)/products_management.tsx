@@ -605,7 +605,7 @@ export default function ProductsManagementScreen() {
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
               <Text style={styles.title}>Products & Price Catalog</Text>
               <View style={styles.proTag}>
-                <Text style={styles.proTagText}>PETPOOJA SUITE</Text>
+                <Text style={styles.proTagText}>RESTAURANT SUITE</Text>
               </View>
             </View>
             <Text style={styles.subtitle}>Unified master catalog with barcode generator & wholesaler bill parser</Text>

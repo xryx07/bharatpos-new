@@ -742,11 +742,11 @@ export default function AdminDashboard() {
                     : '#0F172A' 
                 }}>
                   {posBusinessMode === 'retail' 
-                    ? 'Active Mode: Retail POS (Zoho Style)' 
+                    ? 'Active Mode: Retail POS' 
                     : posBusinessMode === 'wholesale' 
                     ? 'Active Mode: Wholesale & Distribution ERP' 
                     : posBusinessMode === 'restaurant' 
-                    ? 'Active Mode: Restaurant & Café (Petpooja Style)' 
+                    ? 'Active Mode: Restaurant & Café POS' 
                     : 'Active Mode: Enterprise Multi-Mode'}
                 </Text>
               </View>
@@ -1158,18 +1158,18 @@ export default function AdminDashboard() {
           {renderShopModeWidget()}
         </FadeInSection>
 
-        {/* ── Store Persona Quick Launch (Tailored Zoho Retail vs Petpooja Restaurant) ── */}
+        {/* ── Store Persona Quick Launch (Tailored Retail vs Restaurant Operations) ── */}
         <FadeInSection delay={175}>
           <View style={styles.quickLaunchContainer}>
             <View style={styles.quickLaunchHeader}>
               <View>
                 <Text style={styles.quickLaunchTitle}>
                   {posBusinessMode === 'retail' 
-                    ? 'Zoho Retail Quick Launch' 
+                    ? 'Retail POS Operations' 
                     : posBusinessMode === 'wholesale' 
-                    ? 'Wholesale ERP Quick Launch' 
+                    ? 'Wholesale & B2B Operations' 
                     : posBusinessMode === 'restaurant' 
-                    ? 'Petpooja Restaurant Quick Launch' 
+                    ? 'Café & Restaurant Operations' 
                     : 'BharatPOS Enterprise Suite'}
                 </Text>
                 <Text style={styles.quickLaunchSubtitle}>
@@ -1721,5 +1721,198 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     color: '#FFFFFF',
     letterSpacing: 0.5,
+  },
+
+  // ── Dynamic Live Operations Radar Styles ──
+  liveOpsContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    marginBottom: 24,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  liveOpsHeader: {
+    marginBottom: 16,
+  },
+  livePulseDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#10B981',
+  },
+  liveOpsHeading: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#0F172A',
+    letterSpacing: 0.8,
+  },
+  liveTagPill: {
+    backgroundColor: '#F0FDF4',
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
+  },
+  liveTagText: {
+    fontSize: 9.5,
+    fontWeight: '800',
+    color: '#16A34A',
+    letterSpacing: 0.5,
+  },
+  liveOpsSubtitle: {
+    fontSize: 12.5,
+    color: '#64748B',
+    marginTop: 4,
+  },
+  liveOpsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 14,
+  },
+  liveOpsCard: {
+    flexGrow: 1,
+    flexBasis: '23%',
+    minWidth: 220,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    justifyContent: 'space-between',
+  },
+  liveOpsCardTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  liveOpsIconBox: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  microBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    alignSelf: 'flex-start',
+  },
+  microBadgeText: {
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+  liveOpsVal: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#0F172A',
+    marginBottom: 2,
+  },
+  liveOpsLabel: {
+    fontSize: 12.5,
+    fontWeight: '600',
+    color: '#64748B',
+  },
+  liveOpsFoot: {
+    marginTop: 12,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#E2E8F0',
+  },
+  liveOpsFootText: {
+    fontSize: 11.5,
+    fontWeight: '600',
+    color: '#475569',
+  },
+
+  // ── Quick Launch Operations Styles ──
+  quickLaunchContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    marginBottom: 24,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  quickLaunchHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginBottom: 16,
+  },
+  quickLaunchTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#0F172A',
+    letterSpacing: -0.2,
+  },
+  quickLaunchSubtitle: {
+    fontSize: 12.5,
+    color: '#64748B',
+    marginTop: 3,
+  },
+  proPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 6,
+  },
+  proPillText: {
+    fontSize: 10.5,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+  quickLaunchGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  quickLaunchItem: {
+    flexGrow: 1,
+    flexBasis: '23%',
+    minWidth: 220,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 12,
+    borderRadius: 10,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  quickLaunchIcon: {
+    width: 38,
+    height: 38,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  quickLaunchItemTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  quickLaunchItemDesc: {
+    fontSize: 11,
+    color: '#64748B',
+    marginTop: 2,
   },
 });

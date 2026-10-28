@@ -2312,7 +2312,7 @@ const styles = StyleSheet.create({
   formInput: { marginBottom: 10, backgroundColor: '#FFFFFF' },
   dialogStyle: { borderRadius: 10, backgroundColor: '#FFFFFF' },
 
-  // Petpooja-inspired 4-in-1 Ecosystem Styles
+  // BharatPOS Ecosystem Styles
   ecosystemSection: {
     paddingVertical: 70,
     paddingHorizontal: 24,

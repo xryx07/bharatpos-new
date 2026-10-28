@@ -150,7 +150,7 @@ export default function StepwiseTasksScreen() {
         </View>
       </View>
 
-      {/* 2. Petpooja Tasks Status Banner */}
+      {/* 2. Tasks Status Banner */}
       <Surface style={styles.statusBanner} elevation={1}>
         <View style={styles.bannerRow}>
           <View style={{ flex: 1 }}>

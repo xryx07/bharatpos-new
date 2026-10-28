@@ -258,7 +258,7 @@ export default function AttendoAttendanceScreen() {
         </View>
       </View>
 
-      {/* 2. Petpooja Shift & Stats Row */}
+      {/* 2. Shift & Staff Stats Row */}
       <View style={styles.shiftCardsRow}>
         <Surface style={styles.shiftCard} elevation={1}>
           <View style={styles.shiftIconBox}>
