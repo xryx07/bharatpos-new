@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { DS } from '../../constants/designTokens';
-import { View, StyleSheet, ScrollView, Alert, Platform, Share } from 'react-native';
+import { View, StyleSheet, ScrollView, Alert, Platform, Share, TouchableOpacity } from 'react-native';
 import { Text, Card, Button, Switch, useTheme, SegmentedButtons, TextInput, Portal, Dialog } from 'react-native-paper';
 import { auth, isFirebaseConfigured, db } from '../../lib/firebase';
 import { signOut } from 'firebase/auth';

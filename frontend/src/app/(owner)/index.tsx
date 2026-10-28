@@ -458,24 +458,11 @@ export default function AdminDashboard() {
   const profitMarginText = todaySales > 0 ? `${((totalProfit / todaySales) * 100).toFixed(0)}% net margin` : '0% net margin';
   const lowStockAlertText = lowStockAlertCount > 0 ? `${lowStockAlertCount} items need attention` : 'All items in stock';
 
-  const metrics: MetricConfig[] = shopMode === 'Mobile Only' ? (
-    isGstRegistered ? [
-      { title: "Today's Sales", value: salesValue, prefix: '₹', icon: 'currency-inr', color: '#16A34A', bgColor: '#F0FDF4', changeText: salesDiffText, changeColor: salesDiffColor },
-      { title: "Total Amount Collected", value: salesValue, prefix: '₹', icon: 'cash-check', color: '#16A34A', bgColor: '#F0FDF4', changeText: 'Settled to bank', changeColor: '#6B7280' },
-      { title: "Total Profit", value: totalProfit, prefix: '₹', icon: 'trending-up', color: '#16A34A', bgColor: '#F0FDF4', changeText: profitMarginText, changeColor: '#16A34A' },
-      { title: "GST Collected", value: 0, prefix: '₹', icon: 'bank', color: '#4B5563', bgColor: '#F9FAFB', changeText: 'Tax Portal synced', changeColor: '#6B7280' },
-    ] : [
-      { title: "Today's Sales", value: salesValue, prefix: '₹', icon: 'currency-inr', color: '#16A34A', bgColor: '#F0FDF4', changeText: salesDiffText, changeColor: salesDiffColor },
-      { title: "Total Amount Collected", value: salesValue, prefix: '₹', icon: 'cash-check', color: '#16A34A', bgColor: '#F0FDF4', changeText: 'Settled to bank', changeColor: '#6B7280' },
-      { title: "Coming Soon (Khata)", value: 0, prefix: '₹', icon: 'account-clock', color: '#4B5563', bgColor: '#F9FAFB', changeText: 'Bookkeeping module', changeColor: '#6B7280' },
-      { title: "Low Stock Alert", value: lowStockAlertCount, icon: 'alert-outline', color: '#DC2626', bgColor: '#FEF2F2', changeText: lowStockAlertText, changeColor: lowStockAlertCount > 0 ? '#DC2626' : '#16A34A' },
-    ]
-  ) : [
-    { title: "Today's Sales", value: salesValue, prefix: '₹', icon: 'currency-inr', color: '#16A34A', bgColor: '#F0FDF4', changeText: salesDiffText, changeColor: salesDiffColor },
-    { title: "Yesterday's Sales", value: yesterdaySales, prefix: '₹', icon: 'chart-timeline-variant', color: '#4B5563', bgColor: '#F9FAFB', changeText: 'Previous day revenue', changeColor: '#6B7280' },
-    { title: "Monthly Sales", value: monthlySales, prefix: '₹', icon: 'calendar-month', color: '#16A34A', bgColor: '#F0FDF4', changeText: 'Target: ₹1,00,000', changeColor: '#16A34A' },
-    { title: "Total Profit", value: totalProfit, prefix: '₹', icon: 'trending-up', color: '#16A34A', bgColor: '#F0FDF4', changeText: profitMarginText, changeColor: '#16A34A' },
-    { title: "Low Stock Alert", value: lowStockAlertCount, icon: 'alert-outline', color: '#DC2626', bgColor: '#FEF2F2', changeText: lowStockAlertText, changeColor: lowStockAlertCount > 0 ? '#DC2626' : '#16A34A' },
+  const metrics: MetricConfig[] = [
+    { title: "Today's Revenue", value: salesValue, prefix: '₹', icon: 'currency-inr', color: '#0F172A', bgColor: '#F8FAFC', changeText: salesDiffText, changeColor: salesDiffColor },
+    { title: "Total Bills / Orders", value: ordersValue, prefix: '', icon: 'receipt-text-outline', color: '#0F172A', bgColor: '#F8FAFC', changeText: ordersValue > 0 ? 'Active terminal' : 'No bills yet today', changeColor: '#64748B' },
+    { title: "Net Profit", value: totalProfit, prefix: '₹', icon: 'trending-up', color: '#16A34A', bgColor: '#F0FDF4', changeText: profitMarginText, changeColor: '#16A34A' },
+    { title: "Stock Replenishment", value: lowStockAlertCount, icon: 'alert-circle-outline', color: lowStockAlertCount > 0 ? '#DC2626' : '#64748B', bgColor: lowStockAlertCount > 0 ? '#FEF2F2' : '#F8FAFC', changeText: lowStockAlertText, changeColor: lowStockAlertCount > 0 ? '#DC2626' : '#64748B' },
   ];
 
   const renderShopModeWidget = () => {
@@ -637,78 +624,34 @@ export default function AdminDashboard() {
               <Text style={styles.greetingText}>{getGreeting()}, {userName}</Text>
               <Text style={styles.greetingSubtext}>Here's what's happening with your store today.</Text>
             </View>
-            <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+            <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
               <TouchableOpacity
-                style={[styles.greetingBadge, { backgroundColor: isDarkMode ? '#10B981' : '#ECFDF5' }]}
-                onPress={() => setShowAssistantModal(true)}
-              >
-                <Icon name="robot-happy" size={16} color={isDarkMode ? '#FFFFFF' : '#10B981'} />
-                <Text style={[styles.greetingBadgeText, { color: isDarkMode ? '#FFFFFF' : '#10B981', fontWeight: '700' }]}>
-                  AI Copilot
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={[styles.greetingBadge, { backgroundColor: '#F0FDF4', borderColor: '#BBF7D0' }]}
+                style={styles.headerActionOutline}
                 onPress={() => router.push('/')}
+                activeOpacity={0.8}
               >
-                <Icon name="home" size={16} color="#16A34A" />
-                <Text style={[styles.greetingBadgeText, { color: '#16A34A', fontWeight: 'bold' }]}>Back to Homepage</Text>
+                <Icon name="home-outline" size={15} color="#475569" />
+                <Text style={styles.headerActionOutlineText}>Website</Text>
               </TouchableOpacity>
-              <View style={styles.greetingBadge}>
-                <Icon name="store" size={16} color="#10B981" />
-                <Text style={styles.greetingBadgeText}>Main Branch</Text>
-              </View>
+              <TouchableOpacity
+                style={styles.headerActionSolid}
+                onPress={() => router.push(posBusinessMode === 'restaurant' ? '/(owner)/tables_kot' as any : '/(owner)/pos_billing' as any)}
+                activeOpacity={0.85}
+              >
+                <Icon name="plus-circle" size={15} color="#FFFFFF" />
+                <Text style={styles.headerActionSolidText}>{posBusinessMode === 'restaurant' ? 'New Table KOT' : 'New Bill [F2]'}</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </FadeInSection>
 
-        {/* ── Conversational AI Copilot Bar ──────────────────────── */}
-        <FadeInSection delay={50}>
-          <TouchableOpacity
-            style={[
-              styles.aiCopilotBanner,
-              { backgroundColor: isDarkMode ? '#0F172A' : '#ECFDF5', borderColor: isDarkMode ? '#1E293B' : '#A7F3D0' }
-            ]}
-            onPress={() => setShowAssistantModal(true)}
-            activeOpacity={0.85}
-          >
-            <View style={styles.aiCopilotLeft}>
-              <View style={[styles.aiCopilotIconBox, { backgroundColor: '#10B981' }]}>
-                <Icon name="robot-happy" size={20} color="#FFFFFF" />
-              </View>
-              <View style={{ flex: 1 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <Text style={[styles.aiCopilotTitle, { color: isDarkMode ? '#F8FAFC' : '#0F172A' }]}>
-                    BharatPOS AI Voice Assistant
-                  </Text>
-                  <View style={styles.aiNewPill}>
-                    <Text style={styles.aiNewPillText}>AI COPILOT</Text>
-                  </View>
-                </View>
-                <Text style={[styles.aiCopilotSub, { color: isDarkMode ? '#94A3B8' : '#047857' }]}>
-                  Speak or type: "Add 2 Milk and 1 Bread", "Check stock for Sugar", "Today's sales"
-                </Text>
-              </View>
-            </View>
-            <View style={styles.aiMicBtn}>
-              <Icon name="microphone" size={18} color="#FFFFFF" />
-            </View>
-          </TouchableOpacity>
-        </FadeInSection>
+        
  
         {/* ── Store Mode Identity Banner (Tailored to Shop Persona) ── */}
         <FadeInSection delay={60}>
           <View style={styles.businessModeBanner}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1, flexWrap: 'wrap' }}>
-              <View style={[styles.modeIndicatorPill, { 
-                backgroundColor: posBusinessMode === 'retail' 
-                  ? '#DCFCE7' 
-                  : posBusinessMode === 'wholesale' 
-                  ? '#DBEAFE' 
-                  : posBusinessMode === 'restaurant' 
-                  ? '#F3E8FF' 
-                  : '#E2E8F0' 
-              }]}>
+              <View style={styles.modeIndicatorPillMinimal}>
                 <Icon 
                   name={
                     posBusinessMode === 'retail' 
@@ -717,37 +660,19 @@ export default function AdminDashboard() {
                       ? 'warehouse' 
                       : posBusinessMode === 'restaurant' 
                       ? 'silverware-fork-knife' 
-                      : 'lightning-bolt'
+                      : 'storefront'
                   } 
-                  size={16} 
-                  color={
-                    posBusinessMode === 'retail' 
-                      ? '#16A34A' 
-                      : posBusinessMode === 'wholesale' 
-                      ? '#2563EB' 
-                      : posBusinessMode === 'restaurant' 
-                      ? '#7C3AED' 
-                      : '#0F172A'
-                  } 
+                  size={15} 
+                  color="#0F172A"
                 />
-                <Text style={{ 
-                  fontSize: 12.5, 
-                  fontWeight: '700', 
-                  color: posBusinessMode === 'retail' 
-                    ? '#166534' 
-                    : posBusinessMode === 'wholesale' 
-                    ? '#1E40AF' 
-                    : posBusinessMode === 'restaurant' 
-                    ? '#6D28D9' 
-                    : '#0F172A' 
-                }}>
+                <Text style={styles.modeIndicatorTextMinimal}>
                   {posBusinessMode === 'retail' 
-                    ? 'Active Mode: Retail POS' 
+                    ? 'Retail POS' 
                     : posBusinessMode === 'wholesale' 
-                    ? 'Active Mode: Wholesale & Distribution ERP' 
+                    ? 'Wholesale ERP' 
                     : posBusinessMode === 'restaurant' 
-                    ? 'Active Mode: Restaurant & Café POS' 
-                    : 'Active Mode: Enterprise Multi-Mode'}
+                    ? 'Café & Restaurant' 
+                    : 'Multi-Mode POS'}
                 </Text>
               </View>
               <Text style={{ fontSize: 12, color: '#64748B' }}>
@@ -1206,7 +1131,7 @@ export default function AdminDashboard() {
                     : posBusinessMode === 'wholesale' 
                     ? '#2563EB' 
                     : '#16A34A' 
-                }]}>FAST ACTIONS</Text>
+                }]}>SHORTCUTS</Text>
               </View>
             </View>
 
@@ -1914,5 +1839,52 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#64748B',
     marginTop: 2,
+  },
+
+  headerActionOutline: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    backgroundColor: '#FFFFFF',
+  },
+  headerActionOutlineText: {
+    fontSize: 12.5,
+    fontWeight: '600',
+    color: '#334155',
+  },
+  headerActionSolid: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 8,
+    backgroundColor: '#16A34A',
+  },
+  headerActionSolidText: {
+    fontSize: 12.5,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  modeIndicatorPillMinimal: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 6,
+    backgroundColor: '#F1F5F9',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  modeIndicatorTextMinimal: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0F172A',
   },
 });

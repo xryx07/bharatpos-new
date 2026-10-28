@@ -1866,7 +1866,7 @@ const styles = StyleSheet.create({
 
   // Sections General
   section: {
-    paddingVertical: 64,
+    paddingVertical: 44,
     paddingHorizontal: 24,
     alignItems: 'center',
     width: '100%'
