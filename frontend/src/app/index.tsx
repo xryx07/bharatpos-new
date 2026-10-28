@@ -8,6 +8,7 @@ import { auth, db } from '../lib/firebase';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from '../lib/firestore_adapter';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import BharatPOSShowcase from '../components/BharatPOSShowcase';
 
 // Add Plus Jakarta Sans font link on Web platforms dynamically
 if (Platform.OS === 'web' && typeof document !== 'undefined') {
@@ -302,6 +303,9 @@ export default function Index() {
 
         {/* Right Search + Auth Buttons (Image 2 Fixed) */}
         <View style={styles.headerRight}>
+          {screenWidth > 1200 && (
+            <Text style={styles.headerSloganBlue}>One Platform. Complete Business.</Text>
+          )}
           {screenWidth > 850 && (
             <View style={styles.navSearchPill}>
               <Icon name="magnify" size={17} color="#94A3B8" style={{ marginRight: 8 }} />
@@ -613,6 +617,11 @@ export default function Index() {
               </View>
             </View>
           </View>
+        </View>
+
+        {/* ── BHARATPOS 16-MODULE SHOWCASE (Image Matching) ── */}
+        <View style={styles.showcaseSectionContainer} onLayout={(e) => handleLayout('solutions', e)}>
+          <BharatPOSShowcase />
         </View>
 
         {/* ── 4. "WHY BHARATPOS?" + 8 FEATURE TILES (Image 1) ── */}
@@ -2638,6 +2647,21 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#475569',
+  },
+  showcaseSectionContainer: {
+    width: '100%',
+    maxWidth: 1440,
+    alignSelf: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 24,
+    backgroundColor: '#F8FAFC',
+  },
+  headerSloganBlue: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#2563EB',
+    fontStyle: 'italic',
+    marginRight: 12,
   },
   navSearchPill: {
     flexDirection: 'row',
