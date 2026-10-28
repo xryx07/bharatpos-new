@@ -831,12 +831,6 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: '#64748B',
   },
-  topBarLeft: { flexDirection: 'row', alignItems: 'center' },
-  topBarRight: { flexDirection: 'row', alignItems: 'center' },
-  menuToggle: {
-    width: 38, height: 38, borderRadius: 12,
-    backgroundColor: '#F9FAFB', alignItems: 'center', justifyContent: 'center',
-  },
   topBarDivider: {
     width: 1, height: 28, backgroundColor: '#ECECEC', marginHorizontal: 16,
   },

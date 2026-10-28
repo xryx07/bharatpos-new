@@ -10,3 +10,10 @@ declare module 'react-native-vector-icons/MaterialCommunityIcons' {
 
   export default class Icon extends Component<IconProps> {}
 }
+
+declare module '*.module.css' {
+  const classes: { [key: string]: string };
+  export default classes;
+}
+
+declare module '*.css';

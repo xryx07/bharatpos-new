@@ -4,7 +4,7 @@ import { DS } from '../../constants/designTokens';
 import { useAuth } from '../../providers/AuthProvider';
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Platform, ActivityIndicator } from 'react-native';
-import { Text, Card, DataTable, useTheme, Surface, Button } from 'react-native-paper';
+import { Text, Card, DataTable, useTheme, Surface, Button, TextInput } from 'react-native-paper';
 import { db, isFirebaseConfigured, auth } from '../../lib/firebase';
 import { collection, getDocs, query, where } from '../../lib/firestore_adapter';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';

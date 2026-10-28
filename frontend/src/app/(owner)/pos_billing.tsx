@@ -1271,7 +1271,7 @@ export default function POSBillingScreen() {
               {cart.map((item) => (
                 <View key={item.id} style={styles.billItemRow}>
                   <View style={styles.billItemImgWrap}>
-                    <Icon name={item.icon || 'package-variant-closed'} size={18} color="#EA580C" />
+                    <Icon name={(item as any).icon || 'package-variant-closed'} size={18} color="#EA580C" />
                   </View>
                   <View style={{ flex: 1, marginLeft: 8 }}>
                     <Text style={styles.billItemName} numberOfLines={1}>{item.name}</Text>

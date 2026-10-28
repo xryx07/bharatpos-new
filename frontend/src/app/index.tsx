@@ -2634,6 +2634,11 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 12,
   },
+  navLinkText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#475569',
+  },
   navSearchPill: {
     flexDirection: 'row',
     alignItems: 'center',

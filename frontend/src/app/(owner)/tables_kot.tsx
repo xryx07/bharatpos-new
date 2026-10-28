@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Platform, Alert } from 'react-native';
-import { Text, Card, Button, Surface, Chip, TextInput, Divider, Portal, Dialog, IconButton, Badge } from 'react-native-paper';
+import { Text, Card, Button, Surface, Chip, TextInput, Divider, Portal, Dialog, IconButton, Badge, SegmentedButtons } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import * as Print from 'expo-print';
 import { useAuth } from '../../providers/AuthProvider';

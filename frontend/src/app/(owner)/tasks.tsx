@@ -158,7 +158,7 @@ export default function StepwiseTasksScreen() {
               <Text style={{ fontSize: 16, fontWeight: '800', color: '#0F172A' }}>
                 Daily Checklist Compliance
               </Text>
-              <Badge style={{ backgroundColor: '#0284C7' }}>{Math.round(stats.progress * 100)}%</Badge>
+              <Badge style={{ backgroundColor: '#0284C7' }}>{`${Math.round(stats.progress * 100)}%`}</Badge>
             </View>
             <Text style={{ fontSize: 13, color: '#64748B', marginBottom: 8 }}>
               <b>{stats.completed}</b> of <b>{stats.total}</b> tasks verified and completed today • <b>{stats.pending}</b> pending
