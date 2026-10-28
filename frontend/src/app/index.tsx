@@ -48,7 +48,25 @@ export default function Index() {
 
   const { user, loading, role } = useAuth();
   const { signup } = useLocalSearchParams();
-  const { width: screenWidth } = useWindowDimensions();
+  const windowDim = useWindowDimensions();
+  const [mounted, setMounted] = useState(false);
+  const [fontsReady, setFontsReady] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    if (Platform.OS === 'web' && typeof document !== 'undefined') {
+      if (document.fonts) {
+        document.fonts.ready.then(() => setFontsReady(true)).catch(() => setFontsReady(true));
+        const timer = setTimeout(() => setFontsReady(true), 350);
+        return () => clearTimeout(timer);
+      }
+    }
+    setFontsReady(true);
+  }, []);
+
+  const screenWidth = typeof window !== 'undefined' && window.innerWidth > 0
+    ? window.innerWidth
+    : (windowDim.width || 1200);
 
   // Local state
   const [showSignupModal, setShowSignupModal] = useState(false);
@@ -257,6 +275,23 @@ export default function Index() {
   ];
 
 
+
+  if (!fontsReady && Platform.OS === 'web') {
+    return (
+      <View style={{ flex: 1, minHeight: '100vh' as any, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center', padding: 24 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+          <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: '#16A34A', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+            <View style={{ width: 20, height: 20, borderRadius: 5, borderWidth: 3, borderColor: '#FFFFFF' }} />
+          </View>
+          <View>
+            <Text style={{ fontSize: 24, fontWeight: '800', color: '#0F172A', letterSpacing: -0.5 }}>BharatPOS</Text>
+            <Text style={{ fontSize: 11, color: '#64748B', fontWeight: '500' }}>Smart POS for Every Business</Text>
+          </View>
+        </View>
+        <ActivityIndicator size="small" color="#16A34A" />
+      </View>
+    );
+  }
 
   return (
       <View style={styles.container}>

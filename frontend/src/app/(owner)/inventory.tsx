@@ -4,9 +4,9 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { View, StyleSheet, ScrollView, Platform, ActivityIndicator, TouchableOpacity, useWindowDimensions, Alert } from 'react-native';
 import { Text, Card, DataTable, useTheme, TextInput, Button, SegmentedButtons, Dialog, Portal } from 'react-native-paper';
 import { db, isFirebaseConfigured } from '../../lib/firebase';
-import { collection, getDocs, query, orderBy, where, doc, getDoc, setDoc, updateDoc } from '../../lib/firestore_adapter';
+import { collection, getDocs, query, orderBy, where, doc, getDoc, setDoc, updateDoc, addDoc } from '../../lib/firestore_adapter';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useNavigation } from 'expo-router';
+import { useNavigation, router } from 'expo-router';
 import { DS } from '../../constants/designTokens';
 
 // ─── Types ────────────────────────────────────────────────────────────
@@ -14,13 +14,55 @@ interface Product {
   id: string;
   name: string;
   price: number;
+  mrp?: number;
+  cost_price?: number;
   barcode: string;
   category: string;
   gst_pct: number;
   hsn: string;
   stock_qty: number;
+  unit?: string;
   min_stock?: number;
   location_stocks: Record<string, number>;
+}
+
+// ─── Vector Barcode Visualizer ─────────────────────────────────────────
+function BarcodeStripes({ value, height = 48 }: { value: string; height?: number }) {
+  if (!value) return null;
+  const bars: { width: number; isBlack: boolean }[] = [];
+  bars.push({ width: 2, isBlack: true });
+  bars.push({ width: 2, isBlack: false });
+  bars.push({ width: 2, isBlack: true });
+  bars.push({ width: 1, isBlack: false });
+  for (let i = 0; i < value.length; i++) {
+    const code = value.charCodeAt(i);
+    bars.push({ width: (code % 3) + 1, isBlack: true });
+    bars.push({ width: ((code >> 1) % 2) + 1, isBlack: false });
+    bars.push({ width: ((code >> 2) % 3) + 1, isBlack: true });
+    bars.push({ width: 1, isBlack: false });
+  }
+  bars.push({ width: 2, isBlack: true });
+  bars.push({ width: 2, isBlack: false });
+  bars.push({ width: 3, isBlack: true });
+
+  return (
+    <View style={{ alignItems: 'center', backgroundColor: '#FFFFFF', padding: 8, borderRadius: 8, borderWidth: 1, borderColor: '#E2E8F0' }}>
+      <View style={{ flexDirection: 'row', height, alignItems: 'stretch' }}>
+        {bars.map((b, idx) => (
+          <View
+            key={idx}
+            style={{
+              width: b.width * 1.5,
+              backgroundColor: b.isBlack ? '#0F172A' : 'transparent',
+            }}
+          />
+        ))}
+      </View>
+      <Text style={{ fontFamily: Platform.OS === 'web' ? 'monospace' : undefined, fontSize: 11, fontWeight: '700', color: '#0F172A', marginTop: 4, letterSpacing: 2 }}>
+        {value}
+      </Text>
+    </View>
+  );
 }
 
 const DEFAULT_INVENTORY_PRODUCTS: Product[] = [
@@ -61,6 +103,208 @@ export default function InventoryManagementScreen() {
   // Search & Filter
   const [searchQuery, setSearchQuery] = useState('');
   const [stockStatusFilter, setStockStatusFilter] = useState<'all' | 'in_stock' | 'low_stock' | 'out_of_stock'>('all');
+
+  // Add Product & Barcode Modal State
+  const [showAddProduct, setShowAddProduct] = useState(false);
+  const [prodName, setProdName] = useState('');
+  const [prodCategory, setProdCategory] = useState('');
+  const [prodBarcode, setProdBarcode] = useState('');
+  const [prodPrice, setProdPrice] = useState('');
+  const [prodMrp, setProdMrp] = useState('');
+  const [prodCost, setProdCost] = useState('');
+  const [prodStock, setProdStock] = useState('10');
+  const [prodUnit, setProdUnit] = useState('PCS');
+  const [prodMinStock, setProdMinStock] = useState('5');
+  const [prodGst, setProdGst] = useState('5');
+  const [prodHsn, setProdHsn] = useState('');
+  const [prodLocation, setProdLocation] = useState('Main Shop');
+  const [savingProduct, setSavingProduct] = useState(false);
+
+  // Barcode View / Print Label Modal State
+  const [showBarcodeModal, setShowBarcodeModal] = useState(false);
+  const [barcodeModalProd, setBarcodeModalProd] = useState<Product | null>(null);
+  const [printCopies, setPrintCopies] = useState('1');
+
+  const resetAddProductForm = () => {
+    setProdName('');
+    setProdCategory('');
+    setProdBarcode('');
+    setProdPrice('');
+    setProdMrp('');
+    setProdCost('');
+    setProdStock('10');
+    setProdUnit('PCS');
+    setProdMinStock('5');
+    setProdGst('5');
+    setProdHsn('');
+    setProdLocation('Main Shop');
+  };
+
+  const generateBarcode = (customPrefix = '890') => {
+    let hash = 0;
+    const tid = tenantId || 'store';
+    for (let i = 0; i < tid.length; i++) {
+      hash = (hash + tid.charCodeAt(i)) % 10000;
+    }
+    const storePrefix = hash.toString().padStart(4, '0');
+    const randomDigits = Math.floor(10000 + Math.random() * 90000).toString();
+    const base = customPrefix + storePrefix + randomDigits;
+    let sum = 0;
+    for (let i = 0; i < 12; i++) {
+      sum += parseInt(base.charAt(i), 10) * (i % 2 === 0 ? 1 : 3);
+    }
+    const checkDigit = (10 - (sum % 10)) % 10;
+    const fullBarcode = base + (checkDigit === 10 ? 0 : checkDigit);
+    setProdBarcode(fullBarcode);
+    return fullBarcode;
+  };
+
+  const handleAddProduct = async () => {
+    if (!prodName.trim()) {
+      alert('Please enter a Product Name.');
+      return;
+    }
+    const finalBarcode = prodBarcode.trim() || generateBarcode('890');
+    const finalPrice = parseFloat(prodPrice) || 0;
+    const finalStock = parseInt(prodStock, 10) || 0;
+    const finalMrp = parseFloat(prodMrp) || finalPrice;
+    const finalCost = parseFloat(prodCost) || Math.round(finalPrice * 0.8);
+    const finalGst = parseFloat(prodGst) || 5;
+    const finalMin = parseInt(prodMinStock, 10) || 5;
+
+    const newProdData: any = {
+      tenant_id: tenantId || 'default_tenant',
+      name: prodName.trim(),
+      barcode: finalBarcode,
+      category: prodCategory.trim() || 'General',
+      price: finalPrice,
+      selling_price: finalPrice,
+      mrp: finalMrp,
+      cost_price: finalCost,
+      stock_qty: finalStock,
+      stock: finalStock,
+      unit: prodUnit || 'PCS',
+      min_stock: finalMin,
+      gst_pct: finalGst,
+      hsn: prodHsn.trim() || '9988',
+      location_stocks: {
+        [prodLocation || 'Main Shop']: finalStock,
+      },
+      created_at: new Date().toISOString(),
+    };
+
+    setSavingProduct(true);
+    try {
+      let createdId = 'p_' + Date.now();
+      if (isFirebaseConfigured && tenantId) {
+        const docRef = await addDoc(collection(db, 'products'), newProdData);
+        createdId = docRef.id;
+      }
+      const newProduct: Product = {
+        id: createdId,
+        ...newProdData,
+      };
+
+      setProducts(prev => [newProduct, ...prev]);
+      setShowAddProduct(false);
+      resetAddProductForm();
+      alert(`Product "${newProduct.name}" added successfully with Barcode ${finalBarcode}!`);
+    } catch (err: any) {
+      alert('Error saving product: ' + (err.message || 'Please check connection.'));
+    } finally {
+      setSavingProduct(false);
+    }
+  };
+
+  const handlePrintBarcodeLabel = () => {
+    if (!barcodeModalProd) return;
+    const copies = parseInt(printCopies, 10) || 1;
+    const barcodeVal = barcodeModalProd.barcode || 'NO-BARCODE';
+    const prodTitle = barcodeModalProd.name;
+    const priceVal = barcodeModalProd.price || 0;
+
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        printWindow.document.write(`
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <title>Print Barcode - ${prodTitle}</title>
+              <style>
+                @page { size: 50mm 25mm; margin: 0; }
+                body {
+                  margin: 0;
+                  padding: 2mm 3mm;
+                  font-family: Arial, sans-serif;
+                  display: flex;
+                  flex-direction: column;
+                  align-items: center;
+                  justify-content: center;
+                  box-sizing: border-box;
+                }
+                .label-box {
+                  width: 44mm;
+                  height: 21mm;
+                  border: 1px dashed #ccc;
+                  padding: 1.5mm;
+                  box-sizing: border-box;
+                  display: flex;
+                  flex-direction: column;
+                  align-items: center;
+                  justify-content: center;
+                  text-align: center;
+                  margin-bottom: 2mm;
+                }
+                .label-title {
+                  font-size: 8pt;
+                  font-weight: bold;
+                  white-space: nowrap;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                  max-width: 42mm;
+                }
+                .barcode-stripes {
+                  width: 38mm;
+                  height: 9mm;
+                  margin: 1mm 0;
+                  background: repeating-linear-gradient(90deg, #000 0, #000 2px, #fff 2px, #fff 3.5px, #000 3.5px, #000 5px, #fff 5px, #fff 6.5px);
+                }
+                .barcode-num {
+                  font-size: 7.5pt;
+                  font-family: monospace;
+                  letter-spacing: 1.5px;
+                  font-weight: bold;
+                }
+                .price-tag {
+                  font-size: 8.5pt;
+                  font-weight: 800;
+                  margin-top: 0.5mm;
+                }
+                .page-break { page-break-after: always; }
+              </style>
+            </head>
+            <body>
+              ${Array.from({ length: copies }).map((_, idx) => `
+                <div class="label-box ${idx < copies - 1 ? 'page-break' : ''}">
+                  <div class="label-title">${prodTitle}</div>
+                  <div class="barcode-stripes"></div>
+                  <div class="barcode-num">${barcodeVal}</div>
+                  <div class="price-tag">MRP: ₹${priceVal.toFixed(2)}</div>
+                </div>
+              `).join('')}
+              <script>
+                window.onload = function() { window.print(); window.close(); }
+              <\/script>
+            </body>
+          </html>
+        `);
+        printWindow.document.close();
+      }
+    } else {
+      alert(`Printing ${copies} barcode label(s) for ${prodTitle}`);
+    }
+  };
 
   useEffect(() => {
     if (!authLoading) {
@@ -262,7 +506,29 @@ export default function InventoryManagementScreen() {
             <Text variant="headlineSmall" style={styles.title}>Inventory & Godowns</Text>
             <Text style={{ color: '#64748B', fontSize: 13, marginTop: 4 }}>Multi-location stock allocations & transfer logs</Text>
           </View>
-          <View style={{ flexDirection: 'row', gap: 8 }}>
+          <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
+            <Button 
+              mode="contained" 
+              icon="plus" 
+              onPress={() => {
+                resetAddProductForm();
+                generateBarcode('890');
+                setShowAddProduct(true);
+              }}
+              style={{ borderRadius: 8, backgroundColor: '#16A34A' }}
+              labelStyle={{ fontWeight: '700' }}
+            >
+              Add Product
+            </Button>
+            <Button 
+              mode="outlined" 
+              icon="barcode" 
+              onPress={() => router.push('/(owner)/barcode_generator' as any)}
+              style={{ borderColor: '#CBD5E1', borderRadius: 8 }}
+              textColor="#0F172A"
+            >
+              Barcode Tools
+            </Button>
             <Button 
               mode="outlined" 
               icon="plus" 
@@ -276,7 +542,7 @@ export default function InventoryManagementScreen() {
               mode="contained" 
               icon="swap-horizontal" 
               onPress={() => setShowTransfer(true)}
-              style={{ borderRadius: 8, backgroundColor: '#10B981' }}
+              style={{ borderRadius: 8, backgroundColor: '#0284C7' }}
             >
               Transfer Stock
             </Button>
@@ -323,6 +589,18 @@ export default function InventoryManagementScreen() {
                   <Icon name="close-circle" size={16} color="#94A3B8" />
                 </TouchableOpacity>
               )}
+              <TouchableOpacity 
+                style={styles.barcodeScanBtn} 
+                onPress={() => {
+                  if (Platform.OS === 'web' && typeof window !== 'undefined') {
+                    const code = window.prompt('Scan or enter product barcode:');
+                    if (code) setSearchQuery(code.trim());
+                  }
+                }}
+              >
+                <Icon name="barcode-scan" size={16} color="#0F172A" />
+                <Text style={styles.barcodeScanBtnText}>Scan</Text>
+              </TouchableOpacity>
             </View>
 
             <View style={styles.stockFilterTabs}>
@@ -392,10 +670,19 @@ export default function InventoryManagementScreen() {
                             <View style={{ paddingVertical: 8, width: '100%' }}>
                               <Text style={{ fontWeight: '700', fontSize: 13, color: '#0F172A' }} numberOfLines={1}>{item.name}</Text>
                               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 }}>
-                                <View style={styles.skuTag}>
-                                  <Icon name="barcode" size={12} color="#64748B" />
-                                  <Text style={styles.skuTagText}>{item.barcode || 'NO-SKU'}</Text>
-                                </View>
+                                <TouchableOpacity 
+                                  style={styles.skuTagClickable}
+                                  onPress={() => {
+                                    setBarcodeModalProd(item);
+                                    setPrintCopies('1');
+                                    setShowBarcodeModal(true);
+                                  }}
+                                  activeOpacity={0.7}
+                                >
+                                  <Icon name="barcode" size={13} color="#2563EB" />
+                                  <Text style={styles.skuTagTextClickable}>{item.barcode || 'NO-SKU'}</Text>
+                                  <Icon name="printer-outline" size={12} color="#64748B" style={{ marginLeft: 2 }} />
+                                </TouchableOpacity>
                                 {item.category ? (
                                   <Text style={{ fontSize: 11, color: '#64748B' }}>• {item.category}</Text>
                                 ) : null}
@@ -641,6 +928,302 @@ export default function InventoryManagementScreen() {
             </Button>
           </Dialog.Actions>
         </Dialog>
+
+        {/* ── Add Product with Barcode Dialog ── */}
+        <Dialog 
+          visible={showAddProduct} 
+          onDismiss={() => setShowAddProduct(false)} 
+          style={{ backgroundColor: 'white', borderRadius: 16, maxWidth: 640, alignSelf: 'center', width: '92%' }}
+        >
+          <Dialog.Title>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <View style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: '#DCFCE7', alignItems: 'center', justifyContent: 'center' }}>
+                <Icon name="barcode" size={20} color="#16A34A" />
+              </View>
+              <Text style={{ fontWeight: '800', fontSize: 18, color: '#0F172A' }}>Add Product & Barcode</Text>
+            </View>
+          </Dialog.Title>
+          <Dialog.Content>
+            <ScrollView style={{ maxHeight: 460 }} showsVerticalScrollIndicator={false}>
+              <View style={{ gap: 14, paddingTop: 4 }}>
+                {/* Product Name */}
+                <TextInput
+                  label="Product Name *"
+                  value={prodName}
+                  onChangeText={setProdName}
+                  mode="outlined"
+                  activeOutlineColor="#16A34A"
+                  style={{ backgroundColor: 'white' }}
+                  placeholder="e.g. Fortune Sunflower Oil 1L"
+                />
+
+                {/* Category Preset Chips */}
+                <View>
+                  <Text style={{ fontSize: 12, fontWeight: '700', color: '#475569', marginBottom: 6 }}>Category</Text>
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
+                    {['Groceries', 'Snacks', 'Beverages', 'Dairy', 'Personal Care', 'Household', 'Biscuits'].map(cat => (
+                      <TouchableOpacity
+                        key={cat}
+                        onPress={() => setProdCategory(cat)}
+                        style={[
+                          styles.categoryChip,
+                          prodCategory === cat && styles.categoryChipActive
+                        ]}
+                      >
+                        <Text style={[styles.categoryChipText, prodCategory === cat && styles.categoryChipTextActive]}>
+                          {cat}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                  <TextInput
+                    label="Custom Category"
+                    value={prodCategory}
+                    onChangeText={setProdCategory}
+                    mode="outlined"
+                    activeOutlineColor="#16A34A"
+                    style={{ backgroundColor: 'white' }}
+                    placeholder="Enter or select category above"
+                  />
+                </View>
+
+                {/* ── BARCODE SECTION ── */}
+                <View style={{ backgroundColor: '#F8FAFC', padding: 12, borderRadius: 10, borderWidth: 1, borderColor: '#E2E8F0', gap: 10 }}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Text style={{ fontSize: 13, fontWeight: '800', color: '#0F172A' }}>Barcode / EAN-13 Option</Text>
+                    <View style={{ flexDirection: 'row', gap: 6 }}>
+                      <TouchableOpacity
+                        style={styles.barcodeSmallBtn}
+                        onPress={() => generateBarcode('890')}
+                      >
+                        <Icon name="flash" size={13} color="#FFFFFF" />
+                        <Text style={styles.barcodeSmallBtnText}>Generate EAN</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={[styles.barcodeSmallBtn, { backgroundColor: '#F1F5F9' }]}
+                        onPress={() => {
+                          if (Platform.OS === 'web' && typeof window !== 'undefined') {
+                            const scanned = window.prompt('Scan barcode with handheld scanner or enter digits:');
+                            if (scanned) setProdBarcode(scanned.trim());
+                          }
+                        }}
+                      >
+                        <Icon name="barcode-scan" size={13} color="#0F172A" />
+                        <Text style={[styles.barcodeSmallBtnText, { color: '#0F172A' }]}>Scan</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+
+                  <TextInput
+                    label="Barcode Number *"
+                    value={prodBarcode}
+                    onChangeText={setProdBarcode}
+                    mode="outlined"
+                    keyboardType="numeric"
+                    activeOutlineColor="#16A34A"
+                    style={{ backgroundColor: 'white' }}
+                    placeholder="e.g. 8901234567890"
+                    right={<TextInput.Icon icon="barcode" onPress={() => generateBarcode('890')} />}
+                  />
+
+                  {/* Live Barcode Visualizer */}
+                  {prodBarcode ? (
+                    <View style={{ marginTop: 4 }}>
+                      <Text style={{ fontSize: 11, fontWeight: '600', color: '#64748B', marginBottom: 4 }}>Live Barcode Preview:</Text>
+                      <BarcodeStripes value={prodBarcode} height={42} />
+                    </View>
+                  ) : null}
+                </View>
+
+                {/* Pricing: Selling Price, MRP, Cost */}
+                <View style={{ flexDirection: 'row', gap: 10 }}>
+                  <TextInput
+                    label="Selling Price (₹) *"
+                    value={prodPrice}
+                    onChangeText={setProdPrice}
+                    keyboardType="numeric"
+                    mode="outlined"
+                    activeOutlineColor="#16A34A"
+                    style={{ flex: 1, backgroundColor: 'white' }}
+                    placeholder="120"
+                  />
+                  <TextInput
+                    label="MRP (₹)"
+                    value={prodMrp}
+                    onChangeText={setProdMrp}
+                    keyboardType="numeric"
+                    mode="outlined"
+                    activeOutlineColor="#16A34A"
+                    style={{ flex: 1, backgroundColor: 'white' }}
+                    placeholder="130"
+                  />
+                  <TextInput
+                    label="Cost Price (₹)"
+                    value={prodCost}
+                    onChangeText={setProdCost}
+                    keyboardType="numeric"
+                    mode="outlined"
+                    activeOutlineColor="#16A34A"
+                    style={{ flex: 1, backgroundColor: 'white' }}
+                    placeholder="95"
+                  />
+                </View>
+
+                {/* Stock Qty, Unit, Min Stock */}
+                <View style={{ flexDirection: 'row', gap: 10 }}>
+                  <TextInput
+                    label="Opening Stock Qty"
+                    value={prodStock}
+                    onChangeText={setProdStock}
+                    keyboardType="numeric"
+                    mode="outlined"
+                    activeOutlineColor="#16A34A"
+                    style={{ flex: 1.2, backgroundColor: 'white' }}
+                  />
+                  <TextInput
+                    label="Unit"
+                    value={prodUnit}
+                    onChangeText={setProdUnit}
+                    mode="outlined"
+                    activeOutlineColor="#16A34A"
+                    style={{ flex: 1, backgroundColor: 'white' }}
+                    placeholder="PCS"
+                  />
+                  <TextInput
+                    label="Min Stock Alert"
+                    value={prodMinStock}
+                    onChangeText={setProdMinStock}
+                    keyboardType="numeric"
+                    mode="outlined"
+                    activeOutlineColor="#16A34A"
+                    style={{ flex: 1, backgroundColor: 'white' }}
+                    placeholder="5"
+                  />
+                </View>
+
+                {/* GST & HSN */}
+                <View style={{ flexDirection: 'row', gap: 10 }}>
+                  <TextInput
+                    label="GST %"
+                    value={prodGst}
+                    onChangeText={setProdGst}
+                    keyboardType="numeric"
+                    mode="outlined"
+                    activeOutlineColor="#16A34A"
+                    style={{ flex: 1, backgroundColor: 'white' }}
+                    placeholder="5"
+                  />
+                  <TextInput
+                    label="HSN Code"
+                    value={prodHsn}
+                    onChangeText={setProdHsn}
+                    mode="outlined"
+                    activeOutlineColor="#16A34A"
+                    style={{ flex: 1, backgroundColor: 'white' }}
+                    placeholder="e.g. 1512"
+                  />
+                </View>
+
+                {/* Godown Location */}
+                <View>
+                  <Text style={{ fontSize: 12, fontWeight: '700', color: '#475569', marginBottom: 4 }}>Storage Godown</Text>
+                  <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
+                    {locations.map(loc => (
+                      <TouchableOpacity
+                        key={loc}
+                        onPress={() => setProdLocation(loc)}
+                        style={[
+                          styles.locOptionBtn,
+                          prodLocation === loc && styles.locOptionBtnActive
+                        ]}
+                      >
+                        <Icon name="storefront-outline" size={14} color={prodLocation === loc ? '#FFFFFF' : '#475569'} />
+                        <Text style={[styles.locOptionText, prodLocation === loc && styles.locOptionTextActive]}>
+                          {loc}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+              </View>
+            </ScrollView>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setShowAddProduct(false)} textColor="#64748B">Cancel</Button>
+            <Button 
+              mode="contained" 
+              onPress={handleAddProduct} 
+              loading={savingProduct} 
+              buttonColor="#16A34A"
+              style={{ borderRadius: 8 }}
+            >
+              Save Product & Barcode
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
+
+        {/* ── Product Barcode & Thermal Sticker Print Modal ── */}
+        <Dialog 
+          visible={showBarcodeModal} 
+          onDismiss={() => setShowBarcodeModal(false)} 
+          style={{ backgroundColor: 'white', borderRadius: 16, maxWidth: 480, alignSelf: 'center', width: '90%' }}
+        >
+          <Dialog.Title>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <Icon name="printer-pos-outline" size={22} color="#2563EB" />
+              <Text style={{ fontWeight: '800', fontSize: 18, color: '#0F172A' }}>Barcode Label & Print</Text>
+            </View>
+          </Dialog.Title>
+          <Dialog.Content>
+            {barcodeModalProd && (
+              <View style={{ gap: 14 }}>
+                <View style={{ backgroundColor: '#F8FAFC', padding: 12, borderRadius: 10, borderWidth: 1, borderColor: '#E2E8F0' }}>
+                  <Text style={{ fontSize: 14, fontWeight: '800', color: '#0F172A' }}>{barcodeModalProd.name}</Text>
+                  <Text style={{ fontSize: 12, color: '#64748B', marginTop: 2 }}>Category: {barcodeModalProd.category || 'General'} • Price: ₹{barcodeModalProd.price.toFixed(2)}</Text>
+                </View>
+
+                {/* High Contrast Thermal Barcode Preview */}
+                <View style={{ alignItems: 'center', padding: 8, backgroundColor: '#FFFFFF', borderRadius: 8, borderWidth: 1, borderColor: '#CBD5E1' }}>
+                  <BarcodeStripes value={barcodeModalProd.barcode || '8901234567890'} height={55} />
+                </View>
+
+                {/* Copies Count */}
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#F8FAFC', padding: 10, borderRadius: 8 }}>
+                  <Text style={{ fontSize: 13, fontWeight: '700', color: '#0F172A' }}>Label Copies to Print:</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    {['1', '5', '10', '20'].map(num => (
+                      <TouchableOpacity
+                        key={num}
+                        onPress={() => setPrintCopies(num)}
+                        style={[
+                          styles.copiesPill,
+                          printCopies === num && styles.copiesPillActive
+                        ]}
+                      >
+                        <Text style={[styles.copiesPillText, printCopies === num && styles.copiesPillTextActive]}>{num}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+                <Text style={{ fontSize: 11, color: '#94A3B8', textAlign: 'center' }}>
+                  Formats instantly for 50mm x 25mm standard retail thermal sticker rolls.
+                </Text>
+              </View>
+            )}
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setShowBarcodeModal(false)} textColor="#64748B">Close</Button>
+            <Button 
+              mode="contained" 
+              icon="printer" 
+              onPress={handlePrintBarcodeLabel} 
+              buttonColor="#2563EB"
+              style={{ borderRadius: 8 }}
+            >
+              Print Sticker Labels
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
       </Portal>
     </ScrollView>
   );
@@ -834,5 +1417,119 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     borderRadius: DS.radius.sm,
     marginVertical: 2
-  }
+  },
+  barcodeScanBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    marginRight: 6,
+  },
+  barcodeScanBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  skuTagClickable: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#EFF6FF',
+    borderWidth: 1,
+    borderColor: '#DBEAFE',
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 4,
+  },
+  skuTagTextClickable: {
+    fontSize: 11,
+    fontFamily: Platform.OS === 'web' ? 'monospace' : undefined,
+    color: '#2563EB',
+    fontWeight: '700',
+  },
+  barcodeSmallBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#16A34A',
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  barcodeSmallBtnText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  categoryChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 14,
+    backgroundColor: '#F1F5F9',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  categoryChipActive: {
+    backgroundColor: '#16A34A',
+    borderColor: '#16A34A',
+  },
+  categoryChipText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#475569',
+  },
+  categoryChipTextActive: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+  },
+  locOptionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  locOptionBtnActive: {
+    backgroundColor: '#16A34A',
+    borderColor: '#16A34A',
+  },
+  locOptionText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#475569',
+  },
+  locOptionTextActive: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+  },
+  copiesPill: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+  },
+  copiesPillActive: {
+    backgroundColor: '#2563EB',
+    borderColor: '#2563EB',
+  },
+  copiesPillText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#475569',
+  },
+  copiesPillTextActive: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+  },
 });

@@ -85,6 +85,14 @@ if (Platform.OS === 'web' && typeof document !== 'undefined' && !document.getEle
   fontLink.href = 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap';
   document.head.appendChild(fontLink);
 
+  const fontPreload = document.createElement('link');
+  fontPreload.rel = 'preload';
+  fontPreload.as = 'font';
+  fontPreload.type = 'font/woff2';
+  fontPreload.crossOrigin = 'anonymous';
+  fontPreload.href = 'https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/fonts/materialdesignicons-webfont.woff2';
+  document.head.appendChild(fontPreload);
+
   const link = document.createElement('link');
   link.id = 'mdi-font-web';
   link.rel = 'stylesheet';
@@ -95,7 +103,7 @@ if (Platform.OS === 'web' && typeof document !== 'undefined' && !document.getEle
     font-family: "MaterialCommunityIcons";
     src: url("https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/fonts/materialdesignicons-webfont.woff2") format("woff2"),
          url("https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/fonts/materialdesignicons-webfont.ttf") format("truetype");
-    font-display: swap;
+    font-display: block;
   }
   
   #web-print-section {
