@@ -1026,28 +1026,6 @@ export default function TablesKOTScreen() {
         </View>
       </View>
 
-      {/* ── 3. Bottom Key Features Strip ── */}
-      <Surface style={styles.cafeKeyFeaturesFooter} elevation={0}>
-        <Text style={styles.cafeFooterHeading}>Cafe / Restaurant POS – Key Features</Text>
-        <View style={styles.cafeFeaturesRow}>
-          {[
-            { title: 'Table Management\n& Floor Plan', icon: 'table-furniture' },
-            { title: 'KOT & Kitchen\nDisplay System', icon: 'chef-hat' },
-            { title: 'Menu & Modifiers\n(Recipes / Food Costing)', icon: 'silverware-clean' },
-            { title: 'Online Orders\n(Delivery / Takeaway)', icon: 'moped' },
-            { title: 'Inventory &\nIngredient Tracking', icon: 'clipboard-list-outline' },
-            { title: 'Billing & Split Bill\n(Payments)', icon: 'credit-card-outline' },
-          ].map((f, i) => (
-            <View key={i} style={styles.cafeFeaturePill}>
-              <View style={styles.cafeFeatureIconWrap}>
-                <Icon name={f.icon} size={16} color="#F97316" />
-              </View>
-              <Text style={styles.cafeFeaturePillText}>{f.title}</Text>
-            </View>
-          ))}
-        </View>
-      </Surface>
-
       {/* 4. Table KOT Order & Billing Modal */}
       <Portal>
         <Dialog visible={showOrderModal} onDismiss={() => setShowOrderModal(false)} style={styles.orderDialog}>

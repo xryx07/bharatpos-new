@@ -38,6 +38,14 @@ export default function ProductsManagementScreen() {
     }
     return DEFAULT_PRODUCTS_LIST;
   });
+
+  const [posBusinessMode] = useState<'retail' | 'restaurant'>(() => {
+    if (typeof window !== 'undefined') {
+      return (window.localStorage.getItem('posBusinessMode') as any) || 'retail';
+    }
+    return 'retail';
+  });
+
   const [showImportModal, setShowImportModal] = useState(false);
   const [rawInvoiceText, setRawInvoiceText] = useState('');
   const [driveUrl, setDriveUrl] = useState('');
@@ -603,12 +611,20 @@ export default function ProductsManagementScreen() {
         <View style={styles.header}>
           <View>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <Text style={styles.title}>Products & Price Catalog</Text>
-              <View style={styles.proTag}>
-                <Text style={styles.proTagText}>RESTAURANT SUITE</Text>
+              <Text style={styles.title}>
+                {posBusinessMode === 'restaurant' ? 'Food Menu & Pricing' : 'Products & Price Catalog'}
+              </Text>
+              <View style={[styles.proTag, posBusinessMode === 'restaurant' && { backgroundColor: '#FFEDD5', borderColor: '#FED7AA' }]}>
+                <Text style={[styles.proTagText, posBusinessMode === 'restaurant' && { color: '#EA580C' }]}>
+                  {posBusinessMode === 'restaurant' ? 'CAFE & RESTAURANT' : 'RETAIL CATALOG'}
+                </Text>
               </View>
             </View>
-            <Text style={styles.subtitle}>Unified master catalog with barcode generator & wholesaler bill parser</Text>
+            <Text style={styles.subtitle}>
+              {posBusinessMode === 'restaurant' 
+                ? 'Dishes, food categories, pricing & kitchen ingredient mapping' 
+                : 'Unified master catalog with barcode generator & wholesaler bill parser'}
+            </Text>
           </View>
           <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
             <Button 

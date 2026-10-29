@@ -26,29 +26,27 @@ interface MenuSection {
 
 const retailMenuItems: MenuItemDef[] = [
   { name: 'Dashboard', icon: 'view-dashboard-outline', path: '/(owner)', mode: 'all' },
-  { name: 'Billing', icon: 'receipt-text-outline', path: '/(owner)/pos_billing', mode: 'retail' },
+  { name: 'POS Billing', icon: 'barcode-scan', path: '/(owner)/pos_billing', mode: 'retail' },
   { name: 'Products', icon: 'package-variant-closed', path: '/(owner)/products_management', mode: 'retail' },
   { name: 'Inventory', icon: 'clipboard-list-outline', path: '/(owner)/inventory', mode: 'retail' },
   { name: 'Purchases', icon: 'cart-arrow-down', path: '/(owner)/suppliers', mode: 'wholesale' },
   { name: 'Suppliers', icon: 'truck-delivery-outline', path: '/(owner)/suppliers', mode: 'wholesale' },
-  { name: 'Customers', icon: 'account-group-outline', path: '/(owner)/wholesale', mode: 'wholesale' },
-  { name: 'Sales Orders', icon: 'file-document-outline', path: '/(owner)/wholesale', mode: 'wholesale' },
+  { name: 'Customers & Credit', icon: 'account-group-outline', path: '/(owner)/wholesale', mode: 'wholesale' },
   { name: 'Accounting', icon: 'book-open-page-variant-outline', path: '/(owner)/day_book', mode: 'all' },
-  { name: 'GST', icon: 'file-percent-outline', path: '/(owner)/gst_management', isGstOnly: true, mode: 'all' },
+  { name: 'GST Invoicing', icon: 'file-percent-outline', path: '/(owner)/gst_management', isGstOnly: true, mode: 'all' },
   { name: 'Reports', icon: 'chart-box-outline', path: '/(owner)/reports', mode: 'all' },
   { name: 'Settings', icon: 'cog-outline', path: '/(owner)/settings', mode: 'all' },
 ];
 
 const restaurantMenuItems: MenuItemDef[] = [
   { name: 'Dashboard', icon: 'view-dashboard-outline', path: '/(owner)', mode: 'all' },
-  { name: 'Tables', icon: 'table-furniture', path: '/(owner)/tables_kot', mode: 'restaurant' },
-  { name: 'Orders', icon: 'clipboard-text-clock-outline', path: '/(owner)/pos_billing', mode: 'restaurant' },
-  { name: 'Menu', icon: 'silverware-clean', path: '/(owner)/products_management', mode: 'restaurant' },
+  { name: 'Tables & KOT', icon: 'table-furniture', path: '/(owner)/tables_kot', mode: 'restaurant' },
   { name: 'Kitchen Display', icon: 'chef-hat', path: '/(owner)/kds', mode: 'restaurant' },
-  { name: 'Inventory', icon: 'clipboard-list-outline', path: '/(owner)/inventory', mode: 'restaurant' },
-  { name: 'Customers', icon: 'account-group-outline', path: '/(owner)/wholesale', mode: 'restaurant' },
-  { name: 'Billing', icon: 'receipt-text-outline', path: '/(owner)/pos_billing', mode: 'restaurant' },
-  { name: 'Reports', icon: 'chart-box-outline', path: '/(owner)/reports', mode: 'all' },
+  { name: 'Food Menu', icon: 'silverware-clean', path: '/(owner)/products_management', mode: 'restaurant' },
+  { name: 'Kitchen Stock', icon: 'clipboard-list-outline', path: '/(owner)/inventory', mode: 'restaurant' },
+  { name: 'Captains & Staff', icon: 'badge-account-horizontal-outline', path: '/(owner)/attendance', mode: 'restaurant' },
+  { name: 'Day Book', icon: 'book-open-page-variant-outline', path: '/(owner)/day_book', mode: 'all' },
+  { name: 'Restaurant Reports', icon: 'chart-box-outline', path: '/(owner)/reports', mode: 'all' },
   { name: 'Settings', icon: 'cog-outline', path: '/(owner)/settings', mode: 'all' },
 ];
 
@@ -382,7 +380,9 @@ export default function OwnerLayout() {
           </View>
           <View style={styles.logoTextContainer}>
             <Text style={styles.logoText} numberOfLines={1}>BharatPOS</Text>
-            <Text style={styles.logoSubtext}>Retail · Wholesale · Restaurant</Text>
+            <Text style={styles.logoSubtext}>
+              {posBusinessMode === 'restaurant' ? 'Cafe & Restaurant POS' : 'Retail Store POS'}
+            </Text>
           </View>
         </View>
 
@@ -405,13 +405,13 @@ export default function OwnerLayout() {
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <Icon name="storefront-outline" size={14} color="#94A3B8" style={{ marginRight: 6 }} />
               <Text style={styles.branchNameText}>
-                {posBusinessMode === 'restaurant' ? 'Sunrise Cafe' : 'Main Branch'}
+                {posBusinessMode === 'restaurant' ? (storeName ? `${storeName} Outlet` : 'Cafe Outlet #1') : (storeName ? `${storeName} Counter` : 'Main Retail Store')}
               </Text>
             </View>
             <Icon name="chevron-down" size={14} color="#64748B" />
           </View>
           <Text style={styles.branchLocationText}>
-            {posBusinessMode === 'restaurant' ? 'Main Outlet' : 'Gujarat, India'}
+            {posBusinessMode === 'restaurant' ? 'Floor & KOT Terminal' : 'Barcode POS Terminal'}
           </Text>
           <View style={styles.onlineStatusRow}>
             <View style={styles.onlineDot} />
@@ -481,56 +481,56 @@ export default function OwnerLayout() {
               <Icon 
                 name={posBusinessMode === 'restaurant' ? 'coffee' : 'barcode-scan'} 
                 size={14} 
-                color="#F97316" 
+                color={posBusinessMode === 'restaurant' ? '#F97316' : '#16A34A'} 
                 style={{ marginRight: 6 }} 
               />
               <Text style={[styles.modePillBtnText, posBusinessMode === 'restaurant' && { color: '#F1F5F9' }]}>
-                {posBusinessMode === 'restaurant' ? 'Cafe Mode' : 'Retail Mode'}
+                {posBusinessMode === 'restaurant' ? 'Cafe & Restaurant POS' : 'Retail Store POS'}
               </Text>
-              <Icon name="chevron-down" size={13} color={posBusinessMode === 'restaurant' ? '#94A3B8' : '#64748B'} style={{ marginLeft: 6 }} />
+              <Icon name="swap-horizontal" size={13} color={posBusinessMode === 'restaurant' ? '#94A3B8' : '#64748B'} style={{ marginLeft: 6 }} />
             </TouchableOpacity>
           </View>
 
-          {/* Center Category & Mode Tabs (Image 2 Matching) */}
-          {screenWidth > 1024 && (
-            <View style={styles.topNavCenterTabs}>
-              <TouchableOpacity onPress={() => router.push('/(owner)/pos_billing')} style={styles.topNavTabItem}>
-                <Text style={[styles.topNavTabText, pathname.includes('pos_billing') && styles.topNavTabTextActive]}>Retail</Text>
-              </TouchableOpacity>
-              <Text style={styles.topNavTabDivider}>|</Text>
-              <TouchableOpacity onPress={() => router.push('/(owner)/wholesale')} style={styles.topNavTabItem}>
-                <Text style={[styles.topNavTabText, pathname.includes('wholesale') && styles.topNavTabTextActive]}>Wholesale</Text>
-              </TouchableOpacity>
-              <Text style={styles.topNavTabDivider}>|</Text>
-              <TouchableOpacity onPress={() => router.push('/(owner)/tables_kot')} style={styles.topNavTabItem}>
-                <Text style={[styles.topNavTabText, pathname.includes('tables_kot') && styles.topNavTabTextActive]}>Cafe & Restaurant</Text>
-              </TouchableOpacity>
-              <Text style={styles.topNavTabDivider}>|</Text>
-              <TouchableOpacity onPress={() => router.push('/(owner)/cash_bank_book')} style={styles.topNavTabItem}>
-                <Text style={[styles.topNavTabText, (pathname.includes('cash_bank') || pathname.includes('journal') || pathname.includes('day_book')) && styles.topNavTabTextActive]}>Accounting</Text>
-              </TouchableOpacity>
-              <Text style={styles.topNavTabDivider}>|</Text>
-              <TouchableOpacity onPress={() => router.push('/(owner)/gst_management')} style={styles.topNavTabItem}>
-                <Text style={[styles.topNavTabText, pathname.includes('gst') && styles.topNavTabTextActive]}>GST</Text>
-              </TouchableOpacity>
-              <Text style={styles.topNavTabDivider}>|</Text>
-              <TouchableOpacity onPress={() => router.push('/(owner)/reports')} style={styles.topNavTabItem}>
-                <Text style={[styles.topNavTabText, pathname.includes('reports') && styles.topNavTabTextActive]}>Tally Integration</Text>
-              </TouchableOpacity>
+          {/* Operational Register Status Indicator */}
+          {screenWidth > 820 && (
+            <View style={styles.topBarCenterStatus}>
+              <View style={[styles.registerStatusBadge, posBusinessMode === 'restaurant' && styles.registerStatusBadgeDark]}>
+                <View style={[styles.activePulseDot, posBusinessMode === 'restaurant' && { backgroundColor: '#F97316' }]} />
+                <Text style={[styles.registerStatusText, posBusinessMode === 'restaurant' && { color: '#E2E8F0' }]}>
+                  {posBusinessMode === 'restaurant' ? 'Floor Active • 12 Tables' : 'Counter #1 • Register Open'}
+                </Text>
+              </View>
             </View>
           )}
 
           <View style={styles.topBarRight}>
-            {screenWidth > 1280 && (
-              <Text style={styles.topBarSloganBlue}>One Platform. Complete Business.</Text>
+            {/* Fast Terminal Launcher CTA */}
+            {screenWidth > 1100 && (
+              <TouchableOpacity
+                style={[
+                  styles.quickTerminalCta,
+                  posBusinessMode === 'restaurant' ? styles.quickTerminalCtaCafe : styles.quickTerminalCtaRetail
+                ]}
+                onPress={() => router.push(posBusinessMode === 'restaurant' ? '/(owner)/tables_kot' as any : '/(owner)/pos_billing' as any)}
+                activeOpacity={0.8}
+              >
+                <Icon 
+                  name={posBusinessMode === 'restaurant' ? 'table-furniture' : 'barcode-scan'} 
+                  size={14} 
+                  color="#FFFFFF" 
+                  style={{ marginRight: 6 }} 
+                />
+                <Text style={styles.quickTerminalCtaText}>
+                  {posBusinessMode === 'restaurant' ? 'Tables & KOT' : 'New Bill [F2]'}
+                </Text>
+              </TouchableOpacity>
             )}
 
-            {posBusinessMode === 'restaurant' && (
-              <View style={styles.cafeLiveClockPill}>
-                <Icon name="clock-outline" size={14} color="#94A3B8" style={{ marginRight: 6 }} />
-                <Text style={styles.cafeDateText}>{dateStr}   {timeStr}</Text>
-              </View>
-            )}
+            {/* Live Clock Pill */}
+            <View style={[styles.cafeLiveClockPill, posBusinessMode !== 'restaurant' && styles.retailLiveClockPill]}>
+              <Icon name="clock-outline" size={14} color={posBusinessMode === 'restaurant' ? "#94A3B8" : "#64748B"} style={{ marginRight: 6 }} />
+              <Text style={[styles.cafeDateText, posBusinessMode !== 'restaurant' && { color: '#475569' }]}>{dateStr}   {timeStr}</Text>
+            </View>
 
             {/* Notification Bell */}
             <View style={styles.bellContainer}>
@@ -848,42 +848,59 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
-  topNavCenterTabs: {
+  topBarCenterStatus: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F8FAFC',
+    marginHorizontal: 12,
+  },
+  registerStatusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F0FDF4',
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: '#BBF7D0',
     borderRadius: 20,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    marginHorizontal: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
   },
-  topNavTabItem: {
-    paddingHorizontal: 7,
-    paddingVertical: 3,
-    borderRadius: 12,
+  registerStatusBadgeDark: {
+    backgroundColor: '#1E293B',
+    borderColor: '#334155',
   },
-  topNavTabText: {
-    fontSize: 11.5,
+  activePulseDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: '#16A34A',
+    marginRight: 8,
+  },
+  registerStatusText: {
+    fontSize: 12,
     fontWeight: '600',
-    color: '#475569',
+    color: '#15803D',
   },
-  topNavTabTextActive: {
-    color: '#16A34A',
-    fontWeight: '700',
-  },
-  topNavTabDivider: {
-    color: '#CBD5E1',
-    marginHorizontal: 3,
-    fontSize: 11,
-  },
-  topBarSloganBlue: {
-    fontSize: 12.5,
-    fontWeight: '700',
-    color: '#2563EB',
-    fontStyle: 'italic',
+  quickTerminalCta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     marginRight: 10,
+  },
+  quickTerminalCtaRetail: {
+    backgroundColor: '#16A34A',
+  },
+  quickTerminalCtaCafe: {
+    backgroundColor: '#F97316',
+  },
+  quickTerminalCtaText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  retailLiveClockPill: {
+    backgroundColor: '#F8FAFC',
+    borderColor: '#E2E8F0',
   },
   bellButtonDark: {
     backgroundColor: '#1E293B',

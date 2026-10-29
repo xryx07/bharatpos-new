@@ -1416,28 +1416,6 @@ export default function POSBillingScreen() {
         </Surface>
       </View>
 
-      {/* ── 5. Bottom Key Features Strip ── */}
-      <Surface style={styles.keyFeaturesFooterStrip} elevation={0}>
-        <Text style={styles.footerFeaturesTitle}>Retail / Wholesale POS – Key Features</Text>
-        <View style={styles.featuresRowStrip}>
-          {[
-            { title: 'Fast Billing', sub: '(Barcode + Search)', icon: 'barcode-scan' },
-            { title: 'Inventory &', sub: 'Godowns', icon: 'clipboard-list-outline' },
-            { title: 'Purchase Orders', sub: '& Suppliers', icon: 'cart-arrow-down' },
-            { title: 'GST Invoicing', sub: '& Reports', icon: 'file-percent-outline' },
-            { title: 'Customer Credit', sub: '& Price Lists', icon: 'account-cash-outline' },
-            { title: 'Multi-Location', sub: 'Support', icon: 'domain' },
-          ].map((feat, idx) => (
-            <View key={idx} style={styles.featureStripItem}>
-              <View style={styles.featureStripIconWrap}>
-                <Icon name={feat.icon} size={16} color="#0284C7" />
-              </View>
-              <Text style={styles.featureStripTitle}>{feat.title}</Text>
-              <Text style={styles.featureStripSub}>{feat.sub}</Text>
-            </View>
-          ))}
-        </View>
-      </Surface>
       {/* ── 1. CHECKOUT PAYMENT DETAILS DIALOG ──────────────── */}
       <Portal>
         <Dialog visible={showCheckout} onDismiss={() => setShowCheckout(false)} style={styles.dialog}>
