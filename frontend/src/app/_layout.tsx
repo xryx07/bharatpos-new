@@ -103,7 +103,7 @@ if (Platform.OS === 'web' && typeof document !== 'undefined' && !document.getEle
     font-family: "MaterialCommunityIcons";
     src: url("https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/fonts/materialdesignicons-webfont.woff2") format("woff2"),
          url("https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/fonts/materialdesignicons-webfont.ttf") format("truetype");
-    font-display: block;
+    font-display: swap;
   }
   
   #web-print-section {
