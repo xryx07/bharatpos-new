@@ -312,7 +312,7 @@ export default function Index() {
         </TouchableOpacity>
 
         {/* Center Nav Links */}
-        {screenWidth > 1080 && (
+        {screenWidth > 820 && (
           <View style={styles.navLinks}>
             <TouchableOpacity onPress={() => scrollToSection('home')} style={styles.navLinkItemActive}>
               <Text style={styles.navLinkTextActive}>Home</Text>
@@ -335,22 +335,8 @@ export default function Index() {
           </View>
         )}
 
-        {/* Right Search + Auth Buttons (Image 2 Fixed) */}
+        {/* Right Auth Buttons */}
         <View style={styles.headerRight}>
-          {screenWidth > 1200 && (
-            <Text style={styles.headerSloganBlue}>One Platform. Complete Business.</Text>
-          )}
-          {screenWidth > 850 && (
-            <View style={styles.navSearchPill}>
-              <Icon name="magnify" size={17} color="#94A3B8" style={{ marginRight: 8 }} />
-              <RNTextInput
-                placeholder="Search anything..."
-                placeholderTextColor="#94A3B8"
-                style={styles.navSearchInput}
-              />
-            </View>
-          )}
-
           {user ? (
             <>
               <TouchableOpacity
@@ -388,7 +374,9 @@ export default function Index() {
                 onPress={() => setShowSignupModal(true)}
                 activeOpacity={0.85}
               >
-                <Text style={styles.btnLabelSolid}>Get Started Free</Text>
+                <Text style={styles.btnLabelSolid}>
+                  {screenWidth > 520 ? 'Get Started Free' : 'Get Started'}
+                </Text>
               </TouchableOpacity>
             </>
           )}
@@ -1616,29 +1604,30 @@ const styles = StyleSheet.create({
       default: {}
     })
   },
-  logoRow: { flexDirection: 'row', alignItems: 'center' },
+  logoRow: { flexDirection: 'row', alignItems: 'center', flexShrink: 0 },
   logoIconBg: {
-    width: 28,
-    height: 28,
-    borderRadius: 6,
+    width: 32,
+    height: 32,
+    borderRadius: 8,
     backgroundColor: '#16A34A',
     justifyContent: 'center',
     alignItems: 'center'
   },
-  logoText: { fontWeight: '800', fontSize: 15, color: '#0F172A', fontFamily: 'Plus Jakarta Sans' },
-  logoSubtitle: { fontSize: 8, fontWeight: '600', color: '#64748B', marginTop: -2, fontFamily: 'Plus Jakarta Sans' },
-  navLinks: { flexDirection: 'row', alignItems: 'center', gap: 24 },
-  navLink: { fontSize: 13, fontWeight: '600', color: '#475569', fontFamily: 'Plus Jakarta Sans' },
-  headerRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  logoText: { fontWeight: '800', fontSize: 16, color: '#0F172A', fontFamily: 'Plus Jakarta Sans' },
+  logoSubtitle: { fontSize: 9, fontWeight: '600', color: '#64748B', marginTop: -2, fontFamily: 'Plus Jakarta Sans' },
+  navLinks: { flexDirection: 'row', alignItems: 'center', gap: 20 },
+  navLink: { fontSize: 14, fontWeight: '600', color: '#475569', fontFamily: 'Plus Jakarta Sans' },
+  headerRight: { flexDirection: 'row', alignItems: 'center', gap: 12, flexShrink: 0 },
   headerBtnOutline: { borderRadius: 6, borderColor: '#D1D5DB', height: 36, justifyContent: 'center' },
   btnLabelOutline: { fontSize: 12, color: '#374151', fontFamily: 'Plus Jakarta Sans' },
   headerBtnSolid: {
     borderRadius: 8,
     backgroundColor: '#16A34A',
-    height: 38,
-    paddingHorizontal: 18,
+    height: 40,
+    paddingHorizontal: 20,
     justifyContent: 'center',
     alignItems: 'center',
+    flexShrink: 0,
     shadowColor: '#16A34A',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.15,
@@ -1650,6 +1639,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#FFFFFF',
     letterSpacing: 0.2,
+    ...(Platform.OS === 'web' ? ({ whiteSpace: 'nowrap' } as any) : {}),
   },
 
   // Hero Section
@@ -2716,16 +2706,18 @@ const styles = StyleSheet.create({
     ...(Platform.OS === 'web' ? ({ outlineStyle: 'none', borderStyle: 'none' } as any) : {}),
   },
   headerBtnLogin: {
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     paddingVertical: 9,
-    marginRight: 6,
     justifyContent: 'center',
     alignItems: 'center',
+    flexShrink: 0,
+    borderRadius: 8,
   },
   btnLabelLogin: {
     fontSize: 14,
     fontWeight: '600',
     color: '#334155',
+    ...(Platform.OS === 'web' ? ({ whiteSpace: 'nowrap' } as any) : {}),
   },
 
   // Hero Section
