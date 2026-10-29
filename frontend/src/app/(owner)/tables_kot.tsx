@@ -33,29 +33,33 @@ interface TableData {
 export interface RestaurantTableItem {
   id: string;
   name: string;
+  section?: string;
   capacity: number;
-  status: 'occupied' | 'available' | 'reserved' | 'cleaning';
+  status: 'occupied' | 'available' | 'reserved' | 'cleaning' | 'kot_fired';
   items?: OrderItem[];
   total?: number;
+  kotNo?: number;
+  waiter?: string;
+  startTime?: string;
 }
 
 const RESTAURANT_TABLES: RestaurantTableItem[] = [
-  { id: 'T1', name: 'T1', capacity: 2, status: 'occupied', items: [], total: 0 },
-  { id: 'T2', name: 'T2', capacity: 4, status: 'occupied', items: [
+  { id: 'T1', name: 'T1', section: 'Main Dining', capacity: 2, status: 'occupied', items: [], total: 0 },
+  { id: 'T2', name: 'T2', section: 'Main Dining', capacity: 4, status: 'occupied', items: [
     { id: 'm2', name: 'Paneer Tikka', price: 220, qty: 1 },
     { id: 'm6', name: 'Butter Naan', price: 60, qty: 2 },
     { id: 'm5', name: 'Cold Coffee', price: 140, qty: 1 },
   ], total: 480 },
-  { id: 'T3', name: 'T3', capacity: 2, status: 'available', items: [], total: 0 },
-  { id: 'T4', name: 'T4', capacity: 6, status: 'reserved', items: [], total: 0 },
-  { id: 'T5', name: 'T5', capacity: 4, status: 'available', items: [], total: 0 },
-  { id: 'T6', name: 'T6', capacity: 2, status: 'available', items: [], total: 0 },
-  { id: 'T7', name: 'T7', capacity: 4, status: 'occupied', items: [], total: 0 },
-  { id: 'T8', name: 'T8', capacity: 4, status: 'cleaning', items: [], total: 0 },
-  { id: 'T9', name: 'T9', capacity: 4, status: 'available', items: [], total: 0 },
-  { id: 'T10', name: 'T10', capacity: 6, status: 'available', items: [], total: 0 },
-  { id: 'T11', name: 'T11', capacity: 4, status: 'occupied', items: [], total: 0 },
-  { id: 'T12', name: 'T12', capacity: 2, status: 'available', items: [], total: 0 },
+  { id: 'T3', name: 'T3', section: 'Main Dining', capacity: 2, status: 'available', items: [], total: 0 },
+  { id: 'T4', name: 'T4', section: 'AC Hall', capacity: 6, status: 'reserved', items: [], total: 0 },
+  { id: 'T5', name: 'T5', section: 'AC Hall', capacity: 4, status: 'available', items: [], total: 0 },
+  { id: 'T6', name: 'T6', section: 'AC Hall', capacity: 2, status: 'available', items: [], total: 0 },
+  { id: 'T7', name: 'T7', section: 'AC Hall', capacity: 4, status: 'occupied', items: [], total: 0 },
+  { id: 'T8', name: 'T8', section: 'Garden Patio', capacity: 4, status: 'cleaning', items: [], total: 0 },
+  { id: 'T9', name: 'T9', section: 'Garden Patio', capacity: 4, status: 'available', items: [], total: 0 },
+  { id: 'T10', name: 'T10', section: 'Garden Patio', capacity: 6, status: 'available', items: [], total: 0 },
+  { id: 'T11', name: 'T11', section: 'Rooftop', capacity: 4, status: 'occupied', items: [], total: 0 },
+  { id: 'T12', name: 'T12', section: 'Takeaway', capacity: 2, status: 'available', items: [], total: 0 },
 ];
 
 const CAFE_MENU_ITEMS = [
@@ -175,6 +179,7 @@ export default function TablesKOTScreen() {
   const [activeMenuCat, setActiveMenuCat] = useState('Starters');
   const [activeKdsFilter, setActiveKdsFilter] = useState('All (5)');
   const [cafeTables, setCafeTables] = useState<any[]>(() => RESTAURANT_TABLES);
+  const [kdsTickets, setKdsTickets] = useState(KDS_LIVE_TICKETS);
 
   // Auto-select T2 on mount to match reference design
   useEffect(() => {
@@ -260,27 +265,33 @@ export default function TablesKOTScreen() {
     return currentOrderItems.reduce((acc, i) => acc + (i.price * i.qty), 0);
   };
 
-  // ── Dispatch to Kitchen & Print 80mm KOT Slip ───────────────────
-  const handleFireKOT = () => {
-    if (!selectedTable || currentOrderItems.length === 0) return;
+  // ── Dispatch directly to Kitchen (Digital KDS Sync - No print popup) ────────
+  const handleFireKOT = (shouldPrint: boolean = false) => {
+    if (!selectedTable || currentOrderItems.length === 0) {
+      Alert.alert('No Items Selected', 'Please add items to the order before sending to the kitchen.');
+      return;
+    }
 
     const newKotNo = (selectedTable.kotNo || Math.floor(100 + Math.random() * 900));
     const total = calculateOrderTotal();
+    const sectionName = selectedTable.section || 'Main Dining';
 
-    const updatedTable: TableData = {
+    const updatedTable: any = {
       ...selectedTable,
-      status: 'kot_fired',
+      status: 'occupied',
       items: currentOrderItems,
       total,
       kotNo: newKotNo,
       waiter: waiterName,
+      section: sectionName,
       startTime: selectedTable.startTime || 'Just now',
     };
 
     setTables(prev => prev.map(t => t.id === selectedTable.id ? updatedTable : t));
+    setCafeTables(prev => prev.map(t => t.id === selectedTable.id ? updatedTable : t));
     setSelectedTable(updatedTable);
 
-    // Synchronize to Kitchen KDS queue
+    // Synchronize to Kitchen KDS queue immediately
     if (typeof window !== 'undefined') {
       try {
         const existingKots = JSON.parse(window.localStorage.getItem('bharatpos_live_kots') || '[]');
@@ -288,9 +299,9 @@ export default function TablesKOTScreen() {
           id: `kot-${Date.now()}`,
           kotNo: newKotNo,
           table: selectedTable.name,
-          section: selectedTable.section,
+          section: sectionName,
           waiter: waiterName,
-          orderType: selectedTable.section === 'Takeaway' ? 'Takeaway' : 'Dine-In',
+          orderType: sectionName === 'Takeaway' ? 'Takeaway' : 'Dine-In',
           minutesAgo: 0,
           status: 'preparing',
           items: currentOrderItems.map(i => ({ name: i.name, qty: i.qty, done: false, note: i.notes })),
@@ -300,8 +311,23 @@ export default function TablesKOTScreen() {
       } catch (_) {}
     }
 
-    // 80mm Thermal KOT Slip Layout
-    const kotHtml = `
+    // Add directly to local KDS live tickets view
+    setKdsTickets(prev => [
+      {
+        id: `#KOT-${newKotNo}`,
+        table: selectedTable.name,
+        time: 'Just now',
+        items: currentOrderItems.map(i => `${i.name} x${i.qty}`).join(', '),
+        status: 'Preparing',
+        color: '#F59E0B',
+        bg: '#FEF3C7',
+      },
+      ...prev.filter(t => t.table !== selectedTable.name)
+    ]);
+
+    // Optional physical print only if explicitly requested
+    if (shouldPrint) {
+      const kotHtml = `
       <!DOCTYPE html>
       <html>
         <head>
@@ -333,7 +359,7 @@ export default function TablesKOTScreen() {
           <div class="kot-header">
             <div class="kot-title">*** KITCHEN ORDER TICKET ***</div>
             <div class="kot-table">TABLE: ${selectedTable.name}</div>
-            <div class="meta">Section: <b>${selectedTable.section}</b> | KOT: <b>#${newKotNo}</b></div>
+            <div class="meta">Section: <b>${sectionName}</b> | KOT: <b>#${newKotNo}</b></div>
             <div class="meta">Server: <b>${waiterName}</b> | Time: <b>${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}</b></div>
           </div>
           <table>
@@ -361,11 +387,12 @@ export default function TablesKOTScreen() {
           </div>
         </body>
       </html>
-    `;
+      `;
+      printSlipHtml(kotHtml);
+    }
 
-    printSlipHtml(kotHtml);
-    Alert.alert('KOT Fired!', `KOT #${newKotNo} sent to Chef station for Table ${selectedTable.name}.`);
     setShowOrderModal(false);
+    Alert.alert('Sent to Kitchen', `Order KOT #${newKotNo} sent directly to Kitchen Display System.`);
   };
 
   // ── Print Final Tax Bill & Settle Table ────────────────────────
@@ -684,7 +711,7 @@ export default function TablesKOTScreen() {
   const printCurrentOrderBill = () => {
     const billHtml = `
       <div style="font-family: monospace; width: 260px; padding: 10px;">
-        <h2 style="text-align: center; margin: 0;">Sunrise Cafe</h2>
+        <h2 style="text-align: center; margin: 0;">${storeName || 'BharatPOS Cafe'}</h2>
         <p style="text-align: center; margin: 2px 0;">Table: ${selectedTable?.name || 'T3'} (Dine In)</p>
         <hr/>
         ${currentOrderItems.map(i => `<div>${i.name} x${i.qty} - ₹${i.price * i.qty}</div>`).join('')}
@@ -813,10 +840,10 @@ export default function TablesKOTScreen() {
             <View style={styles.kdsHeaderRow}>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <Text style={styles.kdsMainHeading}>Kitchen Display</Text>
-                <Text style={styles.kdsPendingBadge}>Pending Orders (3)</Text>
+                <Text style={styles.kdsPendingBadge}>Pending Orders ({kdsTickets.length})</Text>
               </View>
               <View style={styles.kdsFilterPillsRow}>
-                {['All (5)', 'Starters (1)', 'Main Course (3)', 'Beverages (1)'].map((tab, idx) => {
+                {['All', 'Starters', 'Main Course', 'Beverages'].map((tab, idx) => {
                   const active = activeKdsFilter === tab;
                   return (
                     <TouchableOpacity
@@ -833,7 +860,7 @@ export default function TablesKOTScreen() {
 
             {/* KOT Tickets List */}
             <View style={styles.kdsTicketList}>
-              {KDS_LIVE_TICKETS.map((kot) => (
+              {kdsTickets.map((kot) => (
                 <View key={kot.id} style={styles.kdsTicketRow}>
                   <View style={styles.kotLeftInfo}>
                     <Text style={styles.kotIdText}>{kot.id}</Text>
@@ -972,14 +999,15 @@ export default function TablesKOTScreen() {
 
             {/* Send to Kitchen CTA (Emerald Green) */}
             <TouchableOpacity
-              style={styles.sendToKitchenBtn}
+              style={[styles.sendToKitchenBtn, { flexDirection: 'row' }]}
               activeOpacity={0.8}
-              onPress={handleFireKOT}
+              onPress={() => handleFireKOT(false)}
             >
+              <Icon name="chef-hat" size={18} color="#FFFFFF" style={{ marginRight: 6 }} />
               <Text style={styles.sendToKitchenBtnText}>Send to Kitchen</Text>
             </TouchableOpacity>
 
-            {/* Hold, Print, Save Sub-actions */}
+            {/* Hold, Print Bill, Print KOT Sub-actions */}
             <View style={styles.cafeSubActionsRow}>
               <TouchableOpacity style={styles.cafeSubBtn} onPress={() => Alert.alert('Order Held', 'Table order kept on hold')}>
                 <Icon name="pause" size={13} color="#94A3B8" />
@@ -987,11 +1015,11 @@ export default function TablesKOTScreen() {
               </TouchableOpacity>
               <TouchableOpacity style={styles.cafeSubBtn} onPress={() => printCurrentOrderBill()}>
                 <Icon name="printer" size={13} color="#94A3B8" />
-                <Text style={styles.cafeSubBtnText}>Print</Text>
+                <Text style={styles.cafeSubBtnText}>Print Bill</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.cafeSubBtn} onPress={() => Alert.alert('Saved', 'Order saved successfully')}>
-                <Icon name="content-save" size={13} color="#94A3B8" />
-                <Text style={styles.cafeSubBtnText}>Save</Text>
+              <TouchableOpacity style={styles.cafeSubBtn} onPress={() => handleFireKOT(true)}>
+                <Icon name="receipt" size={13} color="#94A3B8" />
+                <Text style={styles.cafeSubBtnText}>Print KOT</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -1163,12 +1191,12 @@ export default function TablesKOTScreen() {
             )}
             <Button
               mode="contained"
-              buttonColor="#7E22CE"
-              icon="printer"
-              onPress={handleFireKOT}
+              buttonColor="#16A34A"
+              icon="chef-hat"
+              onPress={() => handleFireKOT(false)}
               disabled={currentOrderItems.length === 0}
             >
-              Print & Fire KOT to Kitchen
+              Send Directly to Kitchen (KDS)
             </Button>
           </Dialog.Actions>
         </Dialog>
